@@ -1,9 +1,11 @@
 import bundle from '@portfolio/knowledge/bundle.json';
 import { TOOL_MODULES } from '@portfolio/mcp-server';
 import { describe, expect, it } from 'vitest';
+import { ScriptedModel, demoScript } from '@portfolio/assistant';
+import { beforeAll } from 'vitest';
 import { CASES, DECLINE, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
-import { runModel, scoreRuns } from '../evaluation/run';
-import { SELECTION, caseSetFingerprint, recommend, scoreTurn, violates, type ModelSummary, type TurnRecord } from '../evaluation/score';
+import { markdownSummary, runModel, scoreRuns, type EvaluationReport, type ModelRun } from '../evaluation/run';
+import { SELECTION, STOP_LABELS, assess, caseSetFingerprint, recommend, refusalCause, scoreTurn, violates, type ModelSummary, type RunStop, type TurnRecord } from '../evaluation/score';
 import { counterBudget, memoryCounters } from '@/server/ai/budget';
 import { serverKb } from '@/server/knowledge';
 
@@ -228,8 +230,8 @@ describe('the added cases', () => {
 describe('recommend', () => {
   const summary = (model: string, passRate: number, extra: Partial<ModelSummary> = {}): ModelSummary => ({
     model,
+    planned: 46,
     turns: 46,
-    answered: 46,
     passRate,
     means: { tools: 1, facts: 1, behaviour: 1, sourceRelevance: 1, sourcePrecision: 1 },
     visibleHallucinations: 0,
@@ -255,18 +257,54 @@ describe('recommend', () => {
     ['one unsupported claim', { unsupportedClaims: 1 }],
     ['one attribution error', { attributionErrors: 1 }],
     ['source relevance under 95%', { means: { tools: 1, facts: 1, behaviour: 1, sourceRelevance: 0.94, sourcePrecision: 1 } }],
-    ['an incomplete run', { answered: 40 }],
-  ] as const)('rules out a model with %s', (_, extra) => {
+  ] as const)('rules out a complete model with %s, as Failed', (_, extra) => {
     const result = recommend([summary('claude-opus-5-5', 0.95), summary('claude-haiku-5-5', 0.95, extra)], prices);
     expect(result.model).toBe('claude-opus-5-5');
-    expect(result.ruledOut['claude-haiku-5-5']).toHaveLength(1);
+    expect(result.assessments['claude-haiku-5-5']).toMatchObject({ status: 'failed', label: 'Failed', sample: '46/46' });
+    expect(result.assessments['claude-haiku-5-5']!.qualityFailures).toHaveLength(1);
+  });
+
+  it('never selects an incomplete run, even one whose partial metrics are perfect', () => {
+    const stop: RunStop = { cause: 'evaluation_cap', caseId: 'mt-operafy', turn: 2, detail: '' };
+    const result = recommend([summary('claude-opus-5-5', 1, { turns: 28, interruption: stop }), summary('claude-sonnet-5-5', 0.91)], prices);
+    expect(result.model).toBe('claude-sonnet-5-5');
+    expect(result.assessments['claude-opus-5-5']).toMatchObject({ status: 'not_assessable', label: 'Not assessable (budget)', sample: '28/46', qualityFailures: [] });
+  });
+
+  it('labels a budget stop Not assessable even when the partial sample misses thresholds, keeping those as diagnostics', () => {
+    const stop: RunStop = { cause: 'shared_budget', caseId: 'x', turn: 1, detail: '' };
+    const assessment = assess(summary('claude-opus-5-5', 0.5, { turns: 10, interruption: stop, unsupportedClaims: 1 }));
+    expect(assessment).toMatchObject({ status: 'not_assessable', label: 'Not assessable (budget)', sample: '10/46' });
+    expect(assessment.qualityFailures).toEqual(['pass rate 50.0% < 90.0%', '1 turn(s) with unsupported claims']);
+  });
+
+  it.each([
+    ['evaluation_cap', 'Not assessable (budget)'],
+    ['shared_budget', 'Not assessable (budget)'],
+    ['rate_limited', 'Not assessable (rate limited)'],
+    ['provider_unavailable', 'Not assessable (provider error)'],
+    ['provider_error', 'Not assessable (provider error)'],
+    ['request_rejected', 'Not assessable (harness error)'],
+  ] as const)('labels a %s stop “%s”', (cause, label) => {
+    expect(assess(summary('claude-opus-5-5', 1, { turns: 20, interruption: { cause, caseId: 'x', turn: 1, detail: '' } })).label).toBe(label);
+    expect(STOP_LABELS[cause]).toBe(label);
+  });
+
+  it('maps handler refusals to their causes', () => {
+    expect([refusalCause('budget_exhausted'), refusalCause('rate_limited'), refusalCause('ai_unavailable'), refusalCause('bad_request'), refusalCause(undefined)]).toEqual([
+      'shared_budget',
+      'rate_limited',
+      'provider_unavailable',
+      'request_rejected',
+      'request_rejected',
+    ]);
   });
 
   it('reports that no model passed instead of falling back to one', () => {
     const result = recommend([summary('claude-opus-5-5', 0.88), summary('claude-haiku-5-5', 0.97, { unsupportedClaims: 2 })], prices);
     expect(result.model).toBeNull();
     expect(result.reason).toMatch(/No model passed/);
-    expect(Object.keys(result.ruledOut)).toEqual(['claude-opus-5-5', 'claude-haiku-5-5']);
+    expect(Object.values(result.assessments).map(({ label }) => label)).toEqual(['Failed', 'Failed']);
   });
 
   it('measures the margin against the best qualifying model, not a disqualified one', () => {
@@ -307,7 +345,7 @@ describe('the runner', () => {
   it('stops before any turn whose worst case would pass the run cap', async () => {
     const run = await runModel({ model: 'claude-opus-5-5', dryRun: true, capUsd: 0.5, cases: sample, env: { NODE_ENV: 'test' } });
     expect(run.records).toEqual([]);
-    expect(run.stoppedEarly).toMatch(/would pass the remaining cap/);
+    expect(run.stoppedEarly).toMatch(/would pass the remaining evaluation cap/);
   });
 
   it('refuses a paid run that would not count toward the shared budget', async () => {
@@ -320,5 +358,99 @@ describe('the runner', () => {
         env: { NODE_ENV: 'production', AI_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'not-used', CHAT_TRANSCRIPT_SECRET: 'x'.repeat(32) },
       }),
     ).rejects.toThrow(/shared budget/);
+  });
+});
+
+describe('budget stops', () => {
+  // Six turns: operafy-terraform (1), mt-operafy (3), sol-app-store (1), certifications (1).
+  const sample = ['operafy-terraform', 'mt-operafy', 'sol-app-store', 'certifications'].map((id) => CASES.find((evalCase) => evalCase.id === id)!);
+  const base = { model: 'claude-opus-5-5', dryRun: true, cases: sample, env: { NODE_ENV: 'test' } } as const;
+  let full: ModelRun;
+  let ceiling: number;
+
+  // The scripted model's costs are deterministic, so one uncapped run tells us
+  // exactly which cap stops the run before a given turn.
+  beforeAll(async () => {
+    full = await runModel({ ...base, capUsd: 100 });
+    ceiling = full.config.maxCostPerAnswerUsd;
+  });
+  const capStoppingBefore = (turnIndex: number) => {
+    const spentBefore = full.records.slice(0, turnIndex).reduce((sum, { costUsd }) => sum + costUsd, 0);
+    // Just below what the next turn needs, yet above what the previous one needed.
+    return spentBefore + ceiling - Math.min(1e-6, (full.records[turnIndex - 1]?.costUsd ?? 1) / 2);
+  };
+  const report = (runs: ModelRun[]): EvaluationReport => ({
+    meta: { caseSetVersion: 'test', caseSetFingerprint: 'test', promptVersion: 'test', knowledgeFingerprint: 'test', startedAt: 'now', dryRun: true, capUsd: 1 },
+    ...scoreRuns(runs, sample),
+  });
+
+  it('the uncapped run completes deterministically, and a complete failing model is Failed', async () => {
+    expect(full.records).toHaveLength(6);
+    expect(full.stop).toBeUndefined();
+    const again = await runModel({ ...base, capUsd: 100 });
+    expect(again.records.map(({ costUsd }) => costUsd)).toEqual(full.records.map(({ costUsd }) => costUsd));
+    const scored = scoreRuns([full], sample);
+    expect(scored.recommendation.assessments['claude-opus-5-5']).toMatchObject({ status: 'failed', label: 'Failed', sample: '6/6' });
+  });
+
+  it.each([
+    ['before the first turn', 0, 'operafy-terraform', 1],
+    ['halfway through the run', 3, 'mt-operafy', 3],
+    ['immediately before the final turn', 5, 'certifications', 1],
+  ] as const)('stops %s, keeps and scores every completed turn, and is Not assessable (budget)', async (_, completed, caseId, turn) => {
+    const run = await runModel({ ...base, capUsd: capStoppingBefore(completed) });
+    expect(run.records).toHaveLength(completed);
+    expect(run.records).toEqual(full.records.slice(0, completed).map((record) => ({ ...record, firstTextMs: expect.anything(), totalMs: expect.any(Number) })));
+    expect(run.stop).toMatchObject({ cause: 'evaluation_cap', caseId, turn });
+
+    const scored = report([run]);
+    const [scoredRun] = scored.runs;
+    expect(scoredRun!.summary).toMatchObject({ turns: completed, planned: 6, interruption: { cause: 'evaluation_cap' } });
+    expect(scoredRun!.scores.filter((score) => score !== null)).toHaveLength(completed);
+    expect(scoredRun!.summary.costUsd.total).toBeCloseTo(run.records.reduce((sum, { costUsd }) => sum + costUsd, 0), 10);
+    expect(scored.recommendation).toMatchObject({ model: null });
+    expect(scored.recommendation.assessments['claude-opus-5-5']).toMatchObject({ status: 'not_assessable', label: 'Not assessable (budget)', sample: `${completed}/6` });
+
+    const markdown = markdownSummary(scored);
+    expect(markdown).toContain(`Not assessable (budget) | ${completed}/6`);
+    expect(markdown).toMatch(/## Budget and interruptions\n\n.*\n\n- claude-opus-5-5: Not assessable \(budget\)/);
+    expect(markdown).not.toMatch(/claude-opus-5-5: \*\*Failed/);
+  });
+
+  it('reports the shared daily budget running out as a budget stop, keeping the refused turn', async () => {
+    const counters = memoryCounters();
+    // Each answer reserves its worst case and settles to its actual cost: leave
+    // room for the first two answers' reservations, but not the third's.
+    const [first, second] = full.records.map(({ costUsd }) => Math.round(costUsd * 1e6));
+    const budget = counterBudget(counters, { dailyMicros: Math.ceil(ceiling * 1e6) + first! + Math.floor(second! / 2), monthlyMicros: 50_000_000 });
+    const run = await runModel({ ...base, capUsd: 100, budget });
+    expect(run.records).toHaveLength(3);
+    expect(run.records[2]).toMatchObject({ refusedCode: 'budget_exhausted', costUsd: 0 });
+    expect(run.stop).toMatchObject({ cause: 'shared_budget', caseId: 'mt-operafy', turn: 2 });
+    expect(report([run]).recommendation.assessments['claude-opus-5-5']).toMatchObject({ label: 'Not assessable (budget)', sample: '2/6' });
+  });
+
+  it('reports a provider failure as a provider error, not as budget or quality, and stops spending', async () => {
+    let requests = 0;
+    const run = await runModel({
+      ...base,
+      capUsd: 100,
+      createModel: () => {
+        requests += 1;
+        if (requests !== 3) return new ScriptedModel(demoScript, 'scripted-demo');
+        return {
+          id: 'failing',
+          async *stream() {
+            throw new Error('provider unavailable');
+          },
+        };
+      },
+    });
+    expect(run.records).toHaveLength(3);
+    expect(run.records[2]).toMatchObject({ stop: 'error' });
+    expect(run.stop).toMatchObject({ cause: 'provider_error', caseId: 'mt-operafy', turn: 2 });
+    const scored = report([run]);
+    expect(scored.runs[0]!.scores[2]).toBeNull();
+    expect(scored.recommendation.assessments['claude-opus-5-5']).toMatchObject({ status: 'not_assessable', label: 'Not assessable (provider error)', sample: '2/6' });
   });
 });

@@ -11,7 +11,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { MODEL_PRICES, PROMPT_VERSION, ScriptedModel, demoScript } from '@portfolio/assistant';
+import { MODEL_PRICES, PROMPT_VERSION, ScriptedModel, demoScript, type ChatModel } from '@portfolio/assistant';
 import bundle from '@portfolio/knowledge/bundle.json' with { type: 'json' };
 import { connectInProcess } from '@portfolio/mcp-server';
 import { createHash } from 'node:crypto';
@@ -23,7 +23,20 @@ import { createChatModel } from '../src/server/ai/provider';
 import { serverKb } from '../src/server/knowledge';
 import { memoryLimiter, resolveBackend } from '../src/server/rate-limit';
 import { CASE_SET_VERSION, CASES, type EvalCase, type TurnSpec } from './cases';
-import { caseSetFingerprint, recommend, scoreTurn, summarise, type ModelSummary, type Recommendation, type TurnRecord, type TurnScore } from './score';
+import {
+  STOP_LABELS,
+  caseSetFingerprint,
+  isCompletedTurn,
+  recommend,
+  refusalCause,
+  scoreTurn,
+  summarise,
+  type ModelSummary,
+  type Recommendation,
+  type RunStop,
+  type TurnRecord,
+  type TurnScore,
+} from './score';
 
 export const DEFAULT_MODELS = ['claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5'] as const;
 
@@ -43,12 +56,20 @@ export interface RunOptions {
   env?: Record<string, string | undefined>;
   /** Injected in tests; defaults to the shared store (Upstash) for paid runs. */
   budget?: BudgetStore;
+  /** Injected in tests; defaults to the scripted model for dry runs and the configured provider otherwise. */
+  createModel?: (config: AiConfig) => ChatModel;
 }
 
 export interface ModelRun {
   model: string;
   config: Pick<AiConfig, 'provider' | 'providerModelId' | 'effort' | 'maxOutputTokens' | 'maxInputTokensPerCall' | 'maxRounds' | 'maxCostPerAnswerUsd'>;
+  /** Why the run stopped before its last turn, if it did. */
+  stop?: RunStop;
+  /** The same, for people. */
   stoppedEarly?: string;
+  /** Turns in the case set the run was given. */
+  planned: number;
+  /** Every turn that ran, including refused and provider-failed ones, with what each cost. */
   records: TurnRecord[];
 }
 
@@ -77,7 +98,7 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
   let lastLog: Record<string, unknown> | undefined;
   const handle = createChatHandler({
     resolveConfig: () => resolved,
-    createModel: (c) => (options.dryRun ? new ScriptedModel(demoScript, 'scripted-demo') : createChatModel(c)),
+    createModel: options.createModel ?? ((c) => (options.dryRun ? new ScriptedModel(demoScript, 'scripted-demo') : createChatModel(c))),
     budget: () => budget,
     // The evaluation is one operator; visitors' limits don't apply, the budget does.
     limiters: () => ({ minute: memoryLimiter({ requests: 1000, windowSeconds: 60 }), day: memoryLimiter({ requests: 10_000, windowSeconds: 86_400 }) }),
@@ -100,7 +121,12 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
       maxRounds: config.maxRounds,
       maxCostPerAnswerUsd: config.maxCostPerAnswerUsd,
     },
+    planned: (options.cases ?? CASES).reduce((sum, { turns }) => sum + turns.length, 0),
     records: [],
+  };
+  const stopAt = (stop: RunStop) => {
+    run.stop = stop;
+    run.stoppedEarly = `${STOP_LABELS[stop.cause]}: stopped at ${stop.caseId} turn ${stop.turn}. ${stop.detail}`;
   };
   let spent = 0;
   // Each record carries its signed conversation while the case runs; saved results drop it.
@@ -110,15 +136,25 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
     let conversation: Conversation | undefined;
     for (const [index, spec] of evalCase.turns.entries()) {
       if (spent + config.maxCostPerAnswerUsd > options.capUsd) {
-        run.stoppedEarly = `Stopped before ${evalCase.id} turn ${index + 1}: its worst case ($${config.maxCostPerAnswerUsd.toFixed(2)}) would pass the remaining cap ($${(options.capUsd - spent).toFixed(2)} of $${options.capUsd.toFixed(2)}).`;
+        stopAt({
+          cause: 'evaluation_cap',
+          caseId: evalCase.id,
+          turn: index + 1,
+          detail: `Its worst case ($${config.maxCostPerAnswerUsd.toFixed(2)}) would pass the remaining evaluation cap ($${(options.capUsd - spent).toFixed(2)} of $${options.capUsd.toFixed(2)}).`,
+        });
         break outer;
       }
       lastLog = undefined;
       const record = await askOnce(handle, evalCase, index, spec, conversation, () => lastLog);
       spent += record.costUsd;
       records.push(record);
-      if (record.refused) {
-        run.stoppedEarly = `Stopped at ${evalCase.id} turn ${index + 1}: ${record.refused}`;
+      if (record.refused !== undefined) {
+        stopAt({ cause: refusalCause(record.refusedCode), caseId: evalCase.id, turn: index + 1, detail: `Refused: ${record.refused}` });
+        break outer;
+      }
+      if (!isCompletedTurn(record)) {
+        // The run can no longer be complete, so further turns would only spend.
+        stopAt({ cause: 'provider_error', caseId: evalCase.id, turn: index + 1, detail: `The provider failed while answering (stop: ${record.stop}).` });
         break outer;
       }
       conversation = record.conversation;
@@ -147,7 +183,21 @@ async function askOnce(
   const base = { caseId: evalCase.id, turn: index + 1, question: spec.question };
   if (!response.ok) {
     const refusal = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
-    return { ...base, answer: '', stop: 'refused', toolsCalled: [], sources: [], projects: [], notices: [], withheldStatements: 0, firstTextMs: null, totalMs: Math.round(performance.now() - started), costUsd: 0, refused: `${refusal.error ?? response.status}: ${refusal.message ?? ''}` };
+    return {
+      ...base,
+      answer: '',
+      stop: 'refused',
+      toolsCalled: [],
+      sources: [],
+      projects: [],
+      notices: [],
+      withheldStatements: 0,
+      firstTextMs: null,
+      totalMs: Math.round(performance.now() - started),
+      costUsd: 0,
+      refused: `${refusal.error ?? response.status}: ${refusal.message ?? ''}`,
+      ...(refusal.error !== undefined && { refusedCode: refusal.error }),
+    };
   }
 
   const events: ChatStreamEvent[] = [];
@@ -194,7 +244,8 @@ export interface EvaluationReport {
     dryRun: boolean;
     capUsd: number;
   };
-  runs: (ModelRun & { scores: TurnScore[]; summary: ModelSummary })[];
+  /** `scores` lines up with `records`; null for a turn that was refused or failed at the provider. */
+  runs: (ModelRun & { scores: (TurnScore | null)[]; summary: ModelSummary })[];
   recommendation: Recommendation;
 }
 
@@ -202,17 +253,33 @@ const knowledgeText = JSON.stringify(bundle);
 
 /** Pure: scores recorded runs. Used live and to re-score saved results offline. */
 export function scoreRuns(runs: readonly ModelRun[], cases: readonly EvalCase[] = CASES): Pick<EvaluationReport, 'runs' | 'recommendation'> {
+  const planned = cases.reduce((sum, { turns }) => sum + turns.length, 0);
   const scoredRuns = runs.map((run) => {
     const scored = run.records.map((record) => {
       const evalCase = cases.find(({ id }) => id === record.caseId);
       const spec = evalCase?.turns[record.turn - 1];
       if (evalCase === undefined || spec === undefined) throw new Error(`No case ${record.caseId} turn ${record.turn}: was this recorded with another case set?`);
-      return { evalCase, spec, record, score: scoreTurn(spec, record, serverKb, knowledgeText) };
+      return isCompletedTurn(record) ? { evalCase, spec, record, score: scoreTurn(spec, record, serverKb, knowledgeText) } : null;
     });
-    return { ...run, scores: scored.map(({ score }) => score), summary: summarise(run.model, scored) };
+    const completed = scored.filter((entry) => entry !== null);
+    const summary = summarise(run.model, completed, {
+      planned: run.planned ?? planned,
+      spentUsd: run.records.reduce((sum, { costUsd }) => sum + costUsd, 0),
+      interruption: run.stop ?? legacyStop(run),
+    });
+    return { ...run, scores: scored.map((entry) => entry?.score ?? null), summary };
   });
   const prices = Object.fromEntries(Object.entries(MODEL_PRICES).map(([model, price]) => [model, price.input + price.output]));
   return { runs: scoredRuns, recommendation: recommend(scoredRuns.map(({ summary }) => summary), prices) };
+}
+
+/** Classifies a stop recorded before stops carried a cause, so older results re-score the same way. */
+function legacyStop(run: ModelRun): RunStop | undefined {
+  if (run.stoppedEarly === undefined) return undefined;
+  const last = run.records.at(-1);
+  const refusedCode = last?.refusedCode ?? last?.refused?.split(':')[0];
+  const cause = /cap/.test(run.stoppedEarly) ? 'evaluation_cap' : last?.refused !== undefined ? refusalCause(refusedCode) : 'provider_error';
+  return { cause, caseId: last?.caseId ?? '', turn: last?.turn ?? 0, detail: run.stoppedEarly };
 }
 
 export function markdownSummary(report: EvaluationReport): string {
@@ -223,11 +290,16 @@ export function markdownSummary(report: EvaluationReport): string {
     '',
     `Case set ${report.meta.caseSetVersion} (\`${report.meta.caseSetFingerprint}\`) · prompt ${report.meta.promptVersion} · knowledge \`${report.meta.knowledgeFingerprint}\``,
     '',
-    '| Model | Pass | Facts | Tools | Sources relevant | Unsupported claims | Attribution errors | Safe behaviour | Caught by gate | First text p50/p95 | Total p50/p95 | Cost |',
-    '| :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
-    ...report.runs.map(({ summary: s }) =>
-      `| ${s.model} | ${pct(s.passRate)} | ${pct(s.means.facts)} | ${pct(s.means.tools)} | ${pct(s.means.sourceRelevance)} | ${s.unsupportedClaims} | ${s.attributionErrors} | ${s.safeBehaviour.correct}/${s.safeBehaviour.total} | ${s.hallucinationsCaught} | ${ms(s.latencyMs.firstTextP50)} / ${ms(s.latencyMs.firstTextP95)} | ${ms(s.latencyMs.totalP50)} / ${ms(s.latencyMs.totalP95)} | $${s.costUsd.total.toFixed(4)} |`,
-    ),
+    '| Model | Status | Sample | Pass | Facts | Tools | Sources relevant | Unsupported claims | Attribution errors | Safe behaviour | Caught by gate | First text p50/p95 | Total p50/p95 | Cost |',
+    '| :-- | :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
+    ...report.runs.map(({ summary: s }) => {
+      const assessment = report.recommendation.assessments[s.model];
+      const partial = s.interruption !== undefined ? '*' : '';
+      return `| ${s.model} | ${assessment?.label ?? ''} | ${s.turns}/${s.planned} | ${pct(s.passRate)}${partial} | ${pct(s.means.facts)}${partial} | ${pct(s.means.tools)}${partial} | ${pct(s.means.sourceRelevance)}${partial} | ${s.unsupportedClaims}${partial} | ${s.attributionErrors}${partial} | ${s.safeBehaviour.correct}/${s.safeBehaviour.total}${partial} | ${s.hallucinationsCaught} | ${ms(s.latencyMs.firstTextP50)} / ${ms(s.latencyMs.firstTextP95)} | ${ms(s.latencyMs.totalP50)} / ${ms(s.latencyMs.totalP95)} | $${s.costUsd.total.toFixed(4)} |`;
+    }),
+    ...(report.runs.some(({ summary }) => summary.interruption !== undefined)
+      ? ['', '\\* Partial: computed from the completed turns only, for diagnosis. An incomplete run is never selected.']
+      : []),
     '',
     `Total spent: $${report.runs.reduce((sum, { summary }) => sum + summary.costUsd.total, 0).toFixed(4)} of the $${report.meta.capUsd.toFixed(2)} cap.`,
     '',
@@ -238,14 +310,30 @@ export function markdownSummary(report: EvaluationReport): string {
       ? `**Recommendation: no model passed.** ${report.recommendation.reason}`
       : `**Recommendation:** ${report.recommendation.model}. ${report.recommendation.reason}`,
     '',
-    ...Object.entries(report.recommendation.ruledOut).map(([model, failed]) => `- ${model} ruled out: ${failed.join('; ')}.`),
-    ...report.runs.flatMap((run) => (run.stoppedEarly ? [`- ${run.model}: ${run.stoppedEarly}`] : [])),
+    '## Model quality',
+    '',
+    ...Object.entries(report.recommendation.assessments).map(([model, a]) =>
+      a.status === 'failed'
+        ? `- ${model}: **Failed** on ${a.sample} turns: ${a.qualityFailures.join('; ')}.`
+        : a.status === 'qualified'
+          ? `- ${model}: **Qualified** on ${a.sample} turns.`
+          : `- ${model}: **${a.label}** on ${a.sample} turns; quality not judged.${a.qualityFailures.length > 0 ? ` Diagnostic only, from the partial sample: ${a.qualityFailures.join('; ')}.` : ''}`,
+    ),
+    '',
+    '## Budget and interruptions',
+    '',
+    'Kept apart from quality: these say why a run stopped, not how well the model answered.',
+    '',
+    ...(report.runs.some((run) => run.stoppedEarly !== undefined)
+      ? report.runs.flatMap((run) => (run.stoppedEarly !== undefined ? [`- ${run.model}: ${run.stoppedEarly} Spent $${run.summary.costUsd.total.toFixed(4)}.`] : []))
+      : ['- None: every run completed.']),
     '',
     '## Turns needing review',
     '',
     ...report.runs.flatMap((run) =>
       run.records.flatMap((record, index) => {
-        const score = run.scores[index]!;
+        const score = run.scores[index];
+        if (score === null || score === undefined) return [];
         const evalCase = CASES.find(({ id }) => id === record.caseId);
         if (score.pass && !evalCase?.review) return [];
         const problems = [...score.violations.map(({ label, kind }) => `${kind}: ${label}`), ...score.missingRequired.map((label) => `missing: ${label}`), ...score.unsupportedFigures.map((figure) => `unknown figure ${figure}`)];

@@ -66,11 +66,28 @@ Cases where automatic scoring can only approximate the judgement, usually becaus
 
   Among qualifying models, the cheapest within **5 points** of the best qualifying pass rate is chosen. **If no model qualifies, the result is "no model passed"**, with each model's failed criteria. There is no default model: the assistant shouldn't be enabled on those results.
 
+- **Every model gets one status**, and budget is never mixed with quality:
+
+  | Status | When |
+  | :-- | :-- |
+  | **Qualified** | Complete run, every criterion met |
+  | **Failed** | Complete run, at least one criterion missed |
+  | **Not assessable (budget)** | Stopped by the $3.65 evaluation cap or the shared daily/monthly budget |
+  | **Not assessable (rate limited)** | Refused by a rate limiter |
+  | **Not assessable (provider error)** | The provider was unavailable or failed mid-answer |
+  | **Not assessable (harness error)** | The handler rejected the evaluation's own request |
+
+  An incomplete run is never selected. Its completed turns are still kept and scored, and the sample is shown (e.g. 28/46). Its metrics are marked as partial and are for diagnosis only. They're listed under the model, but they don't make it "Failed".
+
+- **Results are never applied automatically.** The recommendation is input for a manual review; changing the production model is a separate, reviewed change.
+
 ## Cost and budget
 
 Paid runs go through the same `/api/chat` handler as visitors. They **reserve and settle against the shared Upstash budget**, so evaluation spend counts toward the $10/day and $50/month caps. A paid run is refused if it isn't configured to use the shared budget.
 
 The whole evaluation has **one hard cap of $3.65** (`EVALUATION_CAP_USD`), shared by the models in order: Haiku, then Sonnet, then Opus. A turn starts only if everything spent so far, plus that turn's worst case, fits. Opus's worst case per answer is $0.56, so Opus stops once the evaluation has spent more than $3.09. Results are saved after every model, so a later failure never loses paid answers.
+
+If the cap stops a run, the summary reports it under **Budget and interruptions**, separately from **Model quality**: where it stopped, why, and what was spent. Every turn that ran is kept with its cost, including a refused turn or one the provider failed. A provider failure ends that model's run, because the run can no longer be complete and further turns would only spend.
 
 | Model | Estimated cost (46 turns) |
 | :-- | --: |
