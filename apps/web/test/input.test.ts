@@ -59,7 +59,7 @@ describe('complete', () => {
   });
 
   it('lists candidates when several commands match', () => {
-    expect(completeInput('a')).toEqual({ candidates: ['about', 'approach'] });
+    expect(completeInput('a')).toEqual({ candidates: ['about', 'approach', 'ask'] });
   });
 
   it('completes project ids after "projects"', () => {

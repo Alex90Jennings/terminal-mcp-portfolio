@@ -1,3 +1,4 @@
+import { askOrFallback } from './ask';
 import { formatProject } from './format-project';
 import { command, joined, paragraph, text, type Block, type CommandResult } from './output';
 import { parseInput } from './parse';
@@ -38,7 +39,7 @@ export function execute(input: string, registry: Registry, context: CommandConte
   const project = context.kb.getProject(raw);
   if (project !== undefined) return { blocks: formatProject(project, 'overview') };
 
-  if (looksLikeQuestion(raw)) return answerWithoutAi(raw, context);
+  if (looksLikeQuestion(raw)) return askOrFallback(raw, context);
   return notFound(name, registry, context);
 }
 
@@ -71,26 +72,5 @@ function notFound(name: string, registry: Registry, context: CommandContext): Co
       text(' for the list of commands, or ask a question in plain English.', 'muted'),
     ]),
   );
-  return { blocks };
-}
-
-/** Without the AI assistant, a question still gets something useful: the projects that match it. */
-function answerWithoutAi(question: string, { kb }: CommandContext): CommandResult {
-  const hits = kb.search(question, 3);
-  const blocks: Block[] = [
-    paragraph('The AI assistant isn’t available right now, so I can’t answer questions in plain English yet.', 'muted'),
-  ];
-  if (hits.length > 0) {
-    blocks.push(paragraph('These projects look relevant:'), {
-      kind: 'list',
-      items: hits.map((hit) => ({
-        lines: [
-          [command(hit.projectName, `projects ${hit.projectId}`)],
-          ...(hit.matches[0] ? [[text(hit.matches[0].text, 'muted')]] : []),
-        ],
-      })),
-    });
-  }
-  blocks.push(paragraph([text('Or browse with ', 'muted'), command('projects'), text(' and ', 'muted'), command('skills'), text('.', 'muted')]));
   return { blocks };
 }

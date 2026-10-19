@@ -53,7 +53,10 @@ test('an unknown command suggests the right one, and the suggestion runs', async
   await expect(output(page).getByRole('heading', { name: 'Available projects' })).toBeVisible();
 });
 
-test('a question still gets useful answers without AI', async ({ page }) => {
+test('a question still gets useful answers when the AI is unavailable', async ({ page }) => {
+  await page.route('**/api/chat', (route) =>
+    route.fulfill({ status: 503, json: { error: 'ai_unavailable', message: 'The AI assistant isn’t available right now. Commands like `projects` and `skills` still work.' } }),
+  );
   await runCommand(page, 'Which project best demonstrates Docker?');
   await expect(output(page)).toContainText('The AI assistant isn’t available right now');
   await expect(output(page).getByRole('button', { name: 'Clash of Langs' }).last()).toBeVisible();

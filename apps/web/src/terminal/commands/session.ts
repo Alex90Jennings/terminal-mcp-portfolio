@@ -1,5 +1,20 @@
+import { askOrFallback } from '../ask';
 import { command, heading, joined, paragraph, subheading, text, type Block } from '../output';
 import type { Command } from '../types';
+
+export const ask: Command = {
+  name: 'ask',
+  aliases: [],
+  summary: 'Ask the AI assistant about my work in plain English',
+  usage: 'ask <question>',
+  run: (args, context) => {
+    const question = args.join(' ').trim();
+    if (question === '') {
+      return { blocks: [paragraph([text('Usage: '), command('ask Which project best demonstrates Docker?')], 'muted')] };
+    }
+    return askOrFallback(question, context);
+  },
+};
 
 export const help: Command = {
   name: 'help',
@@ -28,7 +43,7 @@ export const help: Command = {
           [
             text(
               aiAvailable
-                ? 'Ask anything in plain English, e.g. "Which project best demonstrates Docker?"'
+                ? 'Ask about my work in plain English, e.g. "Which project best demonstrates Docker?" Follow-up questions work too; Ctrl+C or Esc stops an answer.'
                 : 'Questions in plain English will be answered once the AI assistant is connected. Until then you get the matching projects.',
             ),
           ],

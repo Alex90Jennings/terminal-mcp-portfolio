@@ -4,3 +4,4 @@ export { checkHost, checkOrigin, resolveOriginPolicy, type OriginPolicy } from '
 export { renderProfileMarkdown, renderProjectIndexMarkdown, renderProjectMarkdown, renderSkillsMarkdown } from './markdown.ts';
 export { RESOURCE_NOT_FOUND } from './resources.ts';
 export * from './uris.ts';
+export { connectInProcess } from './in-process.ts';

@@ -1,0 +1,5 @@
+aws_account_id      = "000000000000"
+aws_region          = "eu-west-1"
+vercel_team_slug    = "your-team-slug"
+vercel_project_name = "terminal-mcp-portfolio"
+vercel_environments = ["production"]

@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // `next dev` would otherwise write a generic AGENTS.md; this repo's guidance lives in its own docs.
   agentRules: false,
-  transpilePackages: ['@portfolio/knowledge', '@portfolio/mcp-server'],
+  transpilePackages: ['@portfolio/knowledge', '@portfolio/mcp-server', '@portfolio/assistant'],
   async headers() {
     return [
       {

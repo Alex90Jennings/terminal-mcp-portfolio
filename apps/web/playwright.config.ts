@@ -20,7 +20,15 @@ export default defineConfig({
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
-    // A local production server: explicitly opt in to in-memory rate limiting (refused on Vercel).
-    env: { RATE_LIMIT_BACKEND: 'memory', MCP_RATE_LIMIT_PER_MINUTE: '1000' },
+    // A local production server: in-memory limits (refused on Vercel) and the scripted model, so no
+    // AWS credentials and no paid calls. The transcript secret is a test value, not a real one.
+    env: {
+      RATE_LIMIT_BACKEND: 'memory',
+      MCP_RATE_LIMIT_PER_MINUTE: '1000',
+      AI_PROVIDER: 'scripted',
+      AI_QUESTIONS_PER_MINUTE: '60',
+      AI_QUESTIONS_PER_DAY: '1000',
+      CHAT_TRANSCRIPT_SECRET: 'playwright-test-secret-not-used-anywhere-else',
+    },
   },
 });

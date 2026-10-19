@@ -1,10 +1,6 @@
-import { createKnowledgeBase } from '@portfolio/knowledge';
-import bundle from '@portfolio/knowledge/bundle.json';
 import { createMcpHandler, createPortfolioServer, resolveOriginPolicy } from '@portfolio/mcp-server';
+import { serverKb as kb } from './knowledge';
 import { clientKey, createLimiter, parseFailureMode, type Limiter } from './rate-limit';
-
-// Server-side, so the bundle is re-validated rather than trusted.
-const kb = createKnowledgeBase(bundle);
 
 const perMinute = Math.min(1000, Math.max(1, Number(process.env.MCP_RATE_LIMIT_PER_MINUTE) || 60));
 

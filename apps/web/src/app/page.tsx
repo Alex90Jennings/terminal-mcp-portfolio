@@ -6,7 +6,8 @@ export default function Home() {
   return (
     <main className="flex h-dvh items-stretch justify-center sm:p-6 lg:p-10">
       <div className="h-full w-full max-w-5xl">
-        <Terminal />
+        {/* Decided at build time; the server still refuses questions if AI is switched off later. */}
+        <Terminal aiEnabled={process.env.AI_ENABLED?.trim().toLowerCase() !== 'false'} />
       </div>
       <noscript>
         <p className="fixed inset-x-0 bottom-0 bg-term-chrome p-4 text-center">

@@ -33,6 +33,8 @@ export interface CommandResult {
   blocks: Block[];
   /** Clear the screen instead of appending output. */
   clear?: boolean;
+  /** Ask the AI assistant; `fallback` is shown instead if it is unavailable. */
+  ask?: { question: string; fallback: Block[] };
 }
 
 export const text = (value: string, tone?: Tone, strong?: boolean): Inline =>

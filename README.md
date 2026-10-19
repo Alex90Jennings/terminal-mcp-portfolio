@@ -10,8 +10,11 @@ An interactive developer portfolio that works like a terminal, backed by a typed
 content/               The knowledge base: profile, skills and six projects, every claim cited
 packages/knowledge     Schema, validation, build step and read-only queries
 packages/mcp-server    Read-only MCP server: 6 tools, 4 resources, Streamable HTTP and stdio
-apps/web               Next.js terminal UI and the public /api/mcp endpoint
+packages/assistant     Provider-neutral AI assistant: chat loop over the MCP tools, Claude adapter, grounding
+apps/web               Next.js terminal UI, the public /api/mcp endpoint and the /api/chat assistant
+infra/bedrock          Terraform: least-privilege, OIDC-only IAM role for Claude on Amazon Bedrock
 docs/MCP.md            MCP tools, resources, security and client set-up
+docs/AI.md             The AI assistant: architecture, grounding, budgets, failure behaviour
 ```
 
 ## Getting started
@@ -30,6 +33,10 @@ npm run mcp:stdio    # the MCP server over stdio
 npm run check        # knowledge build, type check, lint, unit tests, production build
 npm run test:e2e     # Playwright: terminal on desktop, Android and iPhone, plus the MCP endpoint
 ```
+
+## AI assistant
+
+Ask the terminal a question in plain English, or use `ask <question>`. Answers come only from the verified portfolio, via the MCP tools, with sources listed under each answer. Locally it runs on a scripted model (no keys, no cost); in production on Claude via Amazon Bedrock, within a $10/day and $50/month budget. See [docs/AI.md](docs/AI.md).
 
 ## MCP
 

@@ -15,7 +15,7 @@ describe('help', () => {
 
   it('says plainly that AI answers are unavailable', () => {
     expect(output('help')).toMatch(/once the AI assistant is connected/);
-    expect(output('help', { aiAvailable: true })).toMatch(/Ask anything in plain English/);
+    expect(output('help', { aiAvailable: true })).toMatch(/Ask about my work in plain English/);
   });
 });
 

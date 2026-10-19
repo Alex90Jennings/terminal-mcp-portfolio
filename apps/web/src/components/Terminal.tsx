@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { applyChatEvent, isActive, waitingAnswer, type AiAnswer } from '@/lib/ai-answer';
+import { ChatRefused, streamChat, type Conversation } from '@/lib/chat-client';
 import { kb } from '@/lib/knowledge';
 import { welcome } from '@/terminal/commands/session';
 import { complete } from '@/terminal/complete';
@@ -10,6 +12,7 @@ import type { Block } from '@/terminal/output';
 import { MAX_INPUT_LENGTH } from '@/terminal/parse';
 import { registry } from '@/terminal/registry';
 import type { CommandContext } from '@/terminal/types';
+import { AiAnswerView } from './AiAnswerView';
 import { OutputBlocks } from './OutputBlocks';
 
 interface Entry {
@@ -17,6 +20,8 @@ interface Entry {
   /** The command as typed; absent for the welcome message. */
   input?: string;
   blocks: Block[];
+  /** Set when the input was a question for the AI assistant. */
+  answer?: AiAnswer;
 }
 
 const QUICK_COMMANDS = ['help', 'projects', 'about', 'skills', 'approach', 'contact'] as const;
@@ -27,7 +32,7 @@ const PROMPT = `${user}@portfolio:~$`;
 /** Touch devices: don't summon the on-screen keyboard after tapping a command. */
 const isCoarsePointer = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
-export function Terminal() {
+export function Terminal({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const [entries, setEntries] = useState<Entry[]>(() => [{ id: 0, blocks: welcome({ kb }) }]);
   const [value, setValue] = useState('');
   const [history, setHistory] = useState<string[]>([]);
@@ -38,10 +43,57 @@ export function Terminal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEntryRef = useRef<HTMLDivElement>(null);
+  // The signed conversation so far: only the server's copy, sent back with each question.
+  const conversationRef = useRef<Conversation | undefined>(undefined);
+  const askingRef = useRef<{ id: number; controller: AbortController } | undefined>(undefined);
 
   const context: CommandContext = useMemo(
-    () => ({ kb, history, commands: registry.commands, aiAvailable: false }),
-    [history],
+    () => ({ kb, history, commands: registry.commands, aiAvailable: aiEnabled }),
+    [history, aiEnabled],
+  );
+
+  const updateAnswer = useCallback((id: number, update: (answer: AiAnswer) => AiAnswer) => {
+    setEntries((current) => current.map((entry) => (entry.id === id && entry.answer ? { ...entry, answer: update(entry.answer) } : entry)));
+  }, []);
+
+  const cancelAnswer = useCallback(() => {
+    const asking = askingRef.current;
+    if (asking === undefined) return false;
+    asking.controller.abort();
+    askingRef.current = undefined;
+    updateAnswer(asking.id, (answer) => (isActive(answer) ? { ...answer, status: 'cancelled' } : answer));
+    return true;
+  }, [updateAnswer]);
+
+  const ask = useCallback(
+    async (id: number, question: string) => {
+      cancelAnswer();
+      const controller = new AbortController();
+      askingRef.current = { id, controller };
+      setStatus('');
+      try {
+        await streamChat({
+          question,
+          conversation: conversationRef.current,
+          signal: controller.signal,
+          onEvent: (event) => {
+            if (event.type === 'done') {
+              conversationRef.current = event.conversation;
+              if (event.answer) setStatus(`Answer: ${event.answer}`);
+            }
+            updateAnswer(id, (answer) => applyChatEvent(answer, event));
+          },
+        });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        const message = error instanceof ChatRefused ? error.message : 'The AI assistant couldn’t answer that. Please try again.';
+        updateAnswer(id, (answer) => ({ ...answer, status: 'unavailable', message }));
+        setStatus(message);
+      } finally {
+        if (askingRef.current?.controller === controller) askingRef.current = undefined;
+      }
+    },
+    [cancelAnswer, updateAnswer],
   );
 
   const run = useCallback(
@@ -53,15 +105,21 @@ export function Terminal() {
       setValue('');
       setCandidates([]);
       if (result.clear) {
+        cancelAnswer();
+        conversationRef.current = undefined;
         setEntries([]);
         setStatus('Screen cleared.');
+      } else if (result.ask) {
+        const id = nextId.current++;
+        setEntries((current) => [...current, { id, input: line, blocks: [], answer: waitingAnswer(result.ask?.fallback ?? []) }]);
+        void ask(id, result.ask.question);
       } else {
         setEntries((current) => [...current, { id: nextId.current++, input: line, blocks: result.blocks }]);
         setStatus('');
       }
       if (refocus && !isCoarsePointer()) inputRef.current?.focus({ preventScroll: true });
     },
-    [context, history],
+    [ask, cancelAnswer, context, history],
   );
 
   // Long output scrolls to its first line, so it reads from the top; short output keeps the prompt in view.
@@ -113,6 +171,12 @@ export function Terminal() {
       event.preventDefault();
       setValue('');
       setCandidates([]);
+      return;
+    }
+    // Esc or Ctrl+C on an empty prompt stops an answer that is still coming in.
+    if ((event.key === 'Escape' || (event.ctrlKey && event.key.toLowerCase() === 'c')) && value === '' && cancelAnswer()) {
+      event.preventDefault();
+      setStatus('Answer stopped.');
       return;
     }
     if (event.ctrlKey && event.key.toLowerCase() === 'l') {
@@ -168,6 +232,7 @@ export function Terminal() {
                 </p>
               )}
               <OutputBlocks blocks={entry.blocks} onCommand={(command) => run(command, { refocus: true })} />
+              {entry.answer && <AiAnswerView answer={entry.answer} onCommand={(command) => run(command, { refocus: true })} />}
             </div>
           ))}
         </div>
