@@ -15,6 +15,7 @@ apps/web               Next.js terminal UI, the public /api/mcp endpoint and the
 infra/bedrock          Terraform: least-privilege, OIDC-only IAM role for Claude on Amazon Bedrock
 docs/MCP.md            MCP tools, resources, security and client set-up
 docs/AI.md             The AI assistant: architecture, grounding, budgets, failure behaviour
+docs/EVALUATION.md     The model evaluation: questions, scoring, costs, how to run it
 ```
 
 ## Getting started

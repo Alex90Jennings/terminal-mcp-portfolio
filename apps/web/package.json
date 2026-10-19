@@ -10,7 +10,8 @@
     "start": "next start",
     "typecheck": "npm run knowledge && next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "eval": "npm run knowledge && tsx evaluation/run.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "0.35.0",

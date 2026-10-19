@@ -100,6 +100,8 @@ A configuration whose ceiling exceeds the daily budget is refused outright.
 - Before *each* model call, the loop refuses to start if its input could exceed the per-call cap, or if what's been spent plus that call's worst case could exceed the reservation. The first call's input is a generous estimate (≈3 characters per token). Later calls are calibrated with the token counts the model actually reported for the previous call, plus an estimate for the new tool results.
 - Afterwards the reservation is settled to the actual cost, from the model's reported token usage and the verified price table.
 
+**Small overruns are possible.** Exact token counts are only known after a call, so the caps rely on estimates. The first call's estimate is deliberately generous, and later calls are calibrated with real counts. If an estimate were ever lower than the real count, one answer could cost slightly more than its reservation. The overrun is recorded when the answer settles, which pushes the counters past the cap and refuses further answers. The caps can therefore be exceeded by a small amount, bounded by the estimation error of answers already in progress, but not continuously. A provider-side alert (AWS Budgets) is the estimate-free backstop.
+
 **When something fails:**
 - An unreachable or slow (> 750 ms) budget store refuses the answer.
 - A failed settlement leaves the reservation counted: an over-count, never an under-count.
@@ -146,4 +148,4 @@ No test makes a paid call or needs AWS credentials.
 | `apps/web/test/chat-client.test.ts` | Server-sent event parsing, answer state, question routing |
 | `apps/web/e2e/ai.spec.ts` | In the browser, through the real route and MCP tools with the scripted model: streaming with sources, follow-ups, budget exhaustion, cancellation, `clear`, accessibility |
 
-The paid evaluation (about 30 questions across Opus, Sonnet and Haiku 5.5) runs only once Bedrock access is enabled and you approve it.
+The paid evaluation (38 conversations, 46 turns, across Haiku, Sonnet and Opus 5.5, at most $3.65 in total) is described in [EVALUATION.md](EVALUATION.md). It runs only once Bedrock access is enabled and approved, and its spend counts toward the same caps.

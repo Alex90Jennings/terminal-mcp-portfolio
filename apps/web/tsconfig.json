@@ -1,16 +1,41 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "allowJs": false,
     "incremental": true,
-    "types": ["node"],
-    "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./src/*"] }
+    "types": [
+      "node"
+    ],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
-  "include": ["next-env.d.ts", "src", "test", "e2e", "*.ts", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next"]
+  "include": [
+    "next-env.d.ts",
+    "src",
+    "test",
+    "evaluation",
+    "e2e",
+    "*.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }
