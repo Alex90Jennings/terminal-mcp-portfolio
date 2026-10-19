@@ -132,6 +132,7 @@ Any client that supports Streamable HTTP (Cursor, VS Code, the official SDKs) ca
 | Over the limit | 429 with `Retry-After` and `RateLimit-Limit`, `-Remaining` and `-Reset` |
 
 - The store gets one quick retry (Upstash's default is five) and a 750 ms timeout, so a failing store is noticed fast.
+- **The Redis database can be shared with other applications.** Every portfolio key starts with `portfolio:`. Rate limits use `portfolio:ratelimit:<limiter>:…`, where the limiter is `mcp`, `ai-minute` or `ai-day`. The AI budget uses `portfolio:budget:ai:…` (see [AI.md](AI.md)). Limiter names can't contain `:`, so no limiter can reach another namespace. The portfolio only increments counters and sets their expiry. It never deletes, scans, renames or flushes keys, so another application's keys are never touched. `apps/web/test/redis-keys.test.ts` checks all of this, including the scripts the rate-limit library sends.
 - Store failures are logged at most **once a minute per limiter**, with a count of the failures suppressed since. Log lines carry the limiter name, cause (`error` or `timeout`), error type and action. Never the error message (an HTTP client's message can include the Redis URL), credentials or client keys.
 - An unrecognised failure mode is treated as `closed`.
 - **Anything that costs money must fail closed.** The AI chat (a later stage) uses `failureMode: 'closed'` with no override.

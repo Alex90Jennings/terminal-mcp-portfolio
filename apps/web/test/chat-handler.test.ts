@@ -229,7 +229,7 @@ describe('POST /api/chat: budget', () => {
 
   it('refuses with a friendly message once the daily cap is reached, and spends nothing', async () => {
     const counters = memoryCounters();
-    counters.values.set(`portfolio:ai:spend:day:${new Date().toISOString().slice(0, 10)}`, 9_800_000);
+    counters.values.set(`portfolio:budget:ai:day:${new Date().toISOString().slice(0, 10)}`, 9_800_000);
     const createModel = vi.fn(() => new ScriptedModel(answerAfterLookup));
     const { handle } = setup({ counters, createModel });
     const response = await handle(request({ question: 'What is SOL?' }));

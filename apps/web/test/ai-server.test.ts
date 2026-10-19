@@ -11,7 +11,7 @@ describe('counterBudget', () => {
     const result = await counterBudget(counters, limits).reserve(toMicros(0.5), now);
     expect(result).toEqual({
       ok: true,
-      reservation: { amountMicros: 500_000, keys: { day: 'portfolio:ai:spend:day:2026-10-19', month: 'portfolio:ai:spend:month:2026-10' } },
+      reservation: { amountMicros: 500_000, keys: { day: 'portfolio:budget:ai:day:2026-10-19', month: 'portfolio:budget:ai:month:2026-10' } },
     });
     expect([...counters.values.values()]).toEqual([500_000, 500_000]);
   });
@@ -31,16 +31,16 @@ describe('counterBudget', () => {
     const results = await Promise.all(Array.from({ length: 50 }, () => budget.reserve(500_000, now)));
     expect(results.filter(({ ok }) => ok)).toHaveLength(20);
     expect(results.filter((result) => !result.ok && result.reason === 'daily')).toHaveLength(30);
-    expect(counters.values.get('portfolio:ai:spend:day:2026-10-19')).toBe(10_000_000);
+    expect(counters.values.get('portfolio:budget:ai:day:2026-10-19')).toBe(10_000_000);
   });
 
   it('enforces the monthly cap across days, and rolls back the day when the month refuses', async () => {
     const counters = memoryCounters();
-    counters.values.set('portfolio:ai:spend:month:2026-10', 49_800_000);
+    counters.values.set('portfolio:budget:ai:month:2026-10', 49_800_000);
     const result = await counterBudget(counters, limits).reserve(500_000, now);
     expect(result).toEqual({ ok: false, reason: 'monthly' });
-    expect(counters.values.get('portfolio:ai:spend:day:2026-10-19')).toBe(0);
-    expect(counters.values.get('portfolio:ai:spend:month:2026-10')).toBe(49_800_000);
+    expect(counters.values.get('portfolio:budget:ai:day:2026-10-19')).toBe(0);
+    expect(counters.values.get('portfolio:budget:ai:month:2026-10')).toBe(49_800_000);
   });
 
   it('fails closed when the store errors or hangs, without logging details', async () => {
@@ -49,9 +49,8 @@ describe('counterBudget', () => {
       incrby: async () => {
         throw new Error('ECONNREFUSED https://secret.upstash.io token=abc');
       },
-      expire: async () => 1,
     };
-    const hanging: Counters = { incrby: () => new Promise(() => {}), expire: async () => 1 };
+    const hanging: Counters = { incrby: () => new Promise(() => {}) };
     expect(await counterBudget(failing, limits, { log: (line) => lines.push(line) }).reserve(1, now)).toEqual({ ok: false, reason: 'unavailable' });
     expect(await counterBudget(hanging, limits, { timeoutMs: 20, log: () => {} }).reserve(1, now)).toEqual({ ok: false, reason: 'unavailable' });
     expect(lines.join('')).not.toMatch(/upstash\.io|abc/);
@@ -61,11 +60,10 @@ describe('counterBudget', () => {
     const counters = memoryCounters();
     let broken = false;
     const flaky: Counters = {
-      incrby: async (key, amount) => {
+      incrby: async (key, amount, ttlSeconds) => {
         if (broken) throw new Error('down');
-        return counters.incrby(key, amount);
+        return counters.incrby(key, amount, ttlSeconds);
       },
-      expire: async () => 1,
     };
     const budget = counterBudget(flaky, limits, { log: () => {} });
     const result = await budget.reserve(500_000, now);

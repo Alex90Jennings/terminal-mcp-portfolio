@@ -35,6 +35,23 @@ export type Backend =
   | { kind: 'memory' }
   | { kind: 'unavailable'; reason: string };
 
+/**
+ * Every key the portfolio writes to Redis starts with this. The database may be
+ * shared with other applications, so the portfolio never touches a key outside
+ * it, and never deletes, scans or flushes.
+ */
+export const REDIS_NAMESPACE = 'portfolio';
+/** Rate-limit counters live here; the AI budget has its own namespace (see ai/budget.ts). */
+export const RATE_LIMIT_PREFIX = `${REDIS_NAMESPACE}:ratelimit`;
+
+const LIMITER_NAME = /^[a-z0-9-]+$/;
+
+/** The key prefix for one limiter. Names can't contain ":", so no limiter can reach another namespace. */
+export function rateLimitPrefix(name: string): string {
+  if (!LIMITER_NAME.test(name)) throw new Error(`Invalid limiter name "${name}": use lowercase letters, digits and hyphens.`);
+  return `${RATE_LIMIT_PREFIX}:${name}`;
+}
+
 /** Longest we wait for the shared store before treating it as failed. */
 export const STORE_TIMEOUT_MS = 750;
 /** At most one failure log line per limiter per interval; the rest are counted. */
@@ -78,17 +95,9 @@ export function parseFailureMode(value: string | undefined, fallback: FailureMod
 export function createLimiter(config: LimitConfig, env: Env = process.env): Limiter {
   const backend = resolveBackend(env);
   switch (backend.kind) {
-    case 'upstash': {
-      const store = new Ratelimit({
-        // One quick retry instead of Upstash's default five, so a failing store is noticed fast.
-        redis: new Redis({ url: backend.url, token: backend.token, retry: { retries: 1, backoff: () => 50 } }),
-        limiter: Ratelimit.slidingWindow(config.requests, `${config.windowSeconds} s`),
-        prefix: `portfolio:${config.name}`,
-        analytics: false,
-        timeout: STORE_TIMEOUT_MS,
-      });
-      return sharedLimiter(config, store);
-    }
+    case 'upstash':
+      // One quick retry instead of Upstash's default five, so a failing store is noticed fast.
+      return sharedLimiter(config, upstashStore(config, new Redis({ url: backend.url, token: backend.token, retry: { retries: 1, backoff: () => 50 } })));
     case 'memory':
       return memoryLimiter(config);
     case 'unavailable': {
@@ -96,6 +105,21 @@ export function createLimiter(config: LimitConfig, env: Env = process.env): Limi
       return async () => ({ ok: false, status: 503 });
     }
   }
+}
+
+/**
+ * The Upstash sliding-window store for one limiter. It only runs the library's
+ * limit script (GET, INCRBY and PEXPIRE on this limiter's own keys); analytics,
+ * the deny list and dynamic limits, which write or delete other keys, stay off.
+ */
+export function upstashStore(config: Pick<LimitConfig, 'name' | 'requests' | 'windowSeconds'>, redis: Redis): SharedStore {
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(config.requests, `${config.windowSeconds} s`),
+    prefix: rateLimitPrefix(config.name),
+    analytics: false,
+    timeout: STORE_TIMEOUT_MS,
+  });
 }
 
 function headersFor(limit: number, remaining: number, resetAt: number, now: number): Record<string, string> {

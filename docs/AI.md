@@ -96,7 +96,7 @@ The server is stateless and stores nothing.
 A configuration whose ceiling exceeds the daily budget is refused outright.
 
 **How the budget holds under concurrency:**
-- Before any model call, the answer's ceiling is reserved with atomic `INCRBY` on both the day and month counters in Upstash. A reservation that would cross a cap is rolled back and refused. Every in-flight answer's ceiling is already counted, so concurrent answers can't overspend between them. The $10 and $50 caps are unchanged.
+- Before any model call, the answer's ceiling is reserved with atomic `INCRBY` on both the day and month counters in Upstash (`portfolio:budget:ai:day:<date>` and `portfolio:budget:ai:month:<month>`). Each increment runs in one Lua script with the counter's expiry: 2 days for a day counter, 35 days for a month counter. A counter can therefore never be left without an expiry in the shared database. A reservation that would cross a cap is rolled back and refused. Every in-flight answer's ceiling is already counted, so concurrent answers can't overspend between them. The $10 and $50 caps are unchanged.
 - Before *each* model call, the loop refuses to start if its input could exceed the per-call cap, or if what's been spent plus that call's worst case could exceed the reservation. The first call's input is a generous estimate (≈3 characters per token). Later calls are calibrated with the token counts the model actually reported for the previous call, plus an estimate for the new tool results.
 - Afterwards the reservation is settled to the actual cost, from the model's reported token usage and the verified price table.
 

@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis';
-import { resolveBackend } from '../rate-limit';
+import { REDIS_NAMESPACE, resolveBackend } from '../rate-limit';
 
 type Env = Record<string, string | undefined>;
 
@@ -24,16 +24,41 @@ export interface BudgetStore {
   settle(reservation: Reservation, actualMicros: number): Promise<void>;
 }
 
-/** The atomic counter operations the budget needs; Upstash Redis provides them. */
+/** The budget's counters; separate from the rate-limit namespace. */
+export const BUDGET_PREFIX = `${REDIS_NAMESPACE}:budget:ai`;
+
+/** The one counter operation the budget needs. */
 export interface Counters {
-  incrby(key: string, amount: number): Promise<number>;
-  expire(key: string, seconds: number): Promise<unknown>;
+  /**
+   * Atomically adds `amount` to the counter and returns the new value. If the
+   * counter has no expiry (it is new), it gets `ttlSeconds`; an existing expiry
+   * is left alone.
+   */
+  incrby(key: string, amount: number, ttlSeconds: number): Promise<number>;
+}
+
+/**
+ * INCRBY and EXPIRE in one script, so they're atomic: a counter can never be
+ * left without an expiry, even if the connection fails between the two. It
+ * touches only the key it's given and never deletes anything.
+ */
+export const INCRBY_WITH_TTL_SCRIPT = `local value = redis.call('INCRBY', KEYS[1], ARGV[1])
+if redis.call('TTL', KEYS[1]) == -1 then redis.call('EXPIRE', KEYS[1], ARGV[2]) end
+return value`;
+
+/** Counters on Upstash Redis. */
+export function redisCounters(redis: Pick<Redis, 'eval'>): Counters {
+  return {
+    incrby: async (key, amount, ttlSeconds) => Number(await redis.eval(INCRBY_WITH_TTL_SCRIPT, [key], [amount, ttlSeconds])),
+  };
 }
 
 export const toMicros = (usd: number): number => Math.ceil(usd * 1_000_000);
 export const STORE_TIMEOUT_MS = 750;
 
 const DAY_SECONDS = 86_400;
+/** A day's counter outlives its day; a month's outlives its longest month. */
+export const BUDGET_TTL_SECONDS = { day: 2 * DAY_SECONDS, month: 35 * DAY_SECONDS } as const;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -50,7 +75,7 @@ export function counterBudget(
   limits: { dailyMicros: number; monthlyMicros: number },
   options: { prefix?: string; timeoutMs?: number; log?: (line: string) => void } = {},
 ): BudgetStore {
-  const prefix = options.prefix ?? 'portfolio:ai:spend';
+  const prefix = options.prefix ?? BUDGET_PREFIX;
   const timeoutMs = options.timeoutMs ?? STORE_TIMEOUT_MS;
   const log = options.log ?? ((line: string) => console.error(line));
   const op = <T>(promise: Promise<T>) => withTimeout(promise, timeoutMs);
@@ -60,17 +85,15 @@ export function counterBudget(
       const iso = now.toISOString();
       const keys = { day: `${prefix}:day:${iso.slice(0, 10)}`, month: `${prefix}:month:${iso.slice(0, 7)}` };
       try {
-        const day = await op(counters.incrby(keys.day, amountMicros));
-        if (day === amountMicros) await op(counters.expire(keys.day, 2 * DAY_SECONDS));
+        const day = await op(counters.incrby(keys.day, amountMicros, BUDGET_TTL_SECONDS.day));
         if (day > limits.dailyMicros) {
-          await op(counters.incrby(keys.day, -amountMicros));
+          await op(counters.incrby(keys.day, -amountMicros, BUDGET_TTL_SECONDS.day));
           return { ok: false, reason: 'daily' };
         }
-        const month = await op(counters.incrby(keys.month, amountMicros));
-        if (month === amountMicros) await op(counters.expire(keys.month, 35 * DAY_SECONDS));
+        const month = await op(counters.incrby(keys.month, amountMicros, BUDGET_TTL_SECONDS.month));
         if (month > limits.monthlyMicros) {
-          await op(counters.incrby(keys.month, -amountMicros));
-          await op(counters.incrby(keys.day, -amountMicros));
+          await op(counters.incrby(keys.month, -amountMicros, BUDGET_TTL_SECONDS.month));
+          await op(counters.incrby(keys.day, -amountMicros, BUDGET_TTL_SECONDS.day));
           return { ok: false, reason: 'monthly' };
         }
         return { ok: true, reservation: { amountMicros, keys } };
@@ -85,8 +108,8 @@ export function counterBudget(
       const delta = actualMicros - reservation.amountMicros;
       if (delta === 0) return;
       try {
-        await op(counters.incrby(reservation.keys.day, delta));
-        await op(counters.incrby(reservation.keys.month, delta));
+        await op(counters.incrby(reservation.keys.day, delta, BUDGET_TTL_SECONDS.day));
+        await op(counters.incrby(reservation.keys.month, delta, BUDGET_TTL_SECONDS.month));
       } catch (error) {
         // The reservation stays counted instead: conservative, never under-counted.
         log(JSON.stringify({ event: 'ai.budget.settle_failed', deltaMicros: delta, errorType: error instanceof Error ? error.name : typeof error }));
@@ -95,17 +118,19 @@ export function counterBudget(
   };
 }
 
-/** In-process counters for development and tests. */
-export function memoryCounters(): Counters & { values: Map<string, number> } {
+/** In-process counters for development and tests, recording each counter's expiry (in seconds) like Redis would. */
+export function memoryCounters(): Counters & { values: Map<string, number>; ttls: Map<string, number> } {
   const values = new Map<string, number>();
+  const ttls = new Map<string, number>();
   return {
     values,
-    incrby: async (key, amount) => {
+    ttls,
+    incrby: async (key, amount, ttlSeconds) => {
       const next = (values.get(key) ?? 0) + amount;
       values.set(key, next);
+      if (!ttls.has(key)) ttls.set(key, ttlSeconds);
       return next;
     },
-    expire: async () => 1,
   };
 }
 
@@ -120,7 +145,7 @@ export function createBudgetStore(limits: { dailyUsd: number; monthlyUsd: number
   const micros = { dailyMicros: toMicros(limits.dailyUsd), monthlyMicros: toMicros(limits.monthlyUsd) };
   switch (backend.kind) {
     case 'upstash':
-      return counterBudget(new Redis({ url: backend.url, token: backend.token, retry: { retries: 1, backoff: () => 50 } }), micros);
+      return counterBudget(redisCounters(new Redis({ url: backend.url, token: backend.token, retry: { retries: 1, backoff: () => 50 } })), micros);
     case 'memory':
       return counterBudget(memoryCounters(), micros);
     case 'unavailable':
