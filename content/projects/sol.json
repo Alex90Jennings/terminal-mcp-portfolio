@@ -1,0 +1,341 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "sol",
+  "name": "SOL",
+  "aliases": [
+    "sol-app"
+  ],
+  "order": 5,
+  "focus": "Native macOS application",
+  "tagline": "A menu bar app that turns the macOS desktop into a live, astronomically accurate solar system.",
+  "listingTags": [
+    "Swift",
+    "AppKit",
+    "Accessibility"
+  ],
+  "context": {
+    "kind": "personal",
+    "organisation": "built by aj"
+  },
+  "visibility": "public",
+  "topics": [
+    "native application design",
+    "accessibility",
+    "VoiceOver",
+    "Voice Control",
+    "reduced motion",
+    "high contrast",
+    "localisation",
+    "rendering performance",
+    "free and pro features",
+    "StoreKit",
+    "quality assurance"
+  ],
+  "sources": [
+    {
+      "id": "readme",
+      "label": "SOL README",
+      "kind": "repository"
+    },
+    {
+      "id": "accessibility-audit",
+      "label": "SOL accessibility audit and verification (17 Oct 2026)",
+      "kind": "documentation"
+    },
+    {
+      "id": "qa-audit",
+      "label": "SOL QA and release-readiness audit (17 Oct 2026)",
+      "kind": "documentation"
+    },
+    {
+      "id": "source-code",
+      "label": "SOL source code",
+      "kind": "repository"
+    },
+    {
+      "id": "author",
+      "label": "Alex, 19 Oct 2026",
+      "kind": "author-statement"
+    },
+    {
+      "id": "privacy-policy",
+      "label": "SOL privacy policy",
+      "kind": "website",
+      "url": "https://built-by-aj.github.io/sol-privacy/"
+    }
+  ],
+  "overview": [
+    {
+      "text": "SOL is a macOS menu bar app (no Dock icon) that animates the solar system as the desktop wallpaper, with every planet at its real heliocentric longitude for the current time.",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "text": "Planet angles come from JPL's approximate Keplerian elements (Standish & Williams) and are accurate to within 0.35° between 1900 and 2100. Orbital radii and sizes are artistic.",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "text": "The menu offers time travel to any moment from 1 AD to 2999 AD, notable celestial dates, playback speeds up to a year per second, and controls for solar flares, asteroids, stars and supernovae.",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "text": "SOL never changes the user's desktop picture: it draws in a window at wallpaper level, so quitting it restores the user's own wallpaper. It is sandboxed, collects nothing, and opens at login only if asked.",
+      "sources": [
+        "readme",
+        "privacy-policy"
+      ]
+    },
+    {
+      "text": "SOL is free, with SOL Pro as a one-time lifetime purchase.",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "text": "SOL has been submitted to the Mac App Store and is awaiting acceptance.",
+      "sources": [
+        "author"
+      ]
+    },
+    {
+      "text": "Localised into 20 languages besides English: all 205 strings are translated, unsupported languages fall back to English, and Arabic and Urdu lay out right to left.",
+      "sources": [
+        "qa-audit",
+        "accessibility-audit"
+      ]
+    },
+    {
+      "text": "SOL has a written accessibility audit (17 October 2026) against Apple's accessibility guidance and the App Store's Accessibility Nutrition Labels, followed by a verification pass that fixed the confirmed defects.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "text": "92 automated package tests cover the engine, including Reduce Motion behaviour; Free/Pro policy is tested without StoreKit, and the app is tested separately against a StoreKit configuration.",
+      "sources": [
+        "accessibility-audit",
+        "readme"
+      ]
+    }
+  ],
+  "technologies": [
+    {
+      "name": "Swift",
+      "category": "language",
+      "sources": [
+        "readme",
+        "source-code"
+      ]
+    },
+    {
+      "name": "AppKit",
+      "category": "frontend",
+      "sources": [
+        "source-code"
+      ]
+    },
+    {
+      "name": "Core Animation",
+      "category": "frontend",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Core Graphics",
+      "category": "frontend",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "SwiftUI (SOL Pro window)",
+      "category": "frontend",
+      "sources": [
+        "source-code"
+      ]
+    },
+    {
+      "name": "StoreKit 2",
+      "category": "platform",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Swift Package Manager and XcodeGen",
+      "category": "devops",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "String catalogs (Localizable.xcstrings)",
+      "category": "frontend",
+      "sources": [
+        "source-code"
+      ]
+    }
+  ],
+  "responsibilities": [
+    {
+      "text": "Personal project, designed and built by Alex: the orbital engine, the renderer, the live wallpaper, the menu, the Free/Pro membership and the App Store listing.",
+      "scope": "individual",
+      "sources": [
+        "readme"
+      ]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "The code is split into a pure engine and the app. Orbits holds the orbital elements and Kepler solver (pure maths, no AppKit). Artwork is a Core Graphics renderer. Playback is the clock and notable dates. Dynamics handles asteroid gravity, integration and collisions. Membership is the Free/Pro feature policy. The App target holds the Core Animation scenes, effects and menu.",
+        "sources": [
+          "readme"
+        ]
+      },
+      {
+        "text": "SOL draws only as often as needed: once a minute at real speed with nothing moving, up to 60 fps when sped up or while an asteroid is in flight, and nothing while paused, while the desktop is covered or while the displays sleep.",
+        "sources": [
+          "readme"
+        ]
+      },
+      {
+        "text": "Asteroids use swept collision tests against the drawn planet sizes, so a fast asteroid cannot skip through a planet between frames.",
+        "sources": [
+          "readme"
+        ]
+      },
+      {
+        "text": "Verified StoreKit 2 transactions are the only source of Pro: Transaction.currentEntitlements at launch (which works offline), then Transaction.updates for purchases, renewals, refunds and revocations. There is no polling and no stored \"is Pro\" flag.",
+        "sources": [
+          "readme"
+        ]
+      },
+      {
+        "text": "A FeaturePolicy lists what Free allows as explicit option sets, and the user's choices are kept as made, so a lapsed Pro user gets them back on renewing.",
+        "sources": [
+          "readme"
+        ]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "A live wallpaper that costs almost nothing",
+      "problem": "An always-on animated desktop must not drain the battery or compete with the user's work.",
+      "approach": [
+        "Redraw only when something changes, and stop entirely while paused, covered or asleep.",
+        "A frame-rate cap of 30, 60 or 120 fps, defaulting to 60.",
+        "Displays of the same pixel size share rendered images.",
+        "OLED burn-in protection drifts the scene with Core Animation, so it costs SOL no CPU."
+      ],
+      "outcome": "SOL used 0.58% of one core at real time with effects at their occasional settings, as measured in the 17 October 2026 verification pass.",
+      "sources": [
+        "readme",
+        "accessibility-audit"
+      ]
+    },
+    {
+      "title": "Making a purely visual app accessible",
+      "problem": "The solar system and notable-date captions were drawn only on the wallpaper, which assistive technologies cannot read. Feedback at Free limits was only a beep.",
+      "approach": [
+        "An Explore the Sky ▸ Planets menu that describes each planet's distance from the Sun, its angle around the Sun and its position on the wallpaper, built only when the menu opens.",
+        "Notable-date explanations announced once and added to each menu item's help; with VoiceOver on, the moment holds until the user resumes.",
+        "A Simplified Menu built from standard menu items, used while VoiceOver is on or when chosen, because VoiceOver did not respond to changes inside custom drawn menu rows.",
+        "Reduce Motion follows the system setting and is free: time travel arrives at once instead of sweeping, and the notable-date asteroid doesn't fly.",
+        "SOL's own accessibility settings can only add to the Mac's settings, never switch them off."
+      ],
+      "outcome": "Most audit findings are resolved in code. VoiceOver, Voice Control and Full Keyboard Access still need hand testing before they can be declared.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "title": "Honest App Store accessibility declarations",
+      "problem": "The draft App Store listing claimed Larger Text, which Apple says isn't available on Mac, and marked VoiceOver and Voice Control as supported without manual testing.",
+      "approach": [
+        "Removed Larger Text from the listing.",
+        "Recorded each declaration's testing status, and planned to declare a feature only after the hand-testing checklist passes."
+      ],
+      "outcome": "Only Dark Interface is declarable today.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Locked features stay visible",
+      "decision": "Pro features stay in the interface with grey PRO badges, and sliders show their whole range with the Pro part muted and dotted. Reaching for one opens the SOL Pro window, the only time it appears.",
+      "rationale": "Users can see what Pro offers without being interrupted by upsell prompts, and the locked region is marked by pattern as well as colour.",
+      "sources": [
+        "readme",
+        "accessibility-audit"
+      ],
+      "status": "unverified"
+    },
+    {
+      "title": "Every accessibility option is free",
+      "decision": "Text size, contrast, Reduce Motion and language are available in the free tier.",
+      "rationale": "Accessibility should not be behind a paywall.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "title": "Entitlements only from verified transactions",
+      "decision": "Pro status comes only from verified StoreKit 2 transactions, with no stored flag and no polling.",
+      "rationale": "A stored flag can drift from reality; StoreKit's signed record works offline and reflects refunds and revocations.",
+      "sources": [
+        "readme"
+      ],
+      "status": "unverified"
+    }
+  ],
+  "lessons": [
+    {
+      "text": "Checking the accessibility tree is not the same as testing with VoiceOver. Hand testing found that VoiceOver ignored announcements and title changes inside an open menu bar menu, which led to the Simplified Menu.",
+      "sources": [
+        "accessibility-audit"
+      ],
+      "status": "unverified"
+    }
+  ],
+  "limitations": [
+    {
+      "text": "Accessibility is not yet fully verified. VoiceOver has been checked by hand only in part, Voice Control slider actions were confirmed by hand, and Full Keyboard Access, light appearance, Grayscale and display scaling remain untested.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "text": "Language names in the language menu are not yet tagged for speech, so VoiceOver may mispronounce them.",
+      "sources": [
+        "accessibility-audit"
+      ]
+    },
+    {
+      "text": "The QA audit's verdict is \"insufficient test evidence\" until a real purchase, VoiceOver and keyboard use, and Open at Login across a real logout have been tested by hand. No P0 defect was found.",
+      "sources": [
+        "qa-audit"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "label": "Privacy policy",
+      "url": "https://built-by-aj.github.io/sol-privacy/",
+      "kind": "website"
+    }
+  ],
+  "undocumented": [
+    "App Store link (pending acceptance)",
+    "Whether the source repository is public"
+  ]
+}

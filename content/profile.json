@@ -1,0 +1,149 @@
+{
+  "$schema": "./schemas/profile.schema.json",
+  "name": "Alex Jennings",
+  "title": "Full Stack Software Developer & Cloud Engineer",
+  "location": "London, UK",
+  "bannerSkills": ["TypeScript", "React & React Native", "Node.js", "AWS"],
+  "sources": [
+    { "id": "cv", "label": "CV (September 2026)", "kind": "cv" },
+    { "id": "github-profile", "label": "GitHub profile", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
+    { "id": "author-notes", "label": "Author's notes on ZIM@SBB and AI use", "kind": "author-statement" }
+  ],
+  "summary": [
+    {
+      "text": "Full-stack software developer with four years of experience building and shipping production software.",
+      "sources": ["cv"]
+    },
+    {
+      "text": "Specialises in TypeScript, React/React Native and Node.js, with hands-on ownership across product development, backend architecture and AWS infrastructure.",
+      "sources": ["cv"]
+    },
+    {
+      "text": "Software Developer at ZIM Connections since October 2022, working on a production eSIM platform: a React Native app, white-label web platforms, a NestJS backend and the AWS infrastructure behind them.",
+      "sources": ["cv", "github-profile"]
+    },
+    {
+      "text": "Uses Claude Code daily across the development lifecycle while keeping ownership of scope, architecture and risk, and validates AI-assisted changes through automated tests, code review, CI and production monitoring.",
+      "sources": ["cv"]
+    },
+    {
+      "text": "Came to software through an economics degree and a six-month software engineering bootcamp in 2022, and is completing a software engineering degree apprenticeship alongside full-time work.",
+      "sources": ["cv", "github-profile"]
+    }
+  ],
+  "contact": {
+    "email": "aj0312@my.bristol.ac.uk",
+    "links": [
+      { "label": "GitHub", "url": "https://github.com/Alex90Jennings", "kind": "profile" },
+      { "label": "LinkedIn", "url": "https://www.linkedin.com/in/alex-jennings-software/", "kind": "profile" }
+    ]
+  },
+  "experience": [
+    {
+      "organisation": "ZIM Connections Ltd.",
+      "role": "Software Developer",
+      "period": "Oct 2022 – present",
+      "location": "London, UK",
+      "projects": ["zim-connections", "zim-sbb"],
+      "sources": ["cv"]
+    }
+  ],
+  "education": [
+    {
+      "qualification": "BSc (Hons) Digital & Technology Solutions (Software Engineering), Degree Apprenticeship",
+      "institution": "QA Ltd.",
+      "period": "2024 – 2027",
+      "detail": "Work-based apprenticeship combining academic study with practical application in a production environment, covering software architecture, cloud computing, data, security and modern development practices.",
+      "sources": ["cv"]
+    },
+    {
+      "qualification": "Software Engineer Bootcamp",
+      "institution": "Boolean UK",
+      "period": "Feb 2022 – Aug 2022",
+      "detail": "Six-month bootcamp covering JavaScript, React, Node.js, SQL and full-stack development, with a focus on TDD, OOP and functional programming.",
+      "sources": ["cv"]
+    },
+    {
+      "qualification": "BSc Economics",
+      "institution": "University of Bristol",
+      "detail": "Microeconomics, macroeconomics, econometrics and quantitative methods.",
+      "sources": ["cv"]
+    }
+  ],
+  "certifications": [
+    { "name": "AWS Certified AI Practitioner", "issuer": "Amazon Web Services", "progress": "earned", "date": "Mar 2026", "sources": ["cv"] },
+    { "name": "AWS Certified Cloud Practitioner", "issuer": "Amazon Web Services", "progress": "earned", "date": "Apr 2026", "sources": ["cv"] },
+    { "name": "AWS Certified Solutions Architect – Associate", "issuer": "Amazon Web Services", "progress": "in-progress", "sources": ["cv"] }
+  ],
+  "languages": [
+    { "language": "English", "level": "Native", "sources": ["cv"] },
+    { "language": "Italian", "level": "B1", "sources": ["cv"] }
+  ],
+  "workingApproach": {
+    "summary": "The loop Alex runs on every piece of work, big or small. A failed pressure test goes back to Execute, and each delivery feeds the next round of scoping.",
+    "steps": [
+      {
+        "title": "Define the scope",
+        "description": "Write down what is in and, more importantly, what is out. Most project failures Alex has seen were scope failures wearing a technical costume.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Evaluate the risk",
+        "description": "What breaks, who it hurts, what it costs, and what the rollback looks like. Decided before the first commit, not during the incident.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Establish stakeholders",
+        "description": "Who signs off, who is affected, and who has to maintain it at 2am. Surfacing the quiet stakeholder early is worth a week of rework.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Reuse before build",
+        "description": "In order: search the codebase for something that already does this, then look for a service that does it well and cheaply, and only then write something custom. Every line not written is a line that never has to be debugged, documented or migrated. Being lazy in the right direction is usually the best engineering decision available.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Execute",
+        "description": "Build it. Claude helps here, treated as a very fast, very literal pair programmer that still needs someone with judgement holding the wheel.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Pressure test",
+        "description": "Tests, edge cases, and honestly trying to break the work before a user does it for free.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Deliver",
+        "description": "Shipped, monitored, documented. \"It works on my machine\" is a confession, not a status update.",
+        "sources": ["github-profile"]
+      },
+      {
+        "title": "Communicate to the client",
+        "description": "In their language, not Alex's. Being able to explain a VPC to a non-technical stakeholder has been worth more to Alex's career than any single framework.",
+        "sources": ["github-profile"]
+      }
+    ],
+    "ai": [
+      {
+        "text": "Alex uses Claude daily and is open about it. AI sits in the Execute step of the loop, and earns its place there.",
+        "sources": ["github-profile"]
+      },
+      {
+        "text": "AI does not decide the scope, weigh the risk, or explain a design to a paying client. Alex sees those as the parts of the job that decide whether software is any good.",
+        "sources": ["github-profile"]
+      },
+      {
+        "text": "AI-assisted changes are validated through automated tests, code review, CI and production monitoring, and Alex keeps ownership of scope, architecture and risk.",
+        "sources": ["cv"]
+      },
+      {
+        "text": "At work, no secrets or customer data go into prompts, every line is reviewed, and nothing merges without passing the 2,600+ test CI gate.",
+        "sources": ["author-notes"]
+      },
+      {
+        "text": "Example: on ZIM@SBB, AI first-pass translations dropped two Italian keys and truncated a button on smaller iPhones. Alex caught both with a key-comparison script and on-device checks, and fixed them before release.",
+        "sources": ["author-notes"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "total-guess",
+  "name": "Total Guess",
+  "aliases": ["totalguess", "tg"],
+  "order": 6,
+  "focus": "Retrieval-augmented generation",
+  "tagline": "A daily supermarket guessing game, plus a grounded grocery assistant built with hybrid retrieval over 25,000 UK products.",
+  "listingTags": ["RAG", "PostgreSQL + pgvector", "LLM grounding"],
+  "context": { "kind": "personal", "period": "Feb 2023 – present" },
+  "visibility": "public",
+  "topics": ["retrieval-augmented generation", "LLM integration", "information retrieval", "hybrid search", "embeddings", "evaluation", "grounding", "prompt injection", "data pipelines", "data quality"],
+  "sources": [
+    { "id": "readme", "label": "Total Guess README", "kind": "repository", "url": "https://github.com/Alex90Jennings/total-guess" },
+    { "id": "ingestion-readme", "label": "packages/ingestion README", "kind": "repository", "url": "https://github.com/Alex90Jennings/total-guess/tree/main/packages/ingestion" },
+    { "id": "retrieval-doc", "label": "docs/retrieval.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/retrieval.md" },
+    { "id": "assistant-doc", "label": "docs/assistant.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/assistant.md" },
+    { "id": "catalogue-doc", "label": "docs/catalogue.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/catalogue.md" },
+    { "id": "daily-game-doc", "label": "docs/daily-game.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/daily-game.md" },
+    { "id": "linkedin-notes", "label": "Author's project description for LinkedIn", "kind": "author-statement" }
+  ],
+  "overview": [
+    {
+      "text": "Total Guess is a daily game: ten real supermarket products, one guess each, and a score based on how close the total came. Everyone plays the same basket, which resets at midnight UTC.",
+      "sources": ["readme"]
+    },
+    {
+      "text": "The game draws from 1,143 products: 268 photographed in shops with representative prices, and 875 from Open Food Facts with real prices observed in named UK shops via Open Prices. That gives 114 unique games before any product comes round again.",
+      "sources": ["readme", "daily-game-doc"]
+    },
+    {
+      "text": "Alongside the game, the repository contains a grounded grocery assistant that answers questions from a database of 25,000 UK products. An LLM plans what to search for and phrases the answer, but every fact comes from the database. The game does not depend on it.",
+      "sources": ["readme", "assistant-doc"]
+    },
+    {
+      "text": "The catalogue is built from the Open Food Facts nightly dump: 4,755,629 records, of which 194,729 were tagged as sold in the UK. Mapping and quality tiers produced an accepted corpus of 25,000 products.",
+      "sources": ["catalogue-doc"]
+    }
+  ],
+  "technologies": [
+    { "name": "TypeScript", "category": "language", "sources": ["ingestion-readme"] },
+    { "name": "React 18", "category": "frontend", "sources": ["readme"] },
+    { "name": "JavaScript", "category": "language", "sources": ["linkedin-notes"] },
+    { "name": "PostgreSQL 17", "category": "data", "sources": ["ingestion-readme"] },
+    { "name": "pgvector", "category": "data", "sources": ["retrieval-doc"] },
+    { "name": "PGlite (in-process PostgreSQL for tests)", "category": "testing", "sources": ["ingestion-readme"] },
+    { "name": "BGE-small-en-v1.5 embeddings (local, via Transformers.js)", "category": "ai", "sources": ["retrieval-doc"] },
+    { "name": "Claude Haiku 4.5", "category": "ai", "sources": ["assistant-doc"] },
+    { "name": "Zod", "category": "backend", "sources": ["ingestion-readme", "assistant-doc"] },
+    { "name": "Vitest", "category": "testing", "sources": ["ingestion-readme"] },
+    { "name": "Docker Compose (local PostgreSQL)", "category": "devops", "sources": ["ingestion-readme"] },
+    { "name": "Appwrite", "category": "platform", "sources": ["readme"] },
+    { "name": "Vercel", "category": "platform", "sources": ["readme"] }
+  ],
+  "responsibilities": [
+    {
+      "text": "Personal project: Alex built the game, the ingestion pipeline, the retrieval system and its evaluation, and the grounded assistant.",
+      "scope": "individual",
+      "sources": ["readme", "linkedin-notes"]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "Assistant pipeline: an LLM planner produces a Zod-validated RetrievalPlan, followed by deterministic policy and routing, then search and lookup tools, then verified product records, then an LLM writer, and finally a grounding validator. The database is authoritative at every step.",
+        "sources": ["assistant-doc"]
+      },
+      {
+        "text": "Retrieval offers PostgreSQL full-text search, full-text search with deterministic UK/US term normalisation, exact pgvector cosine search, and a hybrid that combines them with Reciprocal Rank Fusion (k = 60, top 50 from each).",
+        "sources": ["retrieval-doc"]
+      },
+      {
+        "text": "Structured requirements such as nutrition bounds, dietary policy and allergen exclusions are SQL predicates applied inside every retrieval strategy, so ranking cannot overrule them.",
+        "sources": ["retrieval-doc"]
+      },
+      {
+        "text": "Embeddings live in a separate table keyed by product and model. Vector queries match each embedding's text hash and document version against the product, so a stale embedding can never be searched.",
+        "sources": ["retrieval-doc"]
+      },
+      {
+        "text": "Daily games are generated ahead of time, frozen as snapshots in PostgreSQL, and published as encrypted JSON files that deploy with the app. No server, database or API sits in the path of somebody playing.",
+        "sources": ["daily-game-doc", "readme"]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "Proving semantic retrieval was worth it",
+      "problem": "It was possible that vector search would not beat PostgreSQL full-text search on this corpus.",
+      "approach": [
+        "Wrote and labelled 72 queries in 9 categories before any embedding existed, so no label could be chosen to flatter a vector result.",
+        "Used strict grading: recall, precision and MRR count only exact matches, with partial credit in nDCG@10 alone.",
+        "Compared full-text, normalised full-text, vector and hybrid strategies, and reported where hybrid did worse."
+      ],
+      "outcome": "nDCG@10 rose from 0.582 (full-text) to 0.819 (normalised hybrid), and the zero-result rate fell from 20.8% to 0%. On the 61 queries the term list cannot touch, full-text scored 0.610 and hybrid 0.808.",
+      "sources": ["retrieval-doc", "readme"]
+    },
+    {
+      "title": "Compositional queries that retrieval alone could not answer",
+      "problem": "Requests like \"cheese for a toastie\" retrieved ready-made toasties, because both lexical and vector search matched the object named in the query rather than the ingredient asked for.",
+      "approach": [
+        "An LLM planner decomposes the request into one to four searches with filters.",
+        "Measured the ceiling first with hand-written oracle decompositions, which needed no API key."
+      ],
+      "outcome": "Precision on compositional cases rose from 0.244 to 0.689, about 71% of what a perfect planner achieves (oracle mean P@5 0.878 against a 0.500 baseline).",
+      "sources": ["assistant-doc", "readme"]
+    },
+    {
+      "title": "Stopping the model from inventing facts",
+      "problem": "A model writing about food can invent products, nutrition numbers, allergen claims or prices.",
+      "approach": [
+        "The writer returns structured citations and attributed numbers, which a mechanical validator checks against the records.",
+        "Violations include unknown or uncited product ids, wrong or unverified numbers, unsupported dietary or allergen claims, and any price claim.",
+        "A violation triggers one corrective retry, then a refusal.",
+        "A database CHECK constraint enforces that cited ids are a subset of retrieved ids."
+      ],
+      "outcome": "Zero fabricated products and zero invented prices reached a user. The model attempted an unsupported statement in 44% of runs and the validator caught every one: twelve were corrected on retry and seven became honest refusals.",
+      "sources": ["assistant-doc", "readme"]
+    },
+    {
+      "title": "Prompt injection through catalogue data",
+      "problem": "Product names and ingredients come from a database anyone can edit, so they are untrusted input.",
+      "approach": [
+        "The writer's prompt marks catalogue text as data.",
+        "Obeying injected instructions cannot succeed, because the result would fail validation.",
+        "The test suite includes a fixture product named \"Ignore previous instructions…\" and asserts that obeying it is blocked."
+      ],
+      "sources": ["assistant-doc"]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Local embeddings instead of a hosted model",
+      "decision": "Use BGE-small-en-v1.5 (384 dimensions, MIT licence) locally, at a pinned revision.",
+      "rationale": "A portfolio project anyone can clone should not need an API key, and a pinned model revision makes the reported numbers reproducible. Cost was not the deciding factor; a hosted model would have cost about $0.10.",
+      "alternatives": ["OpenAI text-embedding-3-small (1536 dimensions, hosted)"],
+      "tradeoffs": ["Embedding 25,000 products took 52 minutes on CPU."],
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "title": "Exact vector search with no ANN index",
+      "decision": "Use an exact pgvector cosine scan rather than an HNSW or IVFFlat index.",
+      "rationale": "25,000 × 384 vectors is about 37 MB, and end-to-end search takes 25.8 ms on average. An approximate index would trade exact results for speed this corpus does not need.",
+      "tradeoffs": ["The right change at perhaps 10× this corpus size."],
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "title": "Deterministic routing instead of letting the model choose",
+      "decision": "A five-line rule picks the retrieval strategy. The model may suggest one, but it is ignored by default.",
+      "rationale": "The rule is derived from measured per-category results, and a rule that fits on one screen is easier to justify than a model's preference.",
+      "sources": ["assistant-doc"]
+    },
+    {
+      "title": "Numbers re-derived from the user's words",
+      "decision": "Numeric filters come from a number the user stated, otherwise from a documented threshold for a vague phrase, otherwise they are dropped and the drop is logged.",
+      "rationale": "A model that decides \"high protein\" means 35 g/100 g, or invents a salt limit, is corrected rather than trusted.",
+      "sources": ["assistant-doc"]
+    },
+    {
+      "title": "Fusion weights left untuned",
+      "decision": "The fusion weights were not tuned against the 72-query evaluation set.",
+      "rationale": "Tuning against the same queries used to report results would burn the evaluation set; that needs a held-out set.",
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "title": "Retire the backend",
+      "decision": "Replace the original NestJS + MongoDB API, AWS Lambdas and S3 photos with frozen daily games shipped as files, and Appwrite for accounts.",
+      "rationale": "Nothing needs paying for or keeping awake, and the game can only fail if the site itself is down. On AWS, the Route 53 hosted zone was the entire bill for a project with no revenue.",
+      "sources": ["readme", "linkedin-notes"]
+    },
+    {
+      "title": "Declining a retailer data source",
+      "decision": "Live ingestion from a retailer's website was abandoned rather than worked around.",
+      "rationale": "The first automated request was answered with HTTP 403, and the retailer marks its product data as for personal use only.",
+      "sources": ["ingestion-readme", "readme"]
+    }
+  ],
+  "lessons": [
+    {
+      "text": "Cheap deterministic normalisation is worth doing before reaching for a model: on UK vocabulary queries, a 20-entry term list scored 0.940 nDCG@10, above vector search's 0.751.",
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "text": "Build the labelled evaluation set before the fix: two of the five predicted full-text failures turned out not to be failures once measured.",
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "text": "Hybrid retrieval is not uniformly better. Eight of nine regressions against full-text search were one- or two-word queries naming a product type exactly.",
+      "sources": ["retrieval-doc"]
+    }
+  ],
+  "limitations": [
+    {
+      "text": "72 retrieval queries and 43 assistant cases, each labelled by one person. Small differences are not significant, and per-category results show direction, not measurement.",
+      "sources": ["retrieval-doc", "assistant-doc"]
+    },
+    {
+      "text": "Ambiguous head terms such as \"milk\", \"chips\" and \"cream\" remain unsolved. Hybrid search does worse than full-text on \"milk\" (0.425 vs 1.000).",
+      "sources": ["retrieval-doc"]
+    },
+    {
+      "text": "English only, one locale. The assistant has no conversation memory, no personalisation and no UI: one request, one answer.",
+      "sources": ["retrieval-doc", "assistant-doc"]
+    },
+    {
+      "text": "The assistant costs about a penny a question and adds several seconds of latency to a 28 ms search.",
+      "sources": ["readme"]
+    },
+    {
+      "text": "The system has no current prices. Observed prices are historical, with a shop and date, and the assistant may not state a price.",
+      "sources": ["assistant-doc"]
+    }
+  ],
+  "links": [
+    { "label": "Play Total Guess", "url": "https://www.total-guess.com", "kind": "live" },
+    { "label": "Source on GitHub", "url": "https://github.com/Alex90Jennings/total-guess", "kind": "source" },
+    { "label": "Retrieval and its evaluation", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/retrieval.md", "kind": "documentation" },
+    { "label": "The grounded assistant", "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/assistant.md", "kind": "documentation" }
+  ],
+  "undocumented": ["Whether the assistant is deployed publicly"]
+}

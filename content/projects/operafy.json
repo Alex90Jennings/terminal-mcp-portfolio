@@ -1,0 +1,181 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "operafy",
+  "name": "Operafy",
+  "aliases": ["operafy-infra", "operafy-react"],
+  "order": 4,
+  "focus": "Infrastructure as code",
+  "tagline": "A streaming app for historic opera recordings, with its media served from a private S3 bucket behind CloudFront and provisioned entirely in Terraform.",
+  "listingTags": ["Terraform", "AWS", "GitHub Actions"],
+  "context": { "kind": "personal", "period": "2022 (first version), 2026 (rebuild and infrastructure)" },
+  "visibility": "public",
+  "topics": ["Terraform", "infrastructure as code", "cloud provisioning", "deployment automation", "CI/CD", "OIDC", "least privilege", "remote state", "cost management", "security"],
+  "sources": [
+    { "id": "infra-readme", "label": "operafy-infra README", "kind": "repository", "url": "https://github.com/Alex90Jennings/operafy-infra" },
+    { "id": "infra-workflow", "label": "operafy-infra Terraform workflow", "kind": "repository", "url": "https://github.com/Alex90Jennings/operafy-infra/blob/main/.github/workflows/terraform.yml" },
+    { "id": "app-readme", "label": "operafy-react README", "kind": "repository", "url": "https://github.com/Alex90Jennings/operafy-react" },
+    { "id": "github-profile", "label": "GitHub profile: Operafy sections", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
+    { "id": "linkedin-notes", "label": "Author's project descriptions for LinkedIn", "kind": "author-statement" }
+  ],
+  "overview": [
+    {
+      "text": "Operafy is \"Spotify, but it only plays opera\": 31 historic recordings from 1896 to 1943, all in the public domain.",
+      "sources": ["app-readme", "linkedin-notes"]
+    },
+    {
+      "text": "It began in 2022 as Alex's first HTML and CSS project at bootcamp. In 2026 Alex rebuilt it so that everything that looked like it worked actually works: a full player, Appwrite accounts with persisted playlists, real routes, search, and a mobile layout.",
+      "sources": ["app-readme", "github-profile"]
+    },
+    {
+      "text": "The media was originally hotlinked from Wikimedia Commons, which meant someone else's bandwidth and uptime, and URLs that could change and break the player. operafy-infra moves all 31 recordings and 20 covers to a private S3 bucket behind CloudFront, defined in Terraform.",
+      "sources": ["infra-readme", "app-readme"]
+    }
+  ],
+  "technologies": [
+    { "name": "Terraform", "category": "devops", "sources": ["infra-readme"] },
+    { "name": "Amazon S3", "category": "cloud", "sources": ["infra-readme"] },
+    { "name": "Amazon CloudFront", "category": "cloud", "sources": ["infra-readme"] },
+    { "name": "AWS IAM", "category": "cloud", "sources": ["infra-readme"] },
+    { "name": "AWS Certificate Manager", "category": "cloud", "sources": ["infra-readme"] },
+    { "name": "GitHub Actions", "category": "devops", "sources": ["infra-readme", "infra-workflow"] },
+    { "name": "GitHub OIDC", "category": "devops", "sources": ["infra-readme"] },
+    { "name": "React 18", "category": "frontend", "sources": ["app-readme"] },
+    { "name": "React Router 7", "category": "frontend", "sources": ["app-readme"] },
+    { "name": "JavaScript", "category": "language", "sources": ["linkedin-notes"] },
+    { "name": "Appwrite", "category": "platform", "sources": ["app-readme"] },
+    { "name": "Vercel", "category": "platform", "sources": ["app-readme"] },
+    { "name": "Python (media sourcing script)", "category": "language", "sources": ["linkedin-notes", "github-profile"] }
+  ],
+  "responsibilities": [
+    {
+      "text": "Personal project: Alex wrote the app, the Terraform infrastructure and the CI/CD pipeline.",
+      "scope": "individual",
+      "sources": ["infra-readme", "app-readme"]
+    },
+    {
+      "text": "Audited the AWS account against Cost Explorer and removed orphaned resources, including an unattached EBS volume idle since 2023, unused Route 53 hosted zones and an unused Secrets Manager secret. This cut the monthly bill by 99%.",
+      "scope": "individual",
+      "sources": ["linkedin-notes", "github-profile"]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "Viewers reach CloudFront over HTTPS, and CloudFront reads from a private S3 bucket through an Origin Access Control with SigV4-signed requests. The bucket policy names that one distribution by SourceArn.",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "Public access is blocked at the account level as well as by policy, and an explicit Deny on aws:SecureTransport = false refuses plaintext requests.",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "The bucket is versioned and encrypted at rest. A lifecycle rule expires superseded versions after 30 days.",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "CloudFront serves HTTP/2 and HTTP/3 with compression, accepts only GET, HEAD and OPTIONS, and uses AWS-managed cache, CORS and security-header policies. It defaults to PriceClass_100 (Europe and North America).",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "An ACM certificate in us-east-1 is created only when a custom domain is set, because us-east-1 is the only region CloudFront reads certificates from.",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "Terraform state lives in its own versioned, encrypted S3 bucket with native S3 lock files. That bucket is created once by a separate bootstrap configuration marked prevent_destroy.",
+        "sources": ["infra-readme"]
+      },
+      {
+        "text": "Media is uploaded with max-age=31536000, immutable, which is safe because a changed file gets a changed name.",
+        "sources": ["infra-readme"]
+      }
+    ],
+    "diagrams": [
+      {
+        "title": "Changing and serving the infrastructure",
+        "format": "mermaid",
+        "source": "flowchart TD\n  subgraph SHIP [Changing the infrastructure]\n    direction LR\n    PR[Pull request: fmt, validate, plan, plan posted as a comment] --> GATE[Merge + approval: GitHub environment] --> OIDC[OIDC to STS: short-lived deploy role, no stored AWS keys] --> APPLY[terraform apply: the reviewed plan]\n    APPLY <--> STATE[(Remote state: S3 with lock file)]\n  end\n  subgraph SERVE [Serving the media]\n    direction LR\n    V[Operafy player] -->|HTTPS| CF[CloudFront: HTTP/2 + 3, GET/HEAD only]\n    CF -->|Origin Access Control, SigV4| S3[(Private S3 bucket: versioned, encrypted, lifecycle rule)]\n  end\n  SHIP ==>|provisions| SERVE",
+        "sources": ["github-profile"]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "OIDC role assumption refused by a correct-looking trust policy",
+      "problem": "Every role assumption failed with \"Not authorized to perform sts:AssumeRoleWithWebIdentity\", although the provider, audience and trust policy all looked correct. CloudTrail redacts request parameters on a failed authorisation, so it could not say why.",
+      "approach": [
+        "Printed the token's own claims from a throwaway workflow.",
+        "Found that the account has OIDC subject customisation enabled, so the subject claim carries numeric owner and repository IDs that the documented repo:owner/name:* pattern never matches.",
+        "Matched the real claim, passed in through a github_subject_claim variable."
+      ],
+      "outcome": "Deploys authenticate. Pinning immutable numeric IDs is also harder to abuse: renaming the repository or giving up the account name cannot hand the role to whoever registers that name next.",
+      "sources": ["infra-readme", "linkedin-notes"]
+    },
+    {
+      "title": "Protecting a machine with production credentials",
+      "problem": "The machine holds credentials for more than one AWS account, one of them production, so a wrong AWS_PROFILE is an easy and expensive mistake.",
+      "approach": ["The AWS provider pins allowed_account_ids to the intended account."],
+      "outcome": "Terraform aborts before touching anything if the credentials resolve to a different account. It costs one line.",
+      "sources": ["infra-readme"]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Apply the reviewed plan, not a fresh one",
+      "decision": "Pull requests run fmt, validate and plan, and post the plan as a comment. Merging to main applies the saved plan artefact, behind a GitHub environment that requires approval.",
+      "rationale": "What was reviewed is exactly what runs.",
+      "sources": ["infra-readme", "infra-workflow"]
+    },
+    {
+      "title": "GitHub OIDC instead of stored AWS keys",
+      "decision": "CI exchanges a short-lived GitHub OIDC token for a role session. The deploy role is scoped to named resource ARNs, may only sync this bucket and invalidate this distribution, and cannot modify its own permissions.",
+      "rationale": "No AWS access key exists in the repository or its secrets.",
+      "sources": ["infra-readme", "linkedin-notes"]
+    },
+    {
+      "title": "Native S3 state locking instead of DynamoDB",
+      "decision": "State locking uses Terraform's native S3 lock files (added in Terraform 1.10).",
+      "rationale": "It removes a whole resource whose only job was to hold a lock.",
+      "sources": ["infra-readme"]
+    },
+    {
+      "title": "Origin Access Control instead of Origin Access Identity",
+      "decision": "CloudFront reads the bucket through an Origin Access Control, and the bucket policy names the exact distribution.",
+      "rationale": "OAC is the modern replacement for OAI, and naming the distribution means not just any CloudFront distribution can read the bucket.",
+      "sources": ["infra-readme"]
+    },
+    {
+      "title": "Expire old object versions",
+      "decision": "Versioning is on, with a lifecycle rule that expires superseded versions after 30 days.",
+      "rationale": "Versioning protects against a bad sync, but versioning without expiry keeps billing forever.",
+      "sources": ["infra-readme"]
+    },
+    {
+      "title": "No modules and no Route 53",
+      "decision": "One stack and one environment without module wrappers, and DNS kept at the registrar.",
+      "rationale": "Wrapping eight resources in a module would be architecture for its own sake, and a hosted zone is a real monthly charge for something a free DNS provider does equally well at this scale.",
+      "sources": ["infra-readme"]
+    }
+  ],
+  "lessons": [
+    {
+      "text": "When a token is rejected, read the token. Guessing at the policy is slower and teaches you nothing.",
+      "sources": ["infra-readme"]
+    }
+  ],
+  "limitations": [
+    {
+      "text": "Deliberately small: one stack, one environment, and about eight resources.",
+      "sources": ["infra-readme"]
+    },
+    {
+      "text": "Measured cost is near zero. Cost Explorer shows CloudFront at $0.00 over four months and S3 at $0.01–0.02, for about 200 MB of media.",
+      "sources": ["infra-readme"]
+    }
+  ],
+  "links": [
+    { "label": "Live app", "url": "https://operafy-music.vercel.app", "kind": "live" },
+    { "label": "Infrastructure source (Terraform)", "url": "https://github.com/Alex90Jennings/operafy-infra", "kind": "source" },
+    { "label": "App source (React)", "url": "https://github.com/Alex90Jennings/operafy-react", "kind": "source" }
+  ],
+  "undocumented": []
+}

@@ -1,0 +1,136 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "zim-sbb",
+  "name": "ZIM@SBB",
+  "aliases": ["sbb", "zimsbb"],
+  "order": 2,
+  "focus": "White-label mobile application",
+  "tagline": "A white-label build of the ZIM eSIM app for Swiss Federal Railways, shipped as its own app in four languages.",
+  "listingTags": ["Multi-tenancy", "Localisation", "React Native"],
+  "context": {
+    "kind": "employment",
+    "organisation": "ZIM Connections Ltd.",
+    "role": "Software Developer"
+  },
+  "visibility": "professional",
+  "topics": ["white-label development", "multi-tenancy", "internationalisation", "localisation", "brand requirements", "attention to detail", "product collaboration", "real-device testing"],
+  "sources": [
+    { "id": "cv", "label": "CV (September 2026)", "kind": "cv" },
+    { "id": "github-profile", "label": "GitHub profile: ZIM Connections section", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
+    { "id": "linkedin-notes", "label": "Author's project description for LinkedIn", "kind": "author-statement" },
+    { "id": "author-notes", "label": "Author's notes on ZIM@SBB", "kind": "author-statement" },
+    { "id": "app-store", "label": "ZIM@SBB on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236" }
+  ],
+  "overview": [
+    {
+      "text": "ZIM@SBB is a white-label build of the ZIM eSIM app for Swiss Federal Railways (SBB), shipped as its own app.",
+      "sources": ["linkedin-notes", "github-profile", "app-store"]
+    },
+    {
+      "text": "It provides eSIM connectivity in four languages, using i18next and Locize.",
+      "sources": ["cv", "github-profile"]
+    },
+    {
+      "text": "It runs on ZIM's shared multi-tenant platform, which serves 4 production brands and 11 app identities on shared infrastructure.",
+      "sources": ["cv"]
+    }
+  ],
+  "technologies": [
+    { "name": "React Native", "category": "mobile", "sources": ["author-notes", "cv"] },
+    { "name": "TypeScript", "category": "language", "sources": ["cv"] },
+    { "name": "i18next", "category": "frontend", "sources": ["cv"] },
+    { "name": "Locize", "category": "platform", "sources": ["cv"] },
+    { "name": "NestJS", "category": "backend", "sources": ["author-notes"] },
+    { "name": "Amazon Cognito", "category": "cloud", "sources": ["author-notes"] }
+  ],
+  "responsibilities": [
+    {
+      "text": "Delivered the ZIM@SBB integration with Swiss Federal Railways.",
+      "scope": "individual",
+      "sources": ["cv"]
+    },
+    {
+      "text": "Tested the full journey on physical iPhones and Android phones, because eSIMs cannot be installed on a simulator. The tests covered Cognito sign-in, expired sessions, permission prompts granted and denied, and buying and installing an eSIM on weak or no signal.",
+      "scope": "individual",
+      "sources": ["author-notes"]
+    },
+    {
+      "text": "Worked closely with the product team, reviewing builds together before each release to get every string, asset and flow right in all four languages.",
+      "scope": "collaborative",
+      "sources": ["author-notes"]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "ZIM@SBB shares the core application and backend with the other ZIM brands. Partner-specific behaviour is kept in configuration rather than in the core.",
+        "sources": ["author-notes", "github-profile"]
+      },
+      {
+        "text": "Translations are managed with i18next in the app and Locize as the translation management service.",
+        "sources": ["cv"]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "Multi-tenancy without forks",
+      "problem": "SBB needed its own branded app on the same platform as ZIM's other brands, and each new partner risked a fork of the codebase.",
+      "approach": ["Keep partner-specific behaviour in configuration rather than the core."],
+      "outcome": "A new partner is a configuration change, not a fork. The platform runs 4 brands and 11 app identities.",
+      "sources": ["author-notes", "cv"]
+    },
+    {
+      "title": "Catching translation defects before release",
+      "problem": "AI first-pass translations dropped two Italian keys and truncated a button on smaller iPhones.",
+      "approach": [
+        "A key-comparison script to find translation keys missing in any language.",
+        "On-device checks to catch layout problems such as truncated text."
+      ],
+      "outcome": "Both defects were found and fixed before release.",
+      "sources": ["author-notes"]
+    },
+    {
+      "title": "Testing an eSIM journey that cannot run in a simulator",
+      "problem": "eSIMs cannot be installed on a simulator, and travellers often buy and install them on weak or no signal.",
+      "approach": [
+        "End-to-end testing on physical iPhones and Android phones.",
+        "Covered sign-in, expired sessions, permission prompts granted and denied, and purchase and installation on poor connectivity."
+      ],
+      "sources": ["author-notes"]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Partner behaviour in configuration, not in the core",
+      "decision": "SBB-specific behaviour lives in configuration on the shared platform rather than in a separate codebase.",
+      "rationale": "Adding the next partner is then a configuration change rather than a fork.",
+      "sources": ["author-notes", "github-profile"]
+    }
+  ],
+  "lessons": [
+    {
+      "text": "The hard part of white-labelling is not the theming but keeping partner-specific behaviour out of the core.",
+      "sources": ["github-profile"]
+    },
+    {
+      "text": "AI-generated translations need mechanical checks (key comparison) and on-device review; they can silently drop keys or break layouts.",
+      "sources": ["author-notes"]
+    }
+  ],
+  "limitations": [
+    {
+      "text": "This is employer-owned work. The source code is private, so details here come from Alex's CV and notes.",
+      "sources": ["cv"]
+    }
+  ],
+  "links": [
+    { "label": "ZIM@SBB on the App Store", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236", "kind": "store" }
+  ],
+  "undocumented": [
+    "Which four languages are supported",
+    "How tenant configuration is stored and loaded",
+    "How tenants are isolated from each other",
+    "How brand assets and themes are structured"
+  ]
+}

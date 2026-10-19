@@ -1,0 +1,197 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "clash-of-langs",
+  "name": "Clash of Langs",
+  "aliases": ["clash", "col"],
+  "order": 3,
+  "focus": "Programming language benchmarking",
+  "tagline": "Pick two of 24 programming languages, give them the same real workload, and compare them with honest statistics.",
+  "listingTags": ["Docker", "TypeScript", "Next.js"],
+  "context": { "kind": "personal" },
+  "visibility": "public",
+  "topics": ["Docker", "benchmarking", "performance measurement", "statistics", "reproducibility", "result verification", "process execution", "security hardening"],
+  "sources": [
+    { "id": "readme", "label": "Clash of Langs README", "kind": "repository", "url": "https://github.com/Alex90Jennings/clash-of-langs" },
+    { "id": "architecture-doc", "label": "docs/ARCHITECTURE.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/ARCHITECTURE.md" },
+    { "id": "benchmarking-doc", "label": "docs/BENCHMARKING.md", "kind": "documentation", "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/BENCHMARKING.md" },
+    { "id": "ci-workflow", "label": "CI workflow", "kind": "repository", "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/.github/workflows/ci.yml" }
+  ],
+  "overview": [
+    {
+      "text": "An arena that runs the same computational challenge in two programming languages and compares them. 24 languages are supported, each running as a real native process: CPython, HotSpot, V8, BEAM, GHC-compiled binaries and others. Nothing runs in WebAssembly or as a simulation.",
+      "sources": ["readme"]
+    },
+    {
+      "text": "There are 11 challenges, implemented in every language. Data: JSON transform, regex log parsing, group-by aggregation, a CSV sales report and latency analytics. AI and graphics: int8 neural-network inference, RAG-style top-k vector search and an image pipeline. Core: sorting, hash vs binary search and a prime sieve.",
+      "sources": ["readme"]
+    },
+    {
+      "text": "Both fighters regenerate the same input from a shared seed and must produce the same checksum; if they do not, the battle is invalid and nobody wins.",
+      "sources": ["readme", "benchmarking-doc"]
+    },
+    {
+      "text": "Every result is scoped to one workload, one implementation, one runtime and one machine, with the exact versions and command lines attached.",
+      "sources": ["readme"]
+    },
+    {
+      "text": "Battles can be replayed exactly from their URL, for example /battle/javascript-vs-go/csv?seed=….",
+      "sources": ["readme"]
+    }
+  ],
+  "technologies": [
+    { "name": "TypeScript", "category": "language", "sources": ["readme"] },
+    { "name": "Next.js 16", "category": "frontend", "sources": ["readme"] },
+    { "name": "React 19", "category": "frontend", "sources": ["readme"] },
+    { "name": "Node.js", "category": "backend", "sources": ["readme"] },
+    { "name": "Server-sent events", "category": "backend", "sources": ["readme", "architecture-doc"] },
+    { "name": "HTML canvas", "category": "frontend", "sources": ["readme"] },
+    { "name": "Docker", "category": "devops", "sources": ["readme", "architecture-doc"] },
+    { "name": "Docker Compose", "category": "devops", "sources": ["architecture-doc"] },
+    { "name": "GitHub Actions", "category": "devops", "sources": ["ci-workflow", "architecture-doc"] },
+    { "name": "Vercel", "category": "platform", "sources": ["readme"] },
+    { "name": "24 language runtimes (C to R)", "category": "language", "sources": ["readme"] }
+  ],
+  "responsibilities": [
+    {
+      "text": "Personal open-source project, designed, built and maintained by Alex, covering the Next.js app, the battle engine, the benchmark worker and its Docker image, and the harnesses in all 24 languages.",
+      "scope": "individual",
+      "sources": ["readme"]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "The browser posts a battle configuration to a Next.js route handler and receives a server-sent event stream of battle events.",
+        "sources": ["architecture-doc"]
+      },
+      {
+        "text": "In production the route handler proxies to a separate benchmark worker, a Docker image with all 24 runtimes on a dedicated host, authenticated with a shared secret header compared in constant time. In local development the engine runs in-process.",
+        "sources": ["architecture-doc"]
+      },
+      {
+        "text": "The engine takes an exclusive lock, randomises which fighter goes first, and runs each harness under /usr/bin/time to capture peak memory and CPU time. Harnesses stream JSON-line events with in-process monotonic timings for only the timed step.",
+        "sources": ["readme", "benchmarking-doc"]
+      },
+      {
+        "text": "Every language harness follows a shared contract (bench/SPEC.md), and `npm run bench:verify` checks that all 24 produce byte-identical inputs and outputs for every challenge.",
+        "sources": ["readme"]
+      },
+      {
+        "text": "With no worker configured the API returns 503 and the UI shows ARENA OFFLINE; it never substitutes canned numbers.",
+        "sources": ["architecture-doc"]
+      }
+    ],
+    "diagrams": [
+      {
+        "title": "How a battle runs",
+        "format": "mermaid",
+        "source": "flowchart LR\n  UI[Browser: Next.js UI + canvas visualisers] -- POST /api/battle, server-sent events --> API[Next.js route handler]\n  API -- local dev --> Engine[Battle engine]\n  API -- production, BENCH_WORKER_URL --> Worker[Benchmark worker: Docker, all 24 runtimes]\n  Worker --> Engine\n  Engine -- fixed argv, scrubbed env, timeout, own process group --> H1[bench/lang-A harness]\n  Engine --> H2[bench/lang-B harness]\n  H1 -- JSON lines: hello, ready, run, done --> Engine\n  H2 --> Engine",
+        "sources": ["readme"]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "Making two languages do provably the same work",
+      "problem": "Typical language benchmarks do less work in one language, time compilation in another, or report one lucky run.",
+      "approach": [
+        "Each harness regenerates its input from a shared xorshift32 seed and reports an input hash; mismatched hashes invalidate the battle.",
+        "Outputs must produce the same checksum, verified across all 24 runtimes by a dedicated script.",
+        "Input generation and copies happen outside the timer, so only the challenge itself is measured."
+      ],
+      "sources": ["readme", "benchmarking-doc"]
+    },
+    {
+      "title": "Bit-exact verification for AI and graphics workloads",
+      "problem": "Floating-point code legitimately produces slightly different bits across compilers and maths libraries, which would break exact verification.",
+      "approach": ["The AI and graphics challenges use integer arithmetic throughout, as quantised edge inference and classic image pipelines often do."],
+      "sources": ["benchmarking-doc"]
+    },
+    {
+      "title": "Running 24 native runtimes from a serverless frontend",
+      "problem": "Vercel functions cannot run a JVM, CPython with the harness, or arbitrary native binaries, and shared serverless hardware gives unstable timings.",
+      "approach": [
+        "Vercel hosts only the UI and a thin API.",
+        "Execution happens on a dedicated-CPU worker running one container image with every runtime, with cpuset pinned to otherwise idle cores."
+      ],
+      "sources": ["architecture-doc"]
+    },
+    {
+      "title": "Executing processes safely on a public site",
+      "problem": "A public page that starts native processes must not let visitors run code, exhaust the host or bypass the API.",
+      "approach": [
+        "Requests carry only a challenge id, two language ids and five integers, which are whitelisted, clamped and passed as argv entries; nothing goes through a shell.",
+        "Each process has a 180-second hard timeout, is killed by process group, has a 4 MB stdout cap and runs with a scrubbed environment.",
+        "The container runs as non-root with a read-only root filesystem, all capabilities dropped, no-new-privileges, and PID and memory limits.",
+        "Per-visitor rate limiting allows 5 battles a minute and 30 an hour, with one battle at a time per worker and a queue depth of 3."
+      ],
+      "sources": ["architecture-doc"]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "One container with every runtime, on a dedicated VM",
+      "decision": "All 24 runtimes ship in one pinned Docker image, run on a dedicated-CPU host.",
+      "rationale": "Both fighters get the same hardware and kernel, with pinned versions, which keeps the comparison fair and simple.",
+      "alternatives": [
+        "Browser / WebAssembly: rejected, as it measures each language's WASM build rather than its real runtime.",
+        "WASI runtimes: rejected for the same reason, and there is no JVM.",
+        "Serverless functions per language: rejected as cold-start dominated, with noisy neighbours and differing hardware.",
+        "Firecracker / gVisor per battle: the best isolation, needed only if user-submitted code is ever accepted."
+      ],
+      "tradeoffs": ["Needs a dedicated host rather than free serverless hosting; the image is about 2.2 GB."],
+      "sources": ["architecture-doc", "readme"]
+    },
+    {
+      "title": "Medians and significance testing instead of best runs",
+      "decision": "The headline is the median of all samples. A winner is declared only if a two-sided Mann–Whitney U test gives p < 0.05; otherwise the battle is a draw.",
+      "rationale": "Timings have long right tails, so a non-parametric test is appropriate, and reporting a single fastest run is misleading.",
+      "tradeoffs": ["With fewer than 5 samples per side, significance is unreachable by design."],
+      "sources": ["benchmarking-doc", "readme"]
+    },
+    {
+      "title": "Flag outliers rather than remove them",
+      "decision": "Samples with a modified z-score above 3.5 (Iglewicz & Hoaglin) are flagged in the raw results but still count towards the median.",
+      "rationale": "Nothing is cherry-picked; hiding outliers would misrepresent run-to-run variance.",
+      "sources": ["benchmarking-doc"]
+    },
+    {
+      "title": "Randomised order and one battle at a time",
+      "decision": "The engine holds an exclusive lock per worker, runs fighters sequentially and randomises which goes first.",
+      "rationale": "Two benchmarks sharing CPUs measure each other, and a fixed order would systematically give one side the warmer or more throttled slot.",
+      "sources": ["benchmarking-doc"]
+    },
+    {
+      "title": "Cold and warm modes",
+      "decision": "COLD mode measures fresh-process startup including JIT warm-up; WARM mode measures steady-state throughput after discarded warm-up runs.",
+      "rationale": "JIT and adaptive runtimes behave very differently before and after warm-up, so one number cannot describe both.",
+      "sources": ["readme", "benchmarking-doc"]
+    }
+  ],
+  "lessons": [],
+  "limitations": [
+    {
+      "text": "The worker has no egress firewall yet, and there is no gVisor or Firecracker sandboxing. The project only runs harnesses that ship in the repository and never runs user-submitted code.",
+      "sources": ["readme", "architecture-doc"]
+    },
+    {
+      "text": "Results describe one machine. Runtime versions inside the container differ from a developer Mac, and every result records the exact version it ran on.",
+      "sources": ["architecture-doc"]
+    },
+    {
+      "text": "CI runs type checking and a production build. Harness correctness is checked by the cross-runtime verification script rather than by a unit-test suite.",
+      "sources": ["ci-workflow", "readme"]
+    },
+    {
+      "text": "Shareable result permalinks and Open Graph result cards are on the roadmap, not yet built.",
+      "sources": ["readme"]
+    }
+  ],
+  "links": [
+    { "label": "Live arena", "url": "https://clash-of-langs.vercel.app", "kind": "live" },
+    { "label": "Source on GitHub", "url": "https://github.com/Alex90Jennings/clash-of-langs", "kind": "source" },
+    { "label": "Architecture", "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/ARCHITECTURE.md", "kind": "documentation" },
+    { "label": "Benchmark methodology", "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/BENCHMARKING.md", "kind": "documentation" }
+  ],
+  "undocumented": ["Lessons learned", "Where the production worker is hosted"]
+}

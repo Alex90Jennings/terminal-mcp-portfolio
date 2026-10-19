@@ -1,0 +1,302 @@
+{
+  "$schema": "./schemas/skills.schema.json",
+  "sources": [
+    {
+      "id": "cv",
+      "label": "CV (September 2026)",
+      "kind": "cv"
+    },
+    {
+      "id": "github-profile",
+      "label": "GitHub profile",
+      "kind": "profile",
+      "url": "https://github.com/Alex90Jennings"
+    },
+    {
+      "id": "sol-repo",
+      "label": "SOL source repository and accessibility audit",
+      "kind": "repository"
+    },
+    {
+      "id": "total-guess-repo",
+      "label": "Total Guess repository",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/total-guess"
+    }
+  ],
+  "skills": [
+    {
+      "id": "typescript",
+      "name": "TypeScript",
+      "category": "language",
+      "projects": [
+        "zim-connections",
+        "zim-sbb",
+        "clash-of-langs",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript",
+      "category": "language",
+      "projects": [
+        "operafy",
+        "total-guess"
+      ],
+      "sources": [
+        "github-profile"
+      ]
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "category": "language",
+      "projects": [
+        "operafy"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "swift",
+      "name": "Swift",
+      "category": "language",
+      "projects": [
+        "sol"
+      ],
+      "sources": [
+        "github-profile",
+        "sol-repo"
+      ]
+    },
+    {
+      "id": "sql",
+      "name": "SQL & PostgreSQL",
+      "category": "data",
+      "projects": [
+        "zim-connections",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "category": "data",
+      "projects": [
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "react",
+      "name": "React",
+      "category": "frontend",
+      "projects": [
+        "zim-connections",
+        "clash-of-langs",
+        "operafy",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "nextjs",
+      "name": "Next.js",
+      "category": "frontend",
+      "projects": [
+        "zim-connections",
+        "clash-of-langs"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "react-native",
+      "name": "React Native",
+      "category": "mobile",
+      "projects": [
+        "zim-connections",
+        "zim-sbb"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "macos",
+      "name": "macOS development (AppKit, Core Animation, StoreKit 2)",
+      "category": "mobile",
+      "projects": [
+        "sol"
+      ],
+      "sources": [
+        "sol-repo"
+      ]
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js & NestJS",
+      "category": "backend",
+      "projects": [
+        "zim-connections",
+        "clash-of-langs",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "rest-api-design",
+      "name": "REST API design",
+      "category": "backend",
+      "projects": [
+        "zim-connections"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "websockets",
+      "name": "Real-time systems (Socket.IO)",
+      "category": "backend",
+      "projects": [
+        "zim-connections"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "aws",
+      "name": "AWS & cloud infrastructure",
+      "category": "cloud",
+      "projects": [
+        "zim-connections",
+        "operafy"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "terraform",
+      "name": "Terraform",
+      "category": "devops",
+      "projects": [
+        "operafy"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "category": "devops",
+      "projects": [
+        "zim-connections",
+        "clash-of-langs",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "ci-cd",
+      "name": "CI/CD & production operations",
+      "category": "devops",
+      "projects": [
+        "zim-connections",
+        "operafy",
+        "clash-of-langs"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "automated-testing",
+      "name": "Automated testing",
+      "category": "quality",
+      "projects": [
+        "zim-connections",
+        "sol",
+        "total-guess"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "accessibility",
+      "name": "Accessibility",
+      "category": "quality",
+      "projects": [
+        "sol"
+      ],
+      "sources": [
+        "sol-repo"
+      ]
+    },
+    {
+      "id": "localisation",
+      "name": "Localisation & internationalisation",
+      "category": "frontend",
+      "projects": [
+        "zim-sbb",
+        "sol"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "multi-tenancy",
+      "name": "Multi-tenant / white-label architecture",
+      "category": "backend",
+      "projects": [
+        "zim-connections",
+        "zim-sbb"
+      ],
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "id": "rag",
+      "name": "Retrieval-augmented generation & information retrieval",
+      "category": "ai",
+      "projects": [
+        "total-guess"
+      ],
+      "sources": [
+        "total-guess-repo"
+      ]
+    },
+    {
+      "id": "ai-assisted-development",
+      "name": "AI-native development (Claude Code)",
+      "category": "practice",
+      "projects": [],
+      "sources": [
+        "cv"
+      ]
+    }
+  ]
+}
