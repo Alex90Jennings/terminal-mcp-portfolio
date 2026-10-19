@@ -1,0 +1,26 @@
+{
+  "name": "@portfolio/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A read-only MCP server over the verified portfolio knowledge base, with Streamable HTTP and stdio transports.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "stdio": "tsx src/stdio.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@portfolio/knowledge": "0.1.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,4 +1,4 @@
-import type { PortfolioProject, Responsibility } from '@portfolio/knowledge/runtime';
+import { PROJECT_CONTEXT_LABELS, RESPONSIBILITY_SCOPE_LABELS, type PortfolioProject } from '@portfolio/knowledge/runtime';
 import { bullets, command, heading, joined, link, paragraph, subheading, text, type Block, type Inline } from './output';
 
 export const PROJECT_SECTIONS = ['overview', 'architecture', 'challenges', 'decisions', 'lessons', 'sources', 'all'] as const;
@@ -20,18 +20,6 @@ export function resolveSection(input: string | undefined): ProjectSection | unde
   const key = input.toLowerCase();
   return (PROJECT_SECTIONS as readonly string[]).includes(key) ? (key as ProjectSection) : SECTION_ALIASES[key];
 }
-
-const SCOPE_LABEL: Record<Responsibility['scope'], string> = {
-  individual: 'own work',
-  collaborative: 'with the team',
-  team: 'team effort',
-};
-
-const CONTEXT_LABEL: Record<PortfolioProject['context']['kind'], string> = {
-  employment: 'Professional work',
-  personal: 'Personal project',
-  client: 'Client work',
-};
 
 export function formatProject(project: PortfolioProject, section: ProjectSection): Block[] {
   const blocks: Block[] = [heading(project.name), ...summary(project)];
@@ -59,7 +47,7 @@ export function formatProject(project: PortfolioProject, section: ProjectSection
 function summary(project: PortfolioProject): Block[] {
   const { context } = project;
   const where = [context.role, context.organisation].filter(Boolean).join(', ');
-  const meta = [project.focus, CONTEXT_LABEL[context.kind] + (where ? ` · ${where}` : ''), context.period].filter(
+  const meta = [project.focus, PROJECT_CONTEXT_LABELS[context.kind] + (where ? ` · ${where}` : ''), context.period].filter(
     (part): part is string => Boolean(part),
   );
   return [paragraph(joined(meta.map((part) => text(part, 'accent')))), paragraph(project.tagline)];
@@ -71,7 +59,7 @@ function overview(project: PortfolioProject): Block[] {
   if (project.responsibilities.length > 0) {
     blocks.push(
       subheading('My role'),
-      bullets(project.responsibilities.map((item) => [item.text, text(` (${SCOPE_LABEL[item.scope]})`, 'muted')])),
+      bullets(project.responsibilities.map((item) => [item.text, text(` (${RESPONSIBILITY_SCOPE_LABELS[item.scope]})`, 'muted')])),
     );
   }
   if (project.technologies.length > 0) {

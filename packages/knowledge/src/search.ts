@@ -16,6 +16,8 @@ export type SearchField =
 export interface SearchMatch {
   field: SearchField;
   text: string;
+  /** Ids of the project sources behind this passage; empty for names, focus and topics. */
+  sources: string[];
 }
 
 export interface SearchHit {
@@ -28,6 +30,7 @@ export interface SearchHit {
 interface IndexedPassage {
   field: SearchField;
   text: string;
+  sources: string[];
   normalised: string;
   tokens: ReadonlySet<string>;
 }
@@ -99,7 +102,7 @@ export function search(index: readonly IndexedProject[], query: string, limit = 
       matches: scored
         .sort((a, b) => b.score - a.score)
         .slice(0, MAX_MATCHES_PER_HIT)
-        .map(({ passage }) => ({ field: passage.field, text: passage.text })),
+        .map(({ passage }) => ({ field: passage.field, text: passage.text, sources: passage.sources })),
     });
   }
 
@@ -130,28 +133,31 @@ function stem(token: string): string {
 }
 
 function passagesOf(project: PortfolioProject): IndexedPassage[] {
-  const raw: { field: SearchField; text: string }[] = [
+  const raw: { field: SearchField; text: string; sources?: string[] }[] = [
     { field: 'name', text: [project.name, ...project.aliases].join(' ') },
     { field: 'focus', text: `${project.focus}. ${project.tagline}` },
     ...[...project.topics, ...project.listingTags].map((text) => ({ field: 'topics' as const, text })),
-    ...project.technologies.map(({ name }) => ({ field: 'technologies' as const, text: name })),
-    ...project.overview.map(({ text }) => ({ field: 'overview' as const, text })),
-    ...project.responsibilities.map(({ text }) => ({ field: 'responsibilities' as const, text })),
-    ...project.architecture.overview.map(({ text }) => ({ field: 'architecture' as const, text })),
+    ...project.technologies.map(({ name, sources }) => ({ field: 'technologies' as const, text: name, sources })),
+    ...project.overview.map(({ text, sources }) => ({ field: 'overview' as const, text, sources })),
+    ...project.responsibilities.map(({ text, sources }) => ({ field: 'responsibilities' as const, text, sources })),
+    ...project.architecture.overview.map(({ text, sources }) => ({ field: 'architecture' as const, text, sources })),
     ...project.challenges.map((challenge) => ({
       field: 'challenges' as const,
       text: [challenge.title, challenge.problem, ...challenge.approach, challenge.outcome ?? ''].join(' '),
+      sources: challenge.sources,
     })),
     ...project.decisions.map((decision) => ({
       field: 'decisions' as const,
       text: [decision.title, decision.decision, decision.rationale].join(' '),
+      sources: decision.sources,
     })),
-    ...project.lessons.map(({ text }) => ({ field: 'lessons' as const, text })),
-    ...project.limitations.map(({ text }) => ({ field: 'limitations' as const, text })),
+    ...project.lessons.map(({ text, sources }) => ({ field: 'lessons' as const, text, sources })),
+    ...project.limitations.map(({ text, sources }) => ({ field: 'limitations' as const, text, sources })),
   ];
-  return raw.map(({ field, text }) => ({
+  return raw.map(({ field, text, sources = [] }) => ({
     field,
     text,
+    sources,
     normalised: normalise(text),
     tokens: new Set(tokenise(text)),
   }));

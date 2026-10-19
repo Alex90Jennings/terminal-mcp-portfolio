@@ -48,7 +48,7 @@ describe('search', () => {
   it('returns the passages that matched', () => {
     const [hit] = kb.search('localisation with i18next');
     expect(hit?.projectId).toBe('zim-sbb');
-    expect(hit?.matches).toContainEqual({ field: 'overview', text: 'Four languages with i18next and Locize.' });
+    expect(hit?.matches).toContainEqual({ field: 'overview', text: 'Four languages with i18next and Locize.', sources: ['cv'] });
   });
 
   it('ignores queries made only of stop words', () => {

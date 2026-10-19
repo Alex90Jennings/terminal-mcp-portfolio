@@ -11,6 +11,8 @@ import { createSearchIndex, search, type SearchHit } from './search.ts';
 export interface KnowledgeBase {
   readonly profile: Profile;
   readonly skills: readonly Skill[];
+  /** The sources cited by `skills`. */
+  readonly skillSources: readonly Source[];
   /** Published projects, in display order. */
   readonly projects: readonly PortfolioProject[];
   /** Accepts an id, an alias, a display name ("Clash of Langs", "ZIM@SBB") or a 1-based listing number. */
@@ -45,6 +47,7 @@ export function wrapKnowledgeBase(bundle: KnowledgeBundle): KnowledgeBase {
   return {
     profile: data.profile,
     skills: data.skills.skills,
+    skillSources: data.skills.sources,
     projects,
     resolveProjectId,
     getProject: (input) => {

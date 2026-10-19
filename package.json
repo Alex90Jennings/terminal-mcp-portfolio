@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "test": "npm run test --workspaces --if-present",
     "test:e2e": "npm run test:e2e -w @portfolio/web",
-    "check": "npm run knowledge:build && npm run typecheck && npm run lint && npm test && npm run build"
+    "check": "npm run knowledge:build && npm run typecheck && npm run lint && npm test && npm run build",
+    "mcp:stdio": "npm run knowledge:build --silent 1>&2 && tsx packages/mcp-server/src/stdio.ts"
   },
   "devDependencies": {
     "eslint": "^9.39.5",

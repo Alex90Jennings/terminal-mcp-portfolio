@@ -81,105 +81,105 @@ export const LinkSchema = z.strictObject({
   kind: z.enum(['live', 'source', 'store', 'documentation', 'website', 'profile']),
 });
 
-export const ProjectSchema = z
-  .strictObject({
-    $schema: z.string().optional(),
-    id: SlugSchema,
-    name: Text,
-    aliases: z.array(SlugSchema).default([]),
-    order: z.int().positive(),
-    focus: Text,
-    tagline: Text,
-    listingTags: z.array(Text).min(1).max(5),
-    context: z.strictObject({
-      kind: z.enum(['employment', 'personal', 'client']),
-      organisation: Text.optional(),
-      role: Text.optional(),
-      period: Text.optional(),
-    }),
-    /** `public`: open source or publicly documented. `professional`: employer work, no source access. `private`: never published. */
-    visibility: z.enum(['public', 'professional', 'private']),
-    topics: z.array(Text).default([]),
-    sources: z.array(SourceSchema).min(1),
-    overview: z.array(FactSchema).default([]),
-    technologies: z.array(TechnologySchema).default([]),
-    responsibilities: z.array(ResponsibilitySchema).default([]),
-    architecture: z
-      .strictObject({
-        overview: z.array(FactSchema).default([]),
-        diagrams: z.array(DiagramSchema).default([]),
-      })
-      .default({ overview: [], diagrams: [] }),
-    challenges: z.array(ChallengeSchema).default([]),
-    decisions: z.array(DecisionSchema).default([]),
-    lessons: z.array(FactSchema).default([]),
-    limitations: z.array(FactSchema).default([]),
-    links: z.array(LinkSchema).default([]),
-    /** Topics known to be missing, so answers can say so instead of guessing. */
-    undocumented: z.array(Text).default([]),
-  })
-  .superRefine(checkSourceReferences);
+export const ProjectObject = z.strictObject({
+  $schema: z.string().optional(),
+  id: SlugSchema,
+  name: Text,
+  aliases: z.array(SlugSchema).default([]),
+  order: z.int().positive(),
+  focus: Text,
+  tagline: Text,
+  listingTags: z.array(Text).min(1).max(5),
+  context: z.strictObject({
+    kind: z.enum(['employment', 'personal', 'client']),
+    organisation: Text.optional(),
+    role: Text.optional(),
+    period: Text.optional(),
+  }),
+  /** `public`: open source or publicly documented. `professional`: employer work, no source access. `private`: never published. */
+  visibility: z.enum(['public', 'professional', 'private']),
+  topics: z.array(Text).default([]),
+  sources: z.array(SourceSchema).min(1),
+  overview: z.array(FactSchema).default([]),
+  technologies: z.array(TechnologySchema).default([]),
+  responsibilities: z.array(ResponsibilitySchema).default([]),
+  architecture: z
+    .strictObject({
+      overview: z.array(FactSchema).default([]),
+      diagrams: z.array(DiagramSchema).default([]),
+    })
+    .default({ overview: [], diagrams: [] }),
+  challenges: z.array(ChallengeSchema).default([]),
+  decisions: z.array(DecisionSchema).default([]),
+  lessons: z.array(FactSchema).default([]),
+  limitations: z.array(FactSchema).default([]),
+  links: z.array(LinkSchema).default([]),
+  /** Topics known to be missing, so answers can say so instead of guessing. */
+  undocumented: z.array(Text).default([]),
+});
 
-export const ProfileSchema = z
-  .strictObject({
-    $schema: z.string().optional(),
-    name: Text,
-    title: Text,
-    location: Text,
-    bannerSkills: z.array(Text).min(1).max(6),
-    sources: z.array(SourceSchema).min(1),
-    summary: z.array(FactSchema).min(1),
-    contact: z.strictObject({
-      email: z.email(),
-      links: z.array(LinkSchema).default([]),
-    }),
-    experience: z
-      .array(
-        z.strictObject({
-          organisation: Text,
-          role: Text,
-          period: Text,
-          location: Text.optional(),
-          projects: z.array(SlugSchema).default([]),
-          ...evidence,
-        }),
-      )
-      .default([]),
-    education: z
-      .array(
-        z.strictObject({
-          qualification: Text,
-          institution: Text,
-          period: Text.optional(),
-          detail: Text.optional(),
-          ...evidence,
-        }),
-      )
-      .default([]),
-    certifications: z
-      .array(
-        z.strictObject({
-          name: Text,
-          issuer: Text,
-          progress: z.enum(['earned', 'in-progress']),
-          date: Text.optional(),
-          ...evidence,
-        }),
-      )
-      .default([]),
-    languages: z
-      .array(z.strictObject({ language: Text, level: Text, ...evidence }))
-      .default([]),
-    /** How Alex works: an ordered delivery loop, and where AI sits in it. */
-    workingApproach: z
-      .strictObject({
-        summary: Text,
-        steps: z.array(z.strictObject({ title: Text, description: Text, ...evidence })).min(1),
-        ai: z.array(FactSchema).default([]),
-      })
-      .optional(),
-  })
-  .superRefine(checkSourceReferences);
+export const ProjectSchema = ProjectObject.superRefine(checkSourceReferences);
+
+export const ProfileObject = z.strictObject({
+  $schema: z.string().optional(),
+  name: Text,
+  title: Text,
+  location: Text,
+  bannerSkills: z.array(Text).min(1).max(6),
+  sources: z.array(SourceSchema).min(1),
+  summary: z.array(FactSchema).min(1),
+  contact: z.strictObject({
+    email: z.email(),
+    links: z.array(LinkSchema).default([]),
+  }),
+  experience: z
+    .array(
+      z.strictObject({
+        organisation: Text,
+        role: Text,
+        period: Text,
+        location: Text.optional(),
+        projects: z.array(SlugSchema).default([]),
+        ...evidence,
+      }),
+    )
+    .default([]),
+  education: z
+    .array(
+      z.strictObject({
+        qualification: Text,
+        institution: Text,
+        period: Text.optional(),
+        detail: Text.optional(),
+        ...evidence,
+      }),
+    )
+    .default([]),
+  certifications: z
+    .array(
+      z.strictObject({
+        name: Text,
+        issuer: Text,
+        progress: z.enum(['earned', 'in-progress']),
+        date: Text.optional(),
+        ...evidence,
+      }),
+    )
+    .default([]),
+  languages: z
+    .array(z.strictObject({ language: Text, level: Text, ...evidence }))
+    .default([]),
+  /** How Alex works: an ordered delivery loop, and where AI sits in it. */
+  workingApproach: z
+    .strictObject({
+      summary: Text,
+      steps: z.array(z.strictObject({ title: Text, description: Text, ...evidence })).min(1),
+      ai: z.array(FactSchema).default([]),
+    })
+    .optional(),
+});
+
+export const ProfileSchema = ProfileObject.superRefine(checkSourceReferences);
 
 export const SkillSchema = z.strictObject({
   id: SlugSchema,

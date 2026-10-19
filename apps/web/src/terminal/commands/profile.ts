@@ -1,4 +1,4 @@
-import type { Skill } from '@portfolio/knowledge/runtime';
+import { SKILL_CATEGORY_LABELS, type Skill } from '@portfolio/knowledge/runtime';
 import { bullets, command, heading, joined, link, paragraph, subheading, text, type Block, type Inline } from '../output';
 import type { Command } from '../types';
 
@@ -65,19 +65,6 @@ export const about: Command = {
   },
 };
 
-const CATEGORY_LABELS: Record<Skill['category'], string> = {
-  language: 'Languages',
-  frontend: 'Frontend',
-  mobile: 'Mobile & native',
-  backend: 'Backend',
-  data: 'Data',
-  cloud: 'Cloud',
-  devops: 'DevOps',
-  ai: 'AI',
-  quality: 'Quality',
-  practice: 'Practice',
-};
-
 export const skills: Command = {
   name: 'skills',
   aliases: ['stack', 'tech'],
@@ -88,7 +75,7 @@ export const skills: Command = {
 
     const blocks: Block[] = [heading('Skills')];
     for (const [category, skillsInCategory] of byCategory) {
-      blocks.push(subheading(CATEGORY_LABELS[category]), {
+      blocks.push(subheading(SKILL_CATEGORY_LABELS[category]), {
         kind: 'definitions',
         rows: skillsInCategory.map((skill) => ({
           term: [skill.name],
