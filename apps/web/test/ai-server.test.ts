@@ -93,11 +93,11 @@ describe('resolveAiConfig', () => {
     expect(result.ok && result.config).toMatchObject({
       provider: 'scripted',
       model: 'claude-haiku-5-5',
-      effort: 'low',
-      maxOutputTokens: 1024,
+      effort: 'medium',
+      maxOutputTokens: 2048,
       maxRounds: 4,
       maxInputTokensPerCall: 24_000,
-      maxCostPerAnswerUsd: 0.014048,
+      maxCostPerAnswerUsd: 0.016096,
       dailyBudgetUsd: 10,
       monthlyBudgetUsd: 50,
       questionsPerMinute: 5,
@@ -157,9 +157,9 @@ describe('resolveAiConfig', () => {
   });
 
   it.each([
-    ['claude-opus-5-5', 0.56192],
-    ['claude-sonnet-5-5', 0.28096],
-    ['claude-haiku-5-5', 0.014048],
+    ['claude-opus-5-5', 0.64384],
+    ['claude-sonnet-5-5', 0.32192],
+    ['claude-haiku-5-5', 0.016096],
   ])('reserves the exact worst case per answer for %s ($%s)', (model, usd) => {
     const result = resolveAiConfig({ AI_MODEL: model });
     expect(result.ok && result.config.maxCostPerAnswerUsd).toBe(usd);

@@ -76,11 +76,13 @@ export function resolveAiConfig(env: Env): AiConfigResult {
   const anthropicApiKey = env.ANTHROPIC_API_KEY?.trim() || undefined;
   if (provider === 'anthropic' && anthropicApiKey === undefined) return { ok: false, reason: 'ANTHROPIC_API_KEY is not set.' };
 
-  const effort = (['low', 'medium', 'high'] as const).find((level) => level === env.AI_EFFORT?.trim().toLowerCase()) ?? 'low';
+  // Medium is Haiku 5.5's own default; at low it is more likely to skip a search or a check.
+  const effort = (['low', 'medium', 'high'] as const).find((level) => level === env.AI_EFFORT?.trim().toLowerCase()) ?? 'medium';
   const providerModelId = env.AI_PROVIDER_MODEL_ID?.trim() || (provider === 'bedrock' ? `anthropic.${model}` : model);
 
   const limits = {
-    maxOutputTokens: number(env.AI_MAX_OUTPUT_TOKENS, 1024, 256, 4096),
+    // Thinking counts toward this and is billed as output, so it leaves room for both.
+    maxOutputTokens: number(env.AI_MAX_OUTPUT_TOKENS, 2048, 256, 4096),
     maxRounds: number(env.AI_MAX_TOOL_ROUNDS, 4, 1, 6),
     maxInputTokensPerCall: number(env.AI_MAX_INPUT_TOKENS_PER_CALL, 24_000, 8_000, MAX_INPUT_TOKENS_PER_CALL),
   };

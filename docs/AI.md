@@ -78,7 +78,7 @@ The server is stateless and stores nothing.
 | :-- | :-- | :-- |
 | Daily / monthly spend caps | $10 / $50 | `AI_DAILY_BUDGET_USD`, `AI_MONTHLY_BUDGET_USD` |
 | Reserved per answer (its hard ceiling) | Derived per model, below | from the three limits that follow |
-| Output tokens per model call (includes thinking) | 1,024 at effort `low` | `AI_MAX_OUTPUT_TOKENS`, `AI_EFFORT` |
+| Output tokens per model call (includes thinking) | 2,048 at effort `medium` | `AI_MAX_OUTPUT_TOKENS`, `AI_EFFORT` |
 | Input tokens per model call | 24,000 (max 90,000, which keeps Haiku 5.5 in its ≤100K-token price band) | `AI_MAX_INPUT_TOKENS_PER_CALL` |
 | Model calls per answer | 4 | `AI_MAX_TOOL_ROUNDS` |
 | Timeout per answer | 30 s | `AI_TIMEOUT_MS` |
@@ -89,9 +89,11 @@ The server is stateless and stores nothing.
 
 | Model | Per answer (defaults) | Answers that could be in flight within $10/day |
 | :-- | --: | --: |
-| Claude Opus 5.5 | $0.56192 | 17 |
-| Claude Sonnet 5.5 | $0.28096 | 35 |
-| Claude Haiku 5.5 | $0.014048 | 711 |
+| Claude Opus 5.5 | $0.64384 | 15 |
+| Claude Sonnet 5.5 | $0.32192 | 31 |
+| Claude Haiku 5.5 | $0.016096 | 621 |
+
+Thinking is on by default on these models: it counts toward the output limit and is billed as output, even though the visitor never sees it. The limit of 2,048 leaves room for medium-effort thinking plus a full answer. An answer that still reaches it ends with a notice, and the evaluation reports it as truncated, separately from wrong answers.
 
 A configuration whose ceiling exceeds the daily budget is refused outright.
 

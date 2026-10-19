@@ -301,6 +301,11 @@ export function markdownSummary(report: EvaluationReport): string {
       ? ['', '\\* Partial: computed from the completed turns only, for diagnosis. An incomplete run is never selected.']
       : []),
     '',
+    ...report.runs.map(({ summary: s }) => {
+      const failures = Object.entries(s.outcomes).filter(([outcome, count]) => outcome !== 'pass' && count > 0);
+      return `- ${s.model} failed turns by cause: ${failures.length === 0 ? 'none' : failures.map(([outcome, count]) => `${outcome} ${count}`).join(', ')}; answers cut off by the output limit: ${s.truncated}.`;
+    }),
+    '',
     `Total spent: $${report.runs.reduce((sum, { summary }) => sum + summary.costUsd.total, 0).toFixed(4)} of the $${report.meta.capUsd.toFixed(2)} cap.`,
     '',
     ...(report.meta.dryRun
@@ -338,7 +343,7 @@ export function markdownSummary(report: EvaluationReport): string {
         if (score.pass && !evalCase?.review) return [];
         const problems = [...score.violations.map(({ label, kind }) => `${kind}: ${label}`), ...score.missingRequired.map((label) => `missing: ${label}`), ...score.unsupportedFigures.map((figure) => `unknown figure ${figure}`)];
         return [
-          `- **${run.model} · ${record.caseId}#${record.turn}**${score.pass ? '' : ' (failed)'}${problems.length > 0 ? ` [${problems.join('; ')}]` : ''}: ${evalCase?.review ?? ''} Answer: “${record.answer.slice(0, 300)}”`,
+          `- **${run.model} · ${record.caseId}#${record.turn}**${score.pass ? '' : ` (failed: ${score.outcome})`}${problems.length > 0 ? ` [${problems.join('; ')}]` : ''}: ${evalCase?.review ?? ''} Answer: “${record.answer.slice(0, 300)}”`,
         ];
       }),
     ),

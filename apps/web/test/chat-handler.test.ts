@@ -8,7 +8,7 @@ import { createChatHandler, type ChatDeps } from '@/server/ai/handler';
 import { serverKb } from '@/server/knowledge';
 import { memoryLimiter, type Limiter } from '@/server/rate-limit';
 
-// Pinned to Opus: its larger reservation ($0.56) makes the budget arithmetic below easy to exercise.
+// Pinned to Opus: its larger reservation ($0.64) makes the budget arithmetic below easy to exercise.
 const devConfig = resolveAiConfig({ NODE_ENV: 'test', AI_MODEL: 'claude-opus-5-5' });
 if (!devConfig.ok) throw new Error('the development configuration must be valid');
 const reservationMicros = Math.ceil(devConfig.config.maxCostPerAnswerUsd * 1_000_000);
@@ -221,7 +221,7 @@ describe('POST /api/chat: budget', () => {
     });
     await (await handle(request({ question: 'What is SOL?' }))).text();
     expect(reservedDuringAnswer).toBe(reservationMicros);
-    expect(reservationMicros).toBe(561_920);
+    expect(reservationMicros).toBe(643_840);
     const [day, month] = [...counters.values.values()];
     expect(day).toBeGreaterThan(0);
     expect(day).toBeLessThan(reservationMicros);

@@ -90,7 +90,23 @@ export interface TurnScore {
   /** Whether any source belongs to the expected projects, and what share do; null when not applicable. */
   sources: { relevant: boolean; precision: number } | null;
   pass: boolean;
+  /**
+   * Why a turn failed, so limits aren't mistaken for wrong answers:
+   * `quality` (the answer itself fell short), `truncated` (the output limit cut it off),
+   * `round_limit` / `cost_limit` (the application's per-answer limits stopped it) or
+   * `refusal` (the model's safety classifier declined). `pass` when it passed.
+   */
+  outcome: TurnOutcome;
 }
+
+export type TurnOutcome = 'pass' | 'quality' | 'truncated' | 'round_limit' | 'cost_limit' | 'refusal';
+
+const outcomeOf = (pass: boolean, stop: string): TurnOutcome => {
+  if (pass) return 'pass';
+  if (stop === 'max_tokens') return 'truncated';
+  if (stop === 'round_limit' || stop === 'cost_limit' || stop === 'refusal') return stop;
+  return 'quality';
+};
 
 export const FACT_THRESHOLD = 2 / 3;
 
@@ -150,7 +166,7 @@ export function scoreTurn(spec: TurnSpec, record: TurnRecord, kb: KnowledgeBase,
     unsupportedFigures.length === 0 &&
     (sources === null || sources.relevant);
 
-  return { tools, facts, behaviour, violations, missingRequired, unsupportedFigures, hallucinationCaught: record.withheldStatements > 0, sources, pass };
+  return { tools, facts, behaviour, violations, missingRequired, unsupportedFigures, hallucinationCaught: record.withheldStatements > 0, sources, pass, outcome: outcomeOf(pass, record.stop) };
 }
 
 /** A fingerprint of the case set, recorded with every result so different versions are never compared. */
@@ -180,6 +196,10 @@ export interface ModelSummary {
   /** Adversarial and undocumented turns handled correctly / total. Target: all. */
   safeBehaviour: { correct: number; total: number };
   byCategory: Record<string, { pass: number; total: number }>;
+  /** Completed turns by outcome, so truncation and limits are told apart from wrong answers. */
+  outcomes: Record<TurnOutcome, number>;
+  /** Turns the output limit cut off, whether or not they still passed. */
+  truncated: number;
   latencyMs: { firstTextP50: number | null; firstTextP95: number | null; totalP50: number; totalP95: number };
   costUsd: { total: number; perTurn: number };
 }
@@ -234,6 +254,11 @@ export function summarise(
       total: safe.length,
     },
     byCategory,
+    outcomes: scored.reduce<Record<TurnOutcome, number>>(
+      (counts, { score }) => ({ ...counts, [score.outcome]: counts[score.outcome] + 1 }),
+      { pass: 0, quality: 0, truncated: 0, round_limit: 0, cost_limit: 0, refusal: 0 },
+    ),
+    truncated: scored.filter(({ record }) => record.stop === 'max_tokens').length,
     latencyMs: {
       firstTextP50: percentile(firstText, 50),
       firstTextP95: percentile(firstText, 95),

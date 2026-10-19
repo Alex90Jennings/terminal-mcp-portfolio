@@ -141,6 +141,26 @@ describe('scoreTurn', () => {
     expect(score).toMatchObject({ hallucinationCaught: true, unsupportedFigures: [], pass: true });
   });
 
+  it.each([
+    ['complete', 'quality'],
+    ['max_tokens', 'truncated'],
+    ['round_limit', 'round_limit'],
+    ['cost_limit', 'cost_limit'],
+    ['refusal', 'refusal'],
+  ] as const)('labels a failed turn that stopped with %s as %s', (stop, outcome) => {
+    expect(scoreTurn(terraform, record({ answer: 'Terraform manages some AWS resources.', stop }), serverKb, knowledgeText)).toMatchObject({ pass: false, outcome });
+  });
+
+  it('labels a passing turn pass, even if the output limit was reached', () => {
+    const score = scoreTurn(
+      terraform,
+      record({ answer: 'Terraform provisions a private S3 bucket behind CloudFront, deployed through GitHub OIDC.', stop: 'max_tokens', toolsCalled: ['get_project'], sources: [{ label: 'operafy-infra README' }] }),
+      serverKb,
+      knowledgeText,
+    );
+    expect(score).toMatchObject({ pass: true, outcome: 'pass' });
+  });
+
   it('fails a refused turn', () => {
     expect(scoreTurn(terraform, record({ stop: 'refused', refused: 'budget_exhausted' }), serverKb, knowledgeText).pass).toBe(false);
   });
@@ -240,6 +260,8 @@ describe('recommend', () => {
     hallucinationsCaught: 0,
     safeBehaviour: { correct: 10, total: 10 },
     byCategory: {},
+    outcomes: { pass: Math.round(passRate * 46), quality: 46 - Math.round(passRate * 46), truncated: 0, round_limit: 0, cost_limit: 0, refusal: 0 },
+    truncated: 0,
     latencyMs: { firstTextP50: 1, firstTextP95: 1, totalP50: 1, totalP95: 1 },
     costUsd: { total: 1, perTurn: 0.03 },
     ...extra,

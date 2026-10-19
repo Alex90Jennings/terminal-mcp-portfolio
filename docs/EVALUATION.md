@@ -85,7 +85,7 @@ Cases where automatic scoring can only approximate the judgement, usually becaus
 
 Paid runs go through the same `/api/chat` handler as visitors. They **reserve and settle against the shared Upstash budget**, so evaluation spend counts toward the $10/day and $50/month caps. A paid run is refused if it isn't configured to use the shared budget.
 
-The whole evaluation has **one hard cap of $3.65** (`EVALUATION_CAP_USD`), shared by the models in order: Haiku, then Sonnet, then Opus. A turn starts only if everything spent so far, plus that turn's worst case, fits. Opus's worst case per answer is $0.56, so Opus stops once the evaluation has spent more than $3.09. Results are saved after every model, so a later failure never loses paid answers.
+The whole evaluation has **one hard cap of $3.65** (`EVALUATION_CAP_USD`), shared by the models in order: Haiku, then Sonnet, then Opus. A turn starts only if everything spent so far, plus that turn's worst case, fits. Opus's worst case per answer is $0.64, so Opus would stop once the evaluation had spent more than $3.01. Haiku's is $0.016, so a Haiku run can't spend more than about $0.75 even in the worst case. Results are saved after every model, so a later failure never loses paid answers.
 
 If the cap stops a run, the summary reports it under **Budget and interruptions**, separately from **Model quality**: where it stopped, why, and what was spent. Every turn that ran is kept with its cost, including a refused turn or one the provider failed. A provider failure ends that model's run, because the run can no longer be complete and further turns would only spend.
 
@@ -95,6 +95,8 @@ If the cap stops a run, the summary reports it under **Budget and interruptions*
 | Claude Sonnet 5.5 | ≈ $0.55–0.90 |
 | Claude Opus 5.5 (low effort) | ≈ $1.10–1.80 |
 | **Total** | **≈ $1.70–2.75, hard cap $3.65** |
+
+These estimates were made for effort `low` with 1,024 output tokens. The defaults are now effort `medium` with 2,048 output tokens (thinking included), which Anthropic says roughly doubles output; the costs below the cap are still small for Haiku, which is evaluated first.
 
 How the estimate was made: the dry run measured the input with the budget's deliberately generous estimator (notionally $0.03, $0.55 and $1.11). That's the upper bound for input, and prompt caching lowers the real figure. On top of that, roughly 750 output tokens per turn, including thinking at low effort. At the upper estimate, Opus has about $0.35 of headroom before the cap would stop it. If Opus wrote more than about 1,100 output tokens per turn on average, it could stop a turn or two short. If any run stops early, the summary says where, and an incomplete run can't qualify.
 
