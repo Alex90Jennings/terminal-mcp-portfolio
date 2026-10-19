@@ -6,19 +6,26 @@ export interface ModelPrice {
   output: number;
   cacheRead: number;
   cacheWrite: number;
+  /**
+   * These prices hold only for prompts up to this many tokens (input, cache reads
+   * and cache writes together); longer prompts cost more. The configuration refuses
+   * per-call limits that could reach it.
+   */
+  maxPromptTokens?: number;
 }
 
 /**
- * On-demand prices, USD per million tokens, for the global endpoint. Verified on
- * 2026-10-19 from the AWS Price List API (AmazonBedrockFoundationModels,
- * eu-west-1) and Anthropic's pricing page: the two agree. Regional Bedrock
- * endpoints cost 10% more. Haiku 5.5's price applies to prompts up to 100K
- * tokens, far above anything this assistant sends.
+ * Standard prices, USD per million tokens, with global routing and 5-minute
+ * cache writes (the only kind this assistant makes). Verified on 2026-10-19 from
+ * Anthropic's pricing page for the Claude API and from the AWS Price List API
+ * (AmazonBedrockFoundationModels, eu-west-1) for Bedrock: the two agree. US-only
+ * inference and regional Bedrock endpoints cost 10% more and aren't used.
+ * Haiku 5.5 charges five times these prices for prompts over 100,000 tokens.
  */
 export const MODEL_PRICES: Readonly<Record<string, ModelPrice>> = {
   'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 },
   'claude-sonnet-5-5': { input: 2, output: 10, cacheRead: 0.1, cacheWrite: 2.5 },
-  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
+  'claude-haiku-5-5': { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125, maxPromptTokens: 100_000 },
 };
 
 export function costOf(usage: Usage, price: ModelPrice): number {

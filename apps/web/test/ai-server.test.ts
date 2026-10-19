@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { counterBudget, createBudgetStore, memoryCounters, toMicros, type Counters } from '@/server/ai/budget';
-import { resolveAiConfig } from '@/server/ai/config';
+import { MODEL_PRICES } from '@portfolio/assistant';
+import { DEFAULT_MODEL, MAX_INPUT_TOKENS_PER_CALL, resolveAiConfig } from '@/server/ai/config';
 
 const limits = { dailyMicros: toMicros(10), monthlyMicros: toMicros(50) };
 const now = new Date('2026-10-19T12:00:00Z');
@@ -91,12 +92,12 @@ describe('resolveAiConfig', () => {
     const result = resolveAiConfig({ NODE_ENV: 'development' });
     expect(result.ok && result.config).toMatchObject({
       provider: 'scripted',
-      model: 'claude-opus-5-5',
+      model: 'claude-haiku-5-5',
       effort: 'low',
       maxOutputTokens: 1024,
       maxRounds: 4,
       maxInputTokensPerCall: 24_000,
-      maxCostPerAnswerUsd: 0.56192,
+      maxCostPerAnswerUsd: 0.014048,
       dailyBudgetUsd: 10,
       monthlyBudgetUsd: 50,
       questionsPerMinute: 5,
@@ -114,14 +115,30 @@ describe('resolveAiConfig', () => {
     });
     expect(result.ok && result.config).toMatchObject({
       provider: 'bedrock',
-      providerModelId: 'anthropic.claude-opus-5-5',
+      providerModelId: 'anthropic.claude-haiku-5-5',
       bedrock: { region: 'eu-west-1', roleArn: 'arn:aws:iam::123456789012:role/portfolio-bedrock' },
     });
   });
 
-  it('switches to the Claude API by configuration alone', () => {
-    const result = resolveAiConfig({ NODE_ENV: 'production', AI_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-test', CHAT_TRANSCRIPT_SECRET: secret, AI_MODEL: 'claude-haiku-5-5' });
-    expect(result.ok && result.config).toMatchObject({ provider: 'anthropic', providerModelId: 'claude-haiku-5-5', price: { input: 0.1, output: 0.5 } });
+  it('uses Claude Haiku 5.5 on the Claude API by configuration alone', () => {
+    const result = resolveAiConfig({ NODE_ENV: 'production', AI_PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'sk-test', CHAT_TRANSCRIPT_SECRET: secret });
+    expect(result.ok && result.config).toMatchObject({
+      provider: 'anthropic',
+      model: 'claude-haiku-5-5',
+      providerModelId: 'claude-haiku-5-5',
+      price: { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
+      dailyBudgetUsd: 10,
+      monthlyBudgetUsd: 50,
+    });
+  });
+
+  it('keeps every model on its standard price tier: no per-call cap can reach a long-prompt tier', () => {
+    expect(DEFAULT_MODEL).toBe('claude-haiku-5-5');
+    for (const [model, price] of Object.entries(MODEL_PRICES)) {
+      if (price.maxPromptTokens !== undefined) expect(MAX_INPUT_TOKENS_PER_CALL, model).toBeLessThan(price.maxPromptTokens);
+      const result = resolveAiConfig({ AI_MODEL: model, AI_MAX_INPUT_TOKENS_PER_CALL: '1000000' });
+      expect(result.ok && result.config.maxInputTokensPerCall).toBe(MAX_INPUT_TOKENS_PER_CALL);
+    }
   });
 
   it.each([
@@ -149,7 +166,7 @@ describe('resolveAiConfig', () => {
   });
 
   it('refuses a configuration where one answer could exceed the daily budget', () => {
-    const result = resolveAiConfig({ AI_DAILY_BUDGET_USD: '0.5' });
+    const result = resolveAiConfig({ AI_MODEL: 'claude-opus-5-5', AI_DAILY_BUDGET_USD: '0.5' });
     expect(!result.ok && result.reason).toMatch(/more than the daily budget/);
   });
 

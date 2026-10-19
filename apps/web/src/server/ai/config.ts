@@ -41,6 +41,11 @@ const number = (value: string | undefined, fallback: number, min: number, max: n
   return Number.isFinite(parsed) && value !== undefined && value.trim() !== '' ? Math.min(max, Math.max(min, parsed)) : fallback;
 };
 
+/** The model used when AI_MODEL is unset. Changing the production model is a reviewed configuration change, never automatic. */
+export const DEFAULT_MODEL = 'claude-haiku-5-5';
+/** The highest AI_MAX_INPUT_TOKENS_PER_CALL accepted. */
+export const MAX_INPUT_TOKENS_PER_CALL = 90_000;
+
 /**
  * Reads AI settings from the environment. Anything missing or unsafe makes the
  * assistant unavailable (the terminal's commands are unaffected), never
@@ -57,7 +62,7 @@ export function resolveAiConfig(env: Env): AiConfigResult {
     return { ok: false, reason: 'The scripted model is for development and tests, not production.' };
   }
 
-  const model = env.AI_MODEL?.trim() || 'claude-opus-5-5';
+  const model = env.AI_MODEL?.trim() || DEFAULT_MODEL;
   const price = MODEL_PRICES[model];
   if (price === undefined) return { ok: false, reason: `No verified price for "${model}", so its spend can't be capped.` };
 
@@ -77,8 +82,13 @@ export function resolveAiConfig(env: Env): AiConfigResult {
   const limits = {
     maxOutputTokens: number(env.AI_MAX_OUTPUT_TOKENS, 1024, 256, 4096),
     maxRounds: number(env.AI_MAX_TOOL_ROUNDS, 4, 1, 6),
-    maxInputTokensPerCall: number(env.AI_MAX_INPUT_TOKENS_PER_CALL, 24_000, 8_000, 90_000),
+    maxInputTokensPerCall: number(env.AI_MAX_INPUT_TOKENS_PER_CALL, 24_000, 8_000, MAX_INPUT_TOKENS_PER_CALL),
   };
+  // The chat loop refuses any call whose (generously estimated) input exceeds the per-call cap,
+  // so keeping the cap within the priced range means a dearer long-prompt tier can never apply.
+  if (price.maxPromptTokens !== undefined && limits.maxInputTokensPerCall > price.maxPromptTokens) {
+    return { ok: false, reason: `${model} costs more for prompts over ${price.maxPromptTokens} tokens; lower AI_MAX_INPUT_TOKENS_PER_CALL.` };
+  }
   // Rounded up to the next millionth of a dollar, so the reservation is never below the true ceiling.
   const maxCostPerAnswerUsd = Math.ceil(maxAnswerCost(price, limits) * 1_000_000) / 1_000_000;
   const dailyBudgetUsd = number(env.AI_DAILY_BUDGET_USD, 10, 0, 1000);

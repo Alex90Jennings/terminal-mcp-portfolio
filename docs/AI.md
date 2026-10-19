@@ -107,13 +107,15 @@ A configuration whose ceiling exceeds the daily budget is refused outright.
 - A failed settlement leaves the reservation counted: an over-count, never an under-count.
 - A provider model without a verified price can't be configured at all, because its spend couldn't be capped.
 
-Prices (USD per million tokens, global endpoint; verified 2026-10-19 from the AWS Price List API and Anthropic's pricing page):
+Prices (USD per million tokens, global routing, 5-minute cache writes; verified 2026-10-19 from Anthropic's pricing page for the Claude API and the AWS Price List API for Bedrock, which agree):
 
 | Model | Input | Output | Cache read | Cache write |
 | :-- | --: | --: | --: | --: |
-| Claude Opus 5.5 (default, effort `low`) | 4.00 | 20.00 | 0.20 | 5.00 |
+| Claude Opus 5.5 | 4.00 | 20.00 | 0.20 | 5.00 |
 | Claude Sonnet 5.5 | 2.00 | 10.00 | 0.10 | 2.50 |
-| Claude Haiku 5.5 | 0.10 | 0.50 | 0.01 | 0.125 |
+| Claude Haiku 5.5 (default) | 0.10 | 0.50 | 0.01 | 0.125 |
+
+Haiku 5.5 is the default model (`AI_MODEL`), chosen for cost, subject to the evaluation. Its prices apply to prompts of up to 100,000 tokens; longer prompts cost five times as much. The per-call input cap tops out at 90,000 tokens, so that higher tier can't apply, and the configuration refuses any per-call cap that could reach a model's priced limit. Changing the model is a configuration change you review; nothing switches models automatically.
 
 ## Failure behaviour
 
@@ -148,4 +150,4 @@ No test makes a paid call or needs AWS credentials.
 | `apps/web/test/chat-client.test.ts` | Server-sent event parsing, answer state, question routing |
 | `apps/web/e2e/ai.spec.ts` | In the browser, through the real route and MCP tools with the scripted model: streaming with sources, follow-ups, budget exhaustion, cancellation, `clear`, accessibility |
 
-The paid evaluation (38 conversations, 46 turns, across Haiku, Sonnet and Opus 5.5, at most $3.65 in total) is described in [EVALUATION.md](EVALUATION.md). It runs only once Bedrock access is enabled and approved, and its spend counts toward the same caps.
+The paid evaluation (38 conversations, 46 turns, across Haiku, Sonnet and Opus 5.5, at most $3.65 in total) is described in [EVALUATION.md](EVALUATION.md). It runs only once model access is confirmed and the run is approved, and its spend counts toward the same caps.
