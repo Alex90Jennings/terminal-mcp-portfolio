@@ -1,4 +1,5 @@
-import { z } from 'zod';
+import type { z } from 'zod';
+import { KnowledgeValidationError } from './errors.ts';
 import {
   KNOWLEDGE_BUNDLE_VERSION,
   ProfileSchema,
@@ -19,16 +20,6 @@ export interface RawContent {
 export interface LabelledDocument {
   label: string;
   data: unknown;
-}
-
-export class KnowledgeValidationError extends Error {
-  readonly issues: readonly string[];
-
-  constructor(issues: readonly string[]) {
-    super(`Knowledge base is invalid:\n${issues.map((issue) => `  - ${issue}`).join('\n')}`);
-    this.name = 'KnowledgeValidationError';
-    this.issues = issues;
-  }
 }
 
 /**

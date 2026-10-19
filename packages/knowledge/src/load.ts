@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { buildBundle, KnowledgeValidationError, type LabelledDocument, type RawContent } from './bundle.ts';
+import { buildBundle, type LabelledDocument, type RawContent } from './bundle.ts';
+import { KnowledgeValidationError } from './errors.ts';
 import type { KnowledgeBundle } from './schema.ts';
 
 /**

@@ -6,7 +6,9 @@
   "description": "The portfolio knowledge base: schema, validation, and read-only queries.",
   "exports": {
     ".": "./src/index.ts",
-    "./node": "./src/load.ts"
+    "./runtime": "./src/runtime.ts",
+    "./node": "./src/load.ts",
+    "./bundle.json": "./generated/knowledge.json"
   },
   "scripts": {
     "build": "tsx scripts/build.ts",

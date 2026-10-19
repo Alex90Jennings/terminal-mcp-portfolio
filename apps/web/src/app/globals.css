@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+/*
+ * WCAG contrast on --color-term-bg / --color-term-chrome: text 15.4 / 14.1, muted 8.0 / 7.3,
+ * accent 11.3 / 10.3, error 8.3 / 7.6. AA needs 4.5:1; every pair also passes AAA (7:1).
+ * test/theme.test.ts recomputes these from this file.
+ */
+@theme {
+  --color-term-page: #070809;
+  --color-term-bg: #0f1113;
+  --color-term-chrome: #181b1f;
+  --color-term-border: #2a2e34;
+  --color-term-text: #e6e8ea;
+  --color-term-muted: #a2aab2;
+  --color-term-accent: #5ee08a;
+  --color-term-error: #ff8a8a;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-term-page);
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-term-page);
+    color: var(--color-term-text);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-term-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  .term-scroll {
+    overflow-wrap: anywhere;
+    scrollbar-color: var(--color-term-border) transparent;
+  }
+
+  /* 16px stops iOS Safari zooming into the field on focus. */
+  .term-input {
+    font: inherit;
+    font-size: max(16px, 1em);
+    line-height: inherit;
+  }
+  .term-input:focus-visible {
+    outline: none;
+  }
+
+  .term-link,
+  .term-command {
+    color: var(--color-term-accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-term-accent) 45%, transparent);
+    text-underline-offset: 3px;
+    font: inherit;
+    cursor: pointer;
+    transition: text-decoration-color 120ms ease;
+  }
+  .term-command {
+    background: none;
+    border: 0;
+    padding: 0;
+    text-align: left;
+  }
+  .term-link:hover,
+  .term-command:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Large enough to tap: at least 44px tall including padding. */
+  .term-chip {
+    min-height: 2.75rem;
+    padding: 0 0.875rem;
+    border: 1px solid var(--color-term-border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-term-text);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .term-chip:hover {
+    border-color: var(--color-term-accent);
+    color: var(--color-term-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

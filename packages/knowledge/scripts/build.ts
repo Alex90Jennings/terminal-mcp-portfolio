@@ -6,7 +6,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { buildBundle, KnowledgeValidationError } from '../src/bundle.ts';
+import { buildBundle } from '../src/bundle.ts';
+import { KnowledgeValidationError } from '../src/errors.ts';
 import { readContent } from '../src/load.ts';
 import { ProfileSchema, ProjectSchema, SkillsSchema } from '../src/schema.ts';
 

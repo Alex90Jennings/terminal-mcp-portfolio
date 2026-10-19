@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildBundle, KnowledgeValidationError } from '../src/bundle.ts';
+import { buildBundle } from '../src/bundle.ts';
+import { KnowledgeValidationError } from '../src/errors.ts';
 import { content, profile, project, skills } from './fixtures.ts';
 
 const issuesOf = (run: () => unknown): readonly string[] => {

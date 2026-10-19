@@ -5,14 +5,25 @@
   "type": "module",
   "description": "Alex Jennings' interactive terminal portfolio and public MCP server.",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "knowledge:build": "npm run build -w @portfolio/knowledge",
+    "dev": "npm run dev -w @portfolio/web",
+    "build": "npm run build -w @portfolio/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "lint": "eslint .",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @portfolio/web",
+    "check": "npm run knowledge:build && npm run typecheck && npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2"
   }
 }
