@@ -21,6 +21,8 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // `next dev` would otherwise write a generic AGENTS.md; this repo's guidance lives in its own docs.
+  agentRules: false,
   transpilePackages: ['@portfolio/knowledge'],
   async headers() {
     return [

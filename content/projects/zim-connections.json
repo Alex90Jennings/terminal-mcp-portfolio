@@ -2,11 +2,19 @@
   "$schema": "../schemas/project.schema.json",
   "id": "zim-connections",
   "name": "ZIM Connections",
-  "aliases": ["zim", "zim-esim"],
+  "aliases": [
+    "zim",
+    "zim-esim"
+  ],
   "order": 1,
   "focus": "Production engineering",
   "tagline": "A consumer eSIM platform in production: React Native apps, white-label web platforms, a NestJS backend and AWS infrastructure.",
-  "listingTags": ["TypeScript", "React Native", "Node.js", "AWS"],
+  "listingTags": [
+    "TypeScript",
+    "React Native",
+    "Node.js",
+    "AWS"
+  ],
   "context": {
     "kind": "employment",
     "organisation": "ZIM Connections Ltd.",
@@ -14,122 +22,330 @@
     "period": "Oct 2022 – present"
   },
   "visibility": "professional",
-  "topics": ["production engineering", "full-stack development", "backend services", "API development", "real-time chat", "cloud infrastructure", "CI/CD", "testing", "multi-tenancy"],
+  "topics": [
+    "production engineering",
+    "full-stack development",
+    "backend services",
+    "API development",
+    "real-time chat",
+    "cloud infrastructure",
+    "CI/CD",
+    "testing",
+    "multi-tenancy"
+  ],
   "sources": [
-    { "id": "cv", "label": "CV (September 2026)", "kind": "cv" },
-    { "id": "github-profile", "label": "GitHub profile: ZIM Connections section", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
-    { "id": "linkedin-notes", "label": "Author's project description for LinkedIn", "kind": "author-statement" },
-    { "id": "app-store", "label": "ZIM eSIM on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/us/app/zim-esim-calls-data-plans/id1611244114" }
+    {
+      "id": "cv",
+      "label": "CV (September 2026)",
+      "kind": "cv"
+    },
+    {
+      "id": "github-profile",
+      "label": "GitHub profile: ZIM Connections section",
+      "kind": "profile",
+      "url": "https://github.com/Alex90Jennings"
+    },
+    {
+      "id": "linkedin-notes",
+      "label": "Author's project description for LinkedIn",
+      "kind": "author-statement"
+    },
+    {
+      "id": "app-store",
+      "label": "ZIM eSIM on the App Store",
+      "kind": "store-listing",
+      "url": "https://apps.apple.com/us/app/zim-esim-calls-data-plans/id1611244114"
+    },
+    {
+      "id": "author",
+      "label": "Alex, 19 Oct 2026",
+      "kind": "author-statement"
+    }
   ],
   "overview": [
     {
       "text": "A consumer eSIM platform selling international data, calls and connectivity plans, with paying customers.",
-      "sources": ["github-profile", "linkedin-notes"]
+      "sources": [
+        "github-profile",
+        "linkedin-notes"
+      ]
     },
     {
       "text": "The platform includes a React Native app on iOS and Android, white-label web platforms for partner brands including Swiss Federal Railways (SBB), SoftBank and Akwaaba, and a business dashboard.",
-      "sources": ["github-profile", "linkedin-notes", "app-store"]
+      "sources": [
+        "github-profile",
+        "linkedin-notes",
+        "app-store"
+      ]
     },
     {
       "text": "Over Alex's time there the platform grew from under 1,000 to 50,000+ users and from a single application to a multi-brand ecosystem. This was a team effort by a small engineering team that Alex is part of.",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     }
   ],
   "technologies": [
-    { "name": "TypeScript", "category": "language", "sources": ["cv"] },
-    { "name": "Node.js", "category": "backend", "sources": ["cv"] },
-    { "name": "NestJS", "category": "backend", "sources": ["cv"] },
-    { "name": "Express", "category": "backend", "sources": ["github-profile"] },
-    { "name": "Socket.IO", "category": "backend", "sources": ["cv"] },
-    { "name": "React", "category": "frontend", "sources": ["cv", "github-profile"] },
-    { "name": "React Native", "category": "mobile", "sources": ["cv"] },
-    { "name": "Next.js", "category": "frontend", "sources": ["github-profile"] },
-    { "name": "PostgreSQL (Amazon RDS)", "category": "data", "sources": ["cv", "linkedin-notes"] },
-    { "name": "Docker", "category": "devops", "sources": ["cv"] },
-    { "name": "CI/CD", "category": "devops", "sources": ["cv"] },
-    { "name": "Amazon CloudFront", "category": "cloud", "sources": ["cv"] },
-    { "name": "Application Load Balancer", "category": "cloud", "sources": ["cv"] },
-    { "name": "Amazon EC2", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "AWS WAF", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "Amazon Cognito", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "AWS Lambda", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "Amazon SQS", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "Amazon SNS and SES", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "AWS Secrets Manager", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "Cloudflare DNS", "category": "cloud", "sources": ["linkedin-notes"] },
-    { "name": "Elastic APM and Kibana", "category": "devops", "sources": ["linkedin-notes"] }
+    {
+      "name": "TypeScript",
+      "category": "language",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Node.js",
+      "category": "backend",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "NestJS",
+      "category": "backend",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Express",
+      "category": "backend",
+      "sources": [
+        "github-profile"
+      ]
+    },
+    {
+      "name": "Socket.IO",
+      "category": "backend",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "React",
+      "category": "frontend",
+      "sources": [
+        "cv",
+        "github-profile"
+      ]
+    },
+    {
+      "name": "React Native",
+      "category": "mobile",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Next.js",
+      "category": "frontend",
+      "sources": [
+        "github-profile"
+      ]
+    },
+    {
+      "name": "PostgreSQL (Amazon RDS)",
+      "category": "data",
+      "sources": [
+        "cv",
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Docker",
+      "category": "devops",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "CI/CD",
+      "category": "devops",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Amazon CloudFront",
+      "category": "cloud",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Application Load Balancer",
+      "category": "cloud",
+      "sources": [
+        "cv"
+      ]
+    },
+    {
+      "name": "Amazon EC2",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "AWS WAF",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Amazon Cognito",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "AWS Lambda",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Amazon SQS",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Amazon SNS and SES",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "AWS Secrets Manager",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Cloudflare DNS",
+      "category": "cloud",
+      "sources": [
+        "linkedin-notes"
+      ]
+    },
+    {
+      "name": "Elastic APM and Kibana",
+      "category": "devops",
+      "sources": [
+        "linkedin-notes"
+      ]
+    }
   ],
   "responsibilities": [
     {
       "text": "Works autonomously within a small, fast-moving engineering team, owning features from technical design through deployment and production support.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Maintains the production TypeScript/Node.js/NestJS API, which served 5.4M requests in six months at a 99.9% non-5xx rate and a 104 ms median response time.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Owned the design, development and production rollout of the platform's real-time live chat, covering the Socket.IO/NestJS/React Native gateway, services, database schema, rate limiting and shared React client hooks. It now supports 5,000+ conversations and 100,000+ messages.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Grew backend automated testing to 2,623 tests across 88 suites, reaching 61% statement coverage, and established the core API's CI/CD test gate.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Developed the multi-tenant architecture that supports 4 production brands and 11 app identities on shared infrastructure.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Manages containerised (Docker) production services on AWS across 13 CloudFront distributions, Application Load Balancers, RDS and networking, supporting millions of monthly requests across customer and partner applications.",
       "scope": "individual",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     },
     {
       "text": "Builds frontend features in the React Native app and customer and B2B dashboards in React and Next.js.",
       "scope": "individual",
-      "sources": ["github-profile"]
+      "sources": [
+        "github-profile"
+      ]
     },
     {
       "text": "Helped scale the platform from under 1,000 to 50,000+ users and from a single application to a multi-brand ecosystem.",
       "scope": "team",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     }
   ],
   "architecture": {
     "overview": [
       {
         "text": "The backend is a set of separately deployed and separately reviewed Node.js services: a NestJS API, an Express provider connector and a notifications service. They communicate over REST, and over WebSockets (Socket.IO) where clients need updates pushed rather than polled.",
-        "sources": ["github-profile"]
+        "sources": [
+          "github-profile"
+        ]
       },
       {
         "text": "The NestJS API runs on EC2 in private subnets with no public IP address. It is reachable only through an Application Load Balancer, behind Amazon CloudFront and AWS WAF, with Cloudflare as authoritative DNS.",
-        "sources": ["linkedin-notes", "github-profile"]
+        "sources": [
+          "linkedin-notes",
+          "github-profile"
+        ]
       },
       {
         "text": "Amazon RDS for PostgreSQL runs Multi-AZ with a synchronous standby, automated failover and point-in-time recovery.",
-        "sources": ["linkedin-notes"]
+        "sources": [
+          "linkedin-notes"
+        ]
       },
       {
         "text": "Amazon Cognito issues user tokens. IAM instance profiles and STS supply short-lived, automatically rotated service credentials, and Secrets Manager holds the remaining secrets.",
-        "sources": ["linkedin-notes"]
+        "sources": [
+          "linkedin-notes"
+        ]
       },
       {
         "text": "Lambda and SQS handle background work that should not block a request; SNS and SES send push notifications and email.",
-        "sources": ["linkedin-notes"]
+        "sources": [
+          "linkedin-notes"
+        ]
       },
       {
         "text": "Elastic APM and browser RUM report traces, errors and latency into Kibana.",
-        "sources": ["linkedin-notes"]
+        "sources": [
+          "linkedin-notes"
+        ]
       },
       {
         "text": "One codebase is themed for 4 brands and 11 app identities, and the live chat's shared React hooks are used by both the mobile app and the web.",
-        "sources": ["github-profile", "cv"]
+        "sources": [
+          "github-profile",
+          "cv"
+        ]
       }
     ],
     "diagrams": [
@@ -137,7 +353,9 @@
         "title": "ZIM platform on AWS",
         "format": "mermaid",
         "source": "flowchart TD\n  subgraph CLIENTS [Clients]\n    U[Mobile app: React Native, iOS + Android]\n    W[White-label web platforms: Next.js]\n  end\n  DNS[Cloudflare: authoritative DNS]\n  subgraph EDGE [AWS edge]\n    WAF[AWS WAF: managed rule groups] --> CF[CloudFront: CDN, TLS from ACM]\n  end\n  subgraph VPC [Amazon VPC, multiple Availability Zones]\n    ALB[Application Load Balancer] --> EC2[EC2: NestJS API, IAM instance profile] --> RDS[(RDS PostgreSQL: Multi-AZ, automated backups)]\n  end\n  subgraph MANAGED [Managed services]\n    COG[Cognito: auth tokens]\n    SM[Secrets Manager]\n    S3[S3: assets]\n    Q[SQS to Lambda: background jobs]\n    MSG[SNS and SES: push and email]\n    APM[Elastic APM: traces and errors]\n  end\n  CLIENTS -->|HTTPS| WAF\n  DNS -.->|CNAME| CF\n  CF --> ALB\n  EC2 -.->|IAM role| MANAGED",
-        "sources": ["github-profile"]
+        "sources": [
+          "github-profile"
+        ]
       }
     ]
   },
@@ -150,7 +368,10 @@
         "Shared React client hooks used by both the mobile app and the web clients."
       ],
       "outcome": "Rolled out to production; it now supports 5,000+ conversations and 100,000+ messages.",
-      "sources": ["cv", "github-profile"]
+      "sources": [
+        "cv",
+        "github-profile"
+      ]
     },
     {
       "title": "Serving many brands without forking the product",
@@ -160,7 +381,10 @@
         "Partner-specific behaviour is kept out of the core, so adding a partner is a configuration change rather than a fork."
       ],
       "outcome": "4 production brands and 11 app identities run on shared infrastructure.",
-      "sources": ["cv", "github-profile"]
+      "sources": [
+        "cv",
+        "github-profile"
+      ]
     },
     {
       "title": "Confidence to ship changes to a production API",
@@ -169,7 +393,9 @@
         "Grew the backend automated test suite to 2,623 tests across 88 suites (61% statement coverage).",
         "Established a CI/CD test gate on the core API, so changes merge only when the suite passes."
       ],
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     }
   ],
   "decisions": [
@@ -177,46 +403,76 @@
       "title": "Short-lived credentials instead of stored keys",
       "decision": "Services obtain credentials from IAM instance profiles and STS, which rotate them automatically, and Secrets Manager holds everything else.",
       "rationale": "No long-lived key sits on disk.",
-      "sources": ["linkedin-notes"]
+      "sources": [
+        "linkedin-notes"
+      ]
     },
     {
       "title": "Background work off the request path",
       "decision": "Lambda and SQS handle work that should never block a request.",
       "rationale": "Keeps request latency independent of slow or retryable background jobs.",
-      "status": "unverified",
-      "sources": ["linkedin-notes"]
+      "sources": [
+        "linkedin-notes",
+        "author"
+      ]
     },
     {
       "title": "WebSockets only where pushing is needed",
       "decision": "Services talk over REST, with Socket.IO WebSockets used where the client needs pushing rather than polling.",
       "rationale": "Clients get real-time updates where they matter, such as live chat, without moving every interaction to a persistent connection.",
-      "status": "unverified",
-      "sources": ["github-profile"]
+      "sources": [
+        "github-profile",
+        "author"
+      ]
     },
     {
       "title": "Partner behaviour in configuration, not in the core",
       "decision": "Partner-specific behaviour is kept out of the shared core.",
       "rationale": "Adding the next partner should be a configuration change rather than a fork.",
-      "sources": ["github-profile", "linkedin-notes"]
+      "sources": [
+        "github-profile",
+        "linkedin-notes"
+      ]
     }
   ],
   "lessons": [
     {
       "text": "The interesting engineering in white-labelling is not the theming but keeping partner-specific behaviour out of the core.",
-      "sources": ["github-profile", "linkedin-notes"]
+      "sources": [
+        "github-profile",
+        "linkedin-notes"
+      ]
     }
   ],
   "limitations": [
     {
       "text": "This is employer-owned work. The source code is private, so details here come from Alex's CV and public descriptions of the platform.",
-      "sources": ["cv"]
+      "sources": [
+        "cv"
+      ]
     }
   ],
   "links": [
-    { "label": "ZIM eSIM on the App Store", "url": "https://apps.apple.com/us/app/zim-esim-calls-data-plans/id1611244114", "kind": "store" },
-    { "label": "SoftBank plans (white-label web)", "url": "https://softbank.zimconnections.com/en/plans", "kind": "live" },
-    { "label": "Akwaaba SIM (white-label web)", "url": "https://akwaabasim.com/en/plans", "kind": "live" },
-    { "label": "ZIM Connections", "url": "https://www.zimconnections.com/", "kind": "website" }
+    {
+      "label": "ZIM eSIM on the App Store",
+      "url": "https://apps.apple.com/us/app/zim-esim-calls-data-plans/id1611244114",
+      "kind": "store"
+    },
+    {
+      "label": "SoftBank plans (white-label web)",
+      "url": "https://softbank.zimconnections.com/en/plans",
+      "kind": "live"
+    },
+    {
+      "label": "Akwaaba SIM (white-label web)",
+      "url": "https://akwaabasim.com/en/plans",
+      "kind": "live"
+    },
+    {
+      "label": "ZIM Connections",
+      "url": "https://www.zimconnections.com/",
+      "kind": "website"
+    }
   ],
   "undocumented": [
     "Source code (private, employer-owned)",

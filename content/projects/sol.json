@@ -276,9 +276,9 @@
       "rationale": "Users can see what Pro offers without being interrupted by upsell prompts, and the locked region is marked by pattern as well as colour.",
       "sources": [
         "readme",
-        "accessibility-audit"
-      ],
-      "status": "unverified"
+        "accessibility-audit",
+        "author"
+      ]
     },
     {
       "title": "Every accessibility option is free",
@@ -293,18 +293,18 @@
       "decision": "Pro status comes only from verified StoreKit 2 transactions, with no stored flag and no polling.",
       "rationale": "A stored flag can drift from reality; StoreKit's signed record works offline and reflects refunds and revocations.",
       "sources": [
-        "readme"
-      ],
-      "status": "unverified"
+        "readme",
+        "author"
+      ]
     }
   ],
   "lessons": [
     {
       "text": "Checking the accessibility tree is not the same as testing with VoiceOver. Hand testing found that VoiceOver ignored announcements and title changes inside an open menu bar menu, which led to the Simplified Menu.",
       "sources": [
-        "accessibility-audit"
-      ],
-      "status": "unverified"
+        "accessibility-audit",
+        "author"
+      ]
     }
   ],
   "limitations": [
