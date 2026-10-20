@@ -77,18 +77,24 @@ export function wrapKnowledgeBase(bundle: KnowledgeBundle): KnowledgeBase {
   const index = createSearchIndex(projects);
   const projectNameTerms = new Set(projects.flatMap((project) => tokenise([project.id, project.name, ...project.aliases].join(' '))));
   // Each competency's name, id and aliases as sets of terms. A question names a competency when it contains every term
-  // of one of them; the longest such phrase wins, so "technical decision" beats "decisions".
+  // of one of them; the longest such phrase wins, so "technical decision" beats "decisions". Between equally long
+  // phrases, the one the text names first wins: "weakness, a mistake" is about weakness.
   const competencyPhrases = data.evidence.competencies.map((competency) => ({
     competency,
     phrases: [competency.name, competency.id.replace(/-/g, ' '), ...competency.aliases].map((phrase) => [...new Set(tokenise(phrase))]).filter((terms) => terms.length > 0),
   }));
   const recogniseCompetency = (text: string): { competency: Competency; terms: string[] } | undefined => {
-    const words = new Set(tokenise(text));
-    let best: { competency: Competency; terms: string[] } | undefined;
+    const tokens = tokenise(text);
+    const words = new Set(tokens);
+    let best: { competency: Competency; terms: string[]; at: number } | undefined;
     for (const { competency, phrases } of competencyPhrases) {
-      for (const terms of phrases) if (terms.every((term) => words.has(term)) && terms.length > (best?.terms.length ?? 0)) best = { competency, terms };
+      for (const terms of phrases) {
+        if (!terms.every((term) => words.has(term))) continue;
+        const at = Math.min(...terms.map((term) => tokens.indexOf(term)));
+        if (best === undefined || terms.length > best.terms.length || (terms.length === best.terms.length && at < best.at)) best = { competency, terms, at };
+      }
     }
-    return best;
+    return best && { competency: best.competency, terms: best.terms };
   };
   const exactCompetency = (input: string) => {
     const key = toKey(input);

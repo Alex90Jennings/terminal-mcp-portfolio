@@ -150,6 +150,13 @@ describe('weaknesses (Self-awareness)', () => {
     },
   );
 
+  it('names the competency a query mentions first when two match equally (the live 2026-10-20 miss)', () => {
+    expect(serverKb.recogniseCompetency('weakness, a mistake, something Alex struggled with')?.id).toBe('self-awareness');
+    expect(serverKb.findStories({ query: 'weakness, a mistake, something Alex struggled with' })[0]?.id).toBe('zim-estimates-feedback');
+    expect(serverKb.recogniseCompetency('a mistake or a weakness')?.id).toBe('learning-from-failure');
+    expect(serverKb.recogniseCompetency('Tell me about a technical decision Alex made.')?.id).toBe('technical-decision-making');
+  });
+
   it('keeps continuous-improvement questions where they were', () => {
     expect(serverKb.recogniseCompetency('How does Alex improve working practices?')?.id).toBe('continuous-improvement');
     expect(serverKb.recogniseCompetency('Tell me about a system Alex improved.')?.id).toBe('continuous-improvement');
