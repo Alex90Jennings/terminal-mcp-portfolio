@@ -95,7 +95,7 @@ describe('profile, skills and index', () => {
     expect(text).toContain('**Terraform**: [Operafy](portfolio://projects/operafy)');
   });
 
-  it('the index lists all six projects', async () => {
+  it('the index lists all seven projects', async () => {
     const { text } = await read('portfolio://projects');
     for (const project of kb.projects) expect(text).toContain(`[${project.name}](portfolio://projects/${project.id})`);
   });

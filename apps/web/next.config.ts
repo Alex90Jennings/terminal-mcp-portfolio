@@ -1,4 +1,7 @@
+import bundle from '@portfolio/knowledge/bundle.json';
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import type { NextConfig } from 'next';
+import { guardPreview } from './src/lib/preview-guard';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -40,4 +43,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// A draft-preview knowledge bundle may only be served by `next dev`: building or
+// starting with one fails here, before anything is compiled or served.
+export default function config(phase: string): NextConfig {
+  if (phase !== PHASE_DEVELOPMENT_SERVER) guardPreview(bundle, { ...process.env, NODE_ENV: 'production' });
+  return nextConfig;
+}

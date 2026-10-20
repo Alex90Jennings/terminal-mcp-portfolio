@@ -27,7 +27,7 @@ describe('OutputBlocks', () => {
   it('uses headings and lists for structure', () => {
     const html = render('projects sol');
     expect(html).toMatch(/<h2[^>]*>SOL<\/h2>/);
-    expect(html).toMatch(/<h3[^>]*>Overview<\/h3>/);
+    expect(html).toMatch(/<h3[^>]*>Alex’s role<\/h3>|<h3[^>]*>Alex&#x27;s role<\/h3>/);
     expect(html).toContain('<ul class="space-y-1" role="list">');
   });
 

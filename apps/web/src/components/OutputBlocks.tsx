@@ -48,6 +48,17 @@ function OutputBlock({ block, onCommand }: { block: Block; onCommand: Props['onC
           ))}
         </dl>
       );
+    case 'actions':
+      return (
+        <div role="group" aria-label={block.label} className="grid grid-cols-2 gap-2 sm:max-w-2xl">
+          {block.items.map((item) => (
+            <button key={item.command} type="button" className="term-action" onClick={() => onCommand(item.command)}>
+              <span className="block font-bold text-term-accent">{item.title}</span>
+              <span className="block text-sm text-term-muted">{item.detail}</span>
+            </button>
+          ))}
+        </div>
+      );
   }
 }
 

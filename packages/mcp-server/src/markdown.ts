@@ -154,15 +154,12 @@ export function renderProfileMarkdown(kb: KnowledgeBase): string {
       '',
     );
   }
-  if (experience.certifications.length > 0) {
-    lines.push(
-      '## Certifications',
-      '',
-      ...experience.certifications.map((cert) =>
-        bullet(`${cert.name} (${cert.progress === 'in-progress' ? 'in progress' : (cert.date ?? 'earned')})`, citations.cite(cert.sources)),
-      ),
-      '',
-    );
+  const { earned, inProgress } = experience.certifications;
+  if (earned.length > 0) {
+    lines.push('## Certifications', '', ...earned.map((cert) => bullet(`${cert.name} (earned${cert.date ? `, ${cert.date}` : ''})`, citations.cite(cert.sources))), '');
+  }
+  if (inProgress.length > 0) {
+    lines.push('## Studying for', '', ...inProgress.map((cert) => bullet(`${cert.name} (in progress, not yet earned)`, citations.cite(cert.sources))), '');
   }
   const working = profile.workingApproach;
   if (working !== undefined) {

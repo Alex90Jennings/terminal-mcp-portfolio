@@ -25,3 +25,5 @@ next-env.d.ts
 *.tfplan
 tfplan
 terraform.tfvars
+
+apps/web/evaluation/results/

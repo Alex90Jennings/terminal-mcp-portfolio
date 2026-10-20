@@ -1,4 +1,6 @@
+import type { AbsenceWithheld } from './absence.ts';
 import { checkGrounding } from './evidence.ts';
+import { leakIn, type LeakKind } from './leak.ts';
 
 /** Text longer than this is released at the last word boundary even without a sentence end. */
 export const MAX_HELD_CHARS = 280;
@@ -8,7 +10,12 @@ const BOUNDARY = /[.!?]["')\]]?(?=\s)\s*|\n+/g;
 
 export interface Withheld {
   text: string;
+  /** The figures that couldn't be matched; empty when it was withheld as an unsupported absence claim. */
   figures: string[];
+  /** Set when the sentence said a project doesn't document something its retrieved record couldn't support. */
+  project?: string;
+  /** Set when the sentence reproduced internal instructions or looked like a secret. */
+  leak?: LeakKind;
 }
 
 /**
@@ -28,8 +35,10 @@ export class SentenceGate {
   constructor(
     private readonly evidence: () => readonly string[],
     private readonly emit: (text: string) => void,
-    /** Applied to each sentence after it passes the figure check, e.g. to replace internal ids. */
+    /** Applied to each sentence after it passes the checks, e.g. to replace internal ids. */
     private readonly present: (text: string) => string = (text) => text,
+    /** A second check after the figures: given the sentence and the answer released so far. */
+    private readonly absence?: (sentence: string, released: string) => AbsenceWithheld | undefined,
   ) {}
 
   push(delta: string): void {
@@ -76,9 +85,20 @@ export class SentenceGate {
       this.release(sentence);
       return;
     }
+    // First: nothing internal is shown, whatever else the sentence says. Its text is kept only for inspection.
+    const leak = leakIn(sentence);
+    if (leak !== undefined) {
+      this.withheld.push({ text: sentence.trim(), figures: [], leak });
+      return;
+    }
     const { unsupportedFigures } = checkGrounding(sentence, this.evidence());
     if (unsupportedFigures.length > 0) {
       this.withheld.push({ text: sentence.trim(), figures: unsupportedFigures });
+      return;
+    }
+    const absent = this.absence?.(sentence, this.released);
+    if (absent !== undefined) {
+      this.withheld.push({ text: absent.text, figures: [], project: absent.project });
       return;
     }
     this.release(sentence);

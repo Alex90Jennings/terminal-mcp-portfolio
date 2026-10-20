@@ -1,4 +1,6 @@
 import type { AiAnswer } from '@/lib/ai-answer';
+import { followUps } from '@/lib/follow-ups';
+import { kb } from '@/lib/knowledge';
 import { OutputBlocks } from './OutputBlocks';
 
 const TOOL_MARK = { running: '…', done: '✓', error: '✗' } as const;
@@ -52,6 +54,20 @@ export function AiAnswerView({ answer, onCommand }: { answer: AiAnswer; onComman
               {index > 0 && <span className="text-term-muted"> · </span>}
               <button type="button" className="term-command" title={`Run “projects ${project.id}”`} onClick={() => onCommand(`projects ${project.id}`)}>
                 {project.name}
+              </button>
+            </span>
+          ))}
+        </p>
+      )}
+
+      {answer.status === 'done' && followUps(answer, kb).length > 0 && (
+        <p>
+          <span className="text-term-muted">Next: </span>
+          {followUps(answer, kb).map((suggestion, index) => (
+            <span key={suggestion.input}>
+              {index > 0 && <span className="text-term-muted"> · </span>}
+              <button type="button" className="term-command" title={`Run “${suggestion.input}”`} onClick={() => onCommand(suggestion.input)}>
+                {suggestion.label}
               </button>
             </span>
           ))}

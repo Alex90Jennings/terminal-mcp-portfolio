@@ -19,7 +19,8 @@
     { "id": "github-profile", "label": "GitHub profile: ZIM Connections section", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
     { "id": "linkedin-notes", "label": "Author's project description for LinkedIn", "kind": "author-statement" },
     { "id": "author-notes", "label": "Author's notes on ZIM@SBB", "kind": "author-statement" },
-    { "id": "app-store", "label": "ZIM@SBB on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236" }
+    { "id": "app-store", "label": "ZIM@SBB on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236" },
+    { "id": "alex-confirmation", "label": "Alex, 20 Oct 2026", "kind": "author-statement" }
   ],
   "overview": [
     {
@@ -31,7 +32,7 @@
       "sources": ["cv", "github-profile"]
     },
     {
-      "text": "It runs on ZIM's shared multi-tenant platform, which serves 4 production brands and 11 app identities on shared infrastructure.",
+      "text": "It runs on ZIM's shared multi-tenant platform, which, as of the September 2026 CV, served 4 production brands and 11 app identities on shared infrastructure.",
       "sources": ["cv"]
     }
   ],
@@ -53,6 +54,11 @@
       "text": "Tested the full journey on physical iPhones and Android phones, because eSIMs cannot be installed on a simulator. The tests covered Cognito sign-in, expired sessions, permission prompts granted and denied, and buying and installing an eSIM on weak or no signal.",
       "scope": "individual",
       "sources": ["author-notes"]
+    },
+    {
+      "text": "Identified both translation defects during pre-release testing: the missing translation keys and the truncated button on smaller iPhones. The records don't say who wrote the key-comparison script or who implemented the fixes.",
+      "scope": "individual",
+      "sources": ["alex-confirmation"]
     },
     {
       "text": "Worked closely with the product team, reviewing builds together before each release to get every string, asset and flow right in all four languages.",
@@ -77,18 +83,18 @@
       "title": "Multi-tenancy without forks",
       "problem": "SBB needed its own branded app on the same platform as ZIM's other brands, and each new partner risked a fork of the codebase.",
       "approach": ["Keep partner-specific behaviour in configuration rather than the core."],
-      "outcome": "A new partner is a configuration change, not a fork. The platform runs 4 brands and 11 app identities.",
+      "outcome": "A new partner is a configuration change, not a fork. As of the September 2026 CV, the platform ran 4 brands and 11 app identities.",
       "sources": ["author-notes", "cv"]
     },
     {
       "title": "Catching translation defects before release",
       "problem": "AI first-pass translations dropped two Italian keys and truncated a button on smaller iPhones.",
       "approach": [
-        "A key-comparison script to find translation keys missing in any language.",
+        "A key-comparison script to find translation keys missing in any language (who wrote it isn't recorded).",
         "On-device checks to catch layout problems such as truncated text."
       ],
-      "outcome": "Both defects were found and fixed before release.",
-      "sources": ["author-notes"]
+      "outcome": "During pre-release testing, Alex identified both defects, and both were fixed before release.",
+      "sources": ["author-notes", "alex-confirmation"]
     },
     {
       "title": "Testing an eSIM journey that cannot run in a simulator",
@@ -131,6 +137,8 @@
     "Which four languages are supported",
     "How tenant configuration is stored and loaded",
     "How tenants are isolated from each other",
-    "How brand assets and themes are structured"
+    "How brand assets and themes are structured",
+    "Who wrote the key-comparison script and who implemented the fixes for the two translation defects",
+    "Who else took part in pre-release testing"
   ]
 }

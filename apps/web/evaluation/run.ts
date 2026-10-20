@@ -8,7 +8,7 @@
  *   npm run eval -- --models claude-haiku-5-5       # paid: needs AI_PROVIDER, provider credentials and Upstash
  *   npm run eval -- --rescore evaluation/results/x.json
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { MODEL_PRICES, PROMPT_VERSION, ScriptedModel, demoScript, type ChatModel } from '@portfolio/assistant';
@@ -23,6 +23,53 @@ import { createChatModel } from '../src/server/ai/provider';
 import { serverKb } from '../src/server/knowledge';
 import { memoryLimiter, resolveBackend } from '../src/server/rate-limit';
 import { CASE_SET_VERSION, CASES, type EvalCase, type TurnSpec } from './cases';
+import { STAR_CASE_SET_VERSION, STAR_CASES } from './cases-star';
+import { ADVERSARIAL_CASE_SET_VERSION, ADVERSARIAL_CASES } from './cases-adversarial';
+import { STAR_V2_CASE_SET_VERSION, STAR_V2_CASES } from './cases-star-v2';
+import { BASELINE_V2_VERSION, CASES_V2 } from './cases-v2';
+import { BASELINE_V3_VERSION, CASES_V3 } from './cases-v3';
+
+/**
+ * The case sets: `baseline`, the 46-turn regression set, and `star`, the
+ * separately versioned STAR expansion. A result's case-set version says which.
+ */
+export const SUITES = {
+  /** The current baseline (v3). */
+  baseline: { version: BASELINE_V3_VERSION, cases: CASES_V3 },
+  /** Earlier baselines, kept unchanged so their results stay comparable and re-scorable. */
+  'baseline-v2': { version: BASELINE_V2_VERSION, cases: CASES_V2 },
+  'baseline-v1': { version: CASE_SET_VERSION, cases: CASES },
+  /** The current STAR suite. */
+  star: { version: STAR_V2_CASE_SET_VERSION, cases: STAR_V2_CASES },
+  /** The STAR suite as first run (star-2026-10-20.4). */
+  'star-v1': { version: STAR_CASE_SET_VERSION, cases: STAR_CASES },
+  /** Prompt injection, extraction, abuse and positive controls. */
+  adversarial: { version: ADVERSARIAL_CASE_SET_VERSION, cases: ADVERSARIAL_CASES },
+} as const;
+export type SuiteName = keyof typeof SUITES;
+/** The stories and interests a suite's cases name that the knowledge base doesn't have. */
+export function missingEvidence(cases: readonly EvalCase[], kb: Pick<typeof serverKb, 'evidence'>): string[] {
+  const { stories, interests, background } = kb.evidence;
+  const present = new Set([...stories, ...interests.personal, ...interests.technical, ...background.motivation, ...background.workingEnvironment].map(({ id }) => id));
+  return [...new Set(cases.flatMap(({ stories: ids }) => ids ?? []))].filter((id) => !present.has(id));
+}
+
+/**
+ * The suite a result was recorded with, by its exact version. Older versions with no suite of their own are scored
+ * with the earliest suite of their kind, as they always were.
+ */
+export const suiteFor = (caseSetVersion: string) =>
+  Object.values(SUITES).find(({ version }) => version === caseSetVersion) ?? (caseSetVersion.startsWith('star-') ? SUITES['star-v1'] : SUITES['baseline-v1']);
+
+/**
+ * What earlier paid evaluations spent, from their saved results: the $3.65 cap covers every evaluation, not each one.
+ * Dry runs (scripted, free) and offline re-scores (no model calls) spend nothing.
+ */
+export function spentByEarlierEvaluations(reports: readonly Pick<EvaluationReport, 'meta' | 'runs'>[]): number {
+  return reports
+    .filter(({ meta }) => !meta.dryRun && meta.rescoredFrom === undefined)
+    .reduce((sum, { runs }) => sum + runs.reduce((runSum, { records }) => runSum + records.reduce((total, { costUsd }) => total + costUsd, 0), 0), 0);
+}
 import {
   SCORER_VERSION,
   STOP_LABELS,
@@ -300,11 +347,12 @@ export function scoreRuns(runs: readonly ModelRun[], cases: readonly EvalCase[] 
  * differs, so a re-score can never pass for a result of the original version.
  */
 export function rescoreMeta(saved: EvaluationReport['meta'], from: string): EvaluationReport['meta'] {
-  const fingerprint = caseSetFingerprint();
+  const suite = suiteFor(saved.caseSetVersion);
+  const fingerprint = caseSetFingerprint(suite.cases);
   const changed = saved.caseSetFingerprint !== fingerprint;
   return {
     ...saved,
-    caseSetVersion: CASE_SET_VERSION,
+    caseSetVersion: suite.version,
     caseSetFingerprint: fingerprint,
     scorerVersion: SCORER_VERSION,
     rescoredFrom: from,
@@ -342,7 +390,7 @@ export function markdownSummary(report: EvaluationReport): string {
     '',
     ...report.runs.map(({ summary: s }) => {
       const failures = Object.entries(s.outcomes).filter(([outcome, count]) => outcome !== 'pass' && count > 0);
-      return `- ${s.model} failed turns by cause: ${failures.length === 0 ? 'none' : failures.map(([outcome, count]) => `${outcome} ${count}`).join(', ')}; answers cut off by the output limit: ${s.truncated}. Diagnostics: ${s.presentation.suggestsContact} answers suggest \`contact\` (${s.presentation.contactUnprompted ?? 'n/a'} unprompted), ${s.presentation.markdown ?? 'n/a'} use Markdown, ${s.presentation.internals} show internal identifiers, ${s.presentation.selfCorrection} narrate a self-correction.`;
+      return `- ${s.model} failed turns by cause: ${failures.length === 0 ? 'none' : failures.map(([outcome, count]) => `${outcome} ${count}`).join(', ')}; answers cut off by the output limit: ${s.truncated}. Diagnostics: ${s.presentation.suggestsContact} answers suggest \`contact\` (${s.presentation.contactUnprompted ?? 'n/a'} unprompted), ${s.presentation.markdown ?? 'n/a'} use Markdown, ${s.presentation.narration ?? 'n/a'} narrate lookups, ${s.presentation.sourceList ?? 'n/a'} paste a source list, ${s.presentation.internals} show internal identifiers, ${s.presentation.selfCorrection} narrate a self-correction.`;
     }),
     '',
     `Total spent: $${report.runs.reduce((sum, { summary }) => sum + summary.costUsd.total, 0).toFixed(4)} of the $${report.meta.capUsd.toFixed(2)} cap.`,
@@ -378,7 +426,7 @@ export function markdownSummary(report: EvaluationReport): string {
       run.records.flatMap((record, index) => {
         const score = run.scores[index];
         if (score === null || score === undefined) return [];
-        const evalCase = CASES.find(({ id }) => id === record.caseId);
+        const evalCase = suiteFor(report.meta.caseSetVersion).cases.find(({ id }) => id === record.caseId);
         if (score.pass && !evalCase?.review) return [];
         const problems = [...score.violations.map(({ label, kind }) => `${kind}: ${label}`), ...score.missingRequired.map((label) => `missing: ${label}`), ...score.unsupportedFigures.map((figure) => `unknown figure ${figure}`)];
         return [
@@ -398,16 +446,30 @@ async function main() {
       'dry-run': { type: 'boolean', default: false },
       out: { type: 'string' },
       rescore: { type: 'string' },
+      suite: { type: 'string', default: 'baseline' },
     },
   });
+  const suiteName = values.suite as SuiteName;
+  if (!(suiteName in SUITES)) throw new Error(`Unknown suite "${values.suite}": use ${Object.keys(SUITES).join(', ')}.`);
+  const suite = SUITES[suiteName];
+  const isStar = suiteName.startsWith('star');
+  if (isStar && !values.rescore) {
+    // Every story and interest the suite asks about must be in the bundle the assistant reads: published, or in a local
+    // preview. Otherwise every answer would be scored against evidence the assistant can't see.
+    const missing = missingEvidence(suite.cases, serverKb);
+    if (missing.length > 0) {
+      throw new Error(`The star suite needs evidence this bundle doesn't have (${missing.join(', ')}): publish it, or build a local preview with KNOWLEDGE_PREVIEW=drafts.`);
+    }
+  }
   const outDir = path.resolve(import.meta.dirname, values.out ?? 'results');
 
   if (values.rescore) {
     // Offline: no model calls. The original file is left as it is; the re-score is written beside it.
     const saved = JSON.parse(await readFile(values.rescore, 'utf8')) as EvaluationReport;
-    const report: EvaluationReport = { ...saved, meta: rescoreMeta(saved.meta, path.basename(values.rescore)), ...scoreRuns(saved.runs) };
+    const savedSuite = suiteFor(saved.meta.caseSetVersion);
+    const report: EvaluationReport = { ...saved, meta: rescoreMeta(saved.meta, path.basename(values.rescore)), ...scoreRuns(saved.runs, savedSuite.cases) };
     if (report.meta.recordedWithCaseSet) {
-      console.error(`[eval] Re-scoring answers recorded with case set ${report.meta.recordedWithCaseSet.version} against ${CASE_SET_VERSION}: same questions, different checks.`);
+      console.error(`[eval] Re-scoring answers recorded with case set ${report.meta.recordedWithCaseSet.version} against ${savedSuite.version}: same questions, different checks.`);
     }
     const stem = values.rescore.replace(/\.json$/, `.rescored-${SCORER_VERSION}`);
     await writeFile(`${stem}.json`, `${JSON.stringify(report, null, 2)}\n`);
@@ -419,8 +481,8 @@ async function main() {
   const models = values.models?.split(',').map((model) => model.trim()) ?? [...DEFAULT_MODELS];
   const dryRun = values['dry-run'] ?? false;
   const meta: EvaluationReport['meta'] = {
-    caseSetVersion: CASE_SET_VERSION,
-    caseSetFingerprint: caseSetFingerprint(),
+    caseSetVersion: suite.version,
+    caseSetFingerprint: caseSetFingerprint(suite.cases),
     promptVersion: PROMPT_VERSION,
     knowledgeFingerprint: createHash('sha256').update(knowledgeText).digest('hex').slice(0, 16),
     startedAt: new Date().toISOString(),
@@ -429,19 +491,27 @@ async function main() {
     scorerVersion: SCORER_VERSION,
   };
   await mkdir(outDir, { recursive: true });
-  const stem = `${meta.startedAt.replace(/[:.]/g, '-')}${dryRun ? '-dry-run' : ''}`;
+  const stem = `${meta.startedAt.replace(/[:.]/g, '-')}${isStar ? '-star' : suiteName === 'adversarial' ? '-adversarial' : ''}${dryRun ? '-dry-run' : ''}`;
   const save = async (runs: readonly ModelRun[]) => {
-    const report: EvaluationReport = { meta, ...scoreRuns(runs) };
+    const report: EvaluationReport = { meta, ...scoreRuns(runs, suite.cases) };
     await writeFile(path.join(outDir, `${stem}.json`), `${JSON.stringify(report, null, 2)}\n`);
     await writeFile(path.join(outDir, `${stem}.md`), markdownSummary(report));
     return report;
   };
 
   const runs: ModelRun[] = [];
+  // A paid run starts from what every earlier paid evaluation spent, so the cap is cumulative.
   let spent = 0;
+  if (!dryRun) {
+    const saved = await Promise.all(
+      (await readdir(outDir)).filter((name) => name.endsWith('.json')).map(async (name) => JSON.parse(await readFile(path.join(outDir, name), 'utf8')) as EvaluationReport),
+    );
+    spent = spentByEarlierEvaluations(saved);
+    console.error(`[eval] Earlier paid evaluations spent $${spent.toFixed(4)} of the $${EVALUATION_CAP_USD.toFixed(2)} cap.`);
+  }
   for (const model of models) {
     console.error(`[eval] ${model}${dryRun ? ' (dry run)' : ''}: $${(EVALUATION_CAP_USD - spent).toFixed(2)} of the cap left…`);
-    const run = await runModel({ model, dryRun, capUsd: EVALUATION_CAP_USD - spent });
+    const run = await runModel({ model, dryRun, capUsd: EVALUATION_CAP_USD - spent, cases: suite.cases });
     spent += run.records.reduce((sum, { costUsd }) => sum + costUsd, 0);
     runs.push(run);
     // Saved after every model, so a later failure never loses paid results.

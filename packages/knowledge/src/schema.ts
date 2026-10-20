@@ -91,7 +91,8 @@ export const ProjectObject = z.strictObject({
   tagline: Text,
   listingTags: z.array(Text).min(1).max(5),
   context: z.strictObject({
-    kind: z.enum(['employment', 'personal', 'client']),
+    /** `portfolio`: this portfolio's own project, the site being browsed. */
+    kind: z.enum(['employment', 'personal', 'client', 'portfolio']),
     organisation: Text.optional(),
     role: Text.optional(),
     period: Text.optional(),
@@ -198,13 +199,115 @@ export const SkillsSchema = z
   })
   .superRefine(checkSourceReferences);
 
-export const KNOWLEDGE_BUNDLE_VERSION = 1;
+/*
+ * Evidence: STAR stories, the competencies they demonstrate, and Alex's
+ * interests and background. A story is told once: each STAR part keeps its
+ * facts in `text` (the short telling) and optional `detail` (added in the
+ * detailed telling), so the two versions can never disagree.
+ */
+
+/**
+ * Where a part of a story comes from. `documented`: the project records and
+ * their sources. `firsthand`: Alex's own account, not independently verified.
+ * `inferred`: drafted narrative that Alex hasn't confirmed; never publishable.
+ */
+export const ProvenanceSchema = z.enum(['documented', 'firsthand', 'inferred']);
+
+export const StoryPartSchema = z.strictObject({
+  text: Text,
+  detail: Text.optional(),
+  provenance: ProvenanceSchema,
+  sources: z.array(SlugSchema).min(1, 'every claim needs at least one source'),
+});
+
+/** `approved`: Alex has reviewed it. `needs-review`: drafted, awaiting Alex. `incomplete`: a STAR part lacks evidence. */
+export const ReviewStatusSchema = z.enum(['approved', 'needs-review', 'incomplete']);
+
+/** Only `public` content can be published, and only once `approved`. */
+export const PublicationSchema = z.enum(['public', 'private', 'draft']);
+
+export const StorySchema = z.strictObject({
+  id: SlugSchema,
+  title: Text,
+  /** Featured projects the story is about; their records are the technical source of truth. */
+  projects: z.array(SlugSchema).default([]),
+  /** Where it happened, e.g. "ZIM Connections Ltd." */
+  organisation: Text.optional(),
+  situation: StoryPartSchema,
+  task: StoryPartSchema,
+  action: StoryPartSchema,
+  result: StoryPartSchema,
+  reflection: StoryPartSchema.optional(),
+  /** Competency ids this story demonstrates. */
+  competencies: z.array(SlugSchema).min(1),
+  /** Interview questions this story answers. */
+  questions: z.array(Text).default([]),
+  attribution: z.enum(['individual', 'collaborative', 'team']),
+  /** Who did what, in plain words: always shown with the story. */
+  attributionNote: Text,
+  status: ReviewStatusSchema,
+  visibility: PublicationSchema,
+});
+
+export const CompetencySchema = z.strictObject({
+  id: SlugSchema,
+  name: Text,
+  group: z.enum(['core', 'mindset']),
+  description: Text,
+  /** How visitors phrase it ("disagreement", "trade-off", "went wrong"), so a natural question finds this competency. */
+  aliases: z.array(Text).default([]),
+  /** Story ids, strongest first. */
+  stories: z.array(SlugSchema).default([]),
+  questions: z.array(Text).min(1),
+  /** What evidence is missing, stated plainly, when the stories don't cover the competency well. */
+  gap: Text.optional(),
+});
+
+export const InterestSchema = z.strictObject({
+  id: SlugSchema,
+  title: Text,
+  text: Text,
+  projects: z.array(SlugSchema).default([]),
+  provenance: ProvenanceSchema,
+  sources: z.array(SlugSchema).min(1),
+  status: ReviewStatusSchema,
+  visibility: PublicationSchema,
+});
+
+export const EvidenceObject = z.strictObject({
+  $schema: z.string().optional(),
+  /** May be empty in a published bundle with no published evidence. */
+  sources: z.array(SourceSchema).default([]),
+  stories: z.array(StorySchema).default([]),
+  competencies: z.array(CompetencySchema).default([]),
+  interests: z
+    .strictObject({
+      personal: z.array(InterestSchema).default([]),
+      technical: z.array(InterestSchema).default([]),
+    })
+    .default({ personal: [], technical: [] }),
+  /** Why Alex works in software, and the environment Alex works best in. */
+  background: z
+    .strictObject({
+      motivation: z.array(InterestSchema).default([]),
+      workingEnvironment: z.array(InterestSchema).default([]),
+    })
+    .default({ motivation: [], workingEnvironment: [] }),
+});
+
+export const EvidenceSchema = EvidenceObject.superRefine(checkSourceReferences);
+
+/** 2: adds `evidence` (stories, competencies, interests and background). */
+export const KNOWLEDGE_BUNDLE_VERSION = 2;
 
 export const KnowledgeBundleSchema = z.strictObject({
   version: z.literal(KNOWLEDGE_BUNDLE_VERSION),
+  /** Set only on a local preview build that includes unpublished drafts. Production refuses such a bundle. */
+  preview: z.literal(true).optional(),
   profile: ProfileSchema,
   skills: SkillsSchema,
   projects: z.array(ProjectSchema),
+  evidence: EvidenceSchema,
 });
 
 export type Source = z.infer<typeof SourceSchema>;
@@ -220,6 +323,12 @@ export type Profile = z.infer<typeof ProfileSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
 export type Skills = z.infer<typeof SkillsSchema>;
 export type KnowledgeBundle = z.infer<typeof KnowledgeBundleSchema>;
+export type Provenance = z.infer<typeof ProvenanceSchema>;
+export type StoryPart = z.infer<typeof StoryPartSchema>;
+export type Story = z.infer<typeof StorySchema>;
+export type Competency = z.infer<typeof CompetencySchema>;
+export type Interest = z.infer<typeof InterestSchema>;
+export type Evidence = z.infer<typeof EvidenceSchema>;
 
 /** Every `sources` id used anywhere in a document must be declared in that document's `sources` list. */
 function checkSourceReferences(document: { sources: Source[] }, ctx: z.RefinementCtx): void {

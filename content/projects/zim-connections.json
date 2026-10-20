@@ -278,10 +278,11 @@
       ]
     },
     {
-      "text": "Developed the multi-tenant architecture that supported 4 production brands and 11 app identities on shared infrastructure.",
-      "scope": "individual",
+      "text": "Collaborated with another developer to design and implement ZIM's multi-tenant architecture, supporting four production brands and eleven application identities on shared infrastructure.",
+      "scope": "collaborative",
       "sources": [
-        "cv"
+        "cv",
+        "employment-update"
       ]
     },
     {
@@ -346,7 +347,7 @@
         ]
       },
       {
-        "text": "One codebase is themed for 4 brands and 11 app identities, and the live chat's shared React hooks are used by both the mobile app and the web.",
+        "text": "As of the September 2026 CV, one codebase was themed for 4 brands and 11 app identities, and the live chat's shared React hooks were used by both the mobile app and the web.",
         "sources": [
           "github-profile",
           "cv"
@@ -385,7 +386,7 @@
         "A multi-tenant architecture on shared infrastructure.",
         "Partner-specific behaviour is kept out of the core, so adding a partner is a configuration change rather than a fork."
       ],
-      "outcome": "4 production brands and 11 app identities run on shared infrastructure.",
+      "outcome": "As of the September 2026 CV, 4 production brands and 11 app identities ran on shared infrastructure.",
       "sources": [
         "cv",
         "github-profile"

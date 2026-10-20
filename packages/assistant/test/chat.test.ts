@@ -40,7 +40,7 @@ describe('runChat', () => {
     });
     expect(seen?.system).toBe(SYSTEM_PROMPT);
     expect(seen?.tools.map(({ name }) => name)).toEqual([
-      'list_projects', 'get_project', 'search_projects', 'get_profile', 'get_experience', 'get_skills',
+      'list_projects', 'get_project', 'search_projects', 'get_profile', 'get_experience', 'get_skills', 'get_examples',
     ]);
     expect(seen?.tools.find(({ name }) => name === 'get_project')?.inputSchema).toMatchObject({ required: ['project'] });
     expect(seen?.messages.at(-1)).toEqual({ role: 'user', content: [{ type: 'text', text: 'Which project best demonstrates Docker?' }] });

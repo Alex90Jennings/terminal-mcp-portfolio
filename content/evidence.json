@@ -1,0 +1,1498 @@
+{
+  "$schema": "./schemas/evidence.schema.json",
+  "sources": [
+    {
+      "id": "alex-interview",
+      "label": "Alex, interview answers (20 Oct 2026)",
+      "kind": "author-statement"
+    },
+    {
+      "id": "cv",
+      "label": "CV (September 2026)",
+      "kind": "cv"
+    },
+    {
+      "id": "zim-github",
+      "label": "GitHub profile: ZIM Connections section",
+      "kind": "profile",
+      "url": "https://github.com/Alex90Jennings"
+    },
+    {
+      "id": "zim-linkedin",
+      "label": "Author's project description for LinkedIn",
+      "kind": "author-statement"
+    },
+    {
+      "id": "sbb-notes",
+      "label": "Author's notes on ZIM@SBB",
+      "kind": "author-statement"
+    },
+    {
+      "id": "operafy-infra-readme",
+      "label": "operafy-infra README",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/operafy-infra"
+    },
+    {
+      "id": "operafy-linkedin",
+      "label": "Author's project descriptions for LinkedIn",
+      "kind": "author-statement"
+    },
+    {
+      "id": "operafy-github",
+      "label": "GitHub profile: Operafy sections",
+      "kind": "profile",
+      "url": "https://github.com/Alex90Jennings"
+    },
+    {
+      "id": "clash-readme",
+      "label": "Clash of Langs README",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/clash-of-langs"
+    },
+    {
+      "id": "clash-architecture",
+      "label": "docs/ARCHITECTURE.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/ARCHITECTURE.md"
+    },
+    {
+      "id": "clash-benchmarking",
+      "label": "docs/BENCHMARKING.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/clash-of-langs/blob/main/docs/BENCHMARKING.md"
+    },
+    {
+      "id": "sol-readme",
+      "label": "SOL README",
+      "kind": "repository"
+    },
+    {
+      "id": "sol-audit",
+      "label": "SOL accessibility audit and verification (17 Oct 2026)",
+      "kind": "documentation"
+    },
+    {
+      "id": "tg-readme",
+      "label": "Total Guess README",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/total-guess"
+    },
+    {
+      "id": "tg-retrieval",
+      "label": "docs/retrieval.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/total-guess/blob/main/packages/ingestion/docs/retrieval.md"
+    },
+    {
+      "id": "alex-confirmation",
+      "label": "Alex, final confirmations (20 Oct 2026)",
+      "kind": "author-statement"
+    }
+  ],
+  "stories": [
+    {
+      "id": "zim-sbb-feature-scope",
+      "title": "Agreeing the scope of the white-label apps",
+      "projects": [
+        "zim-sbb",
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "As ZIM built white-label apps for partners, including ZIM@SBB for Swiss Federal Railways, the product team wanted to bring more features from the main ZIM app into the partner apps.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "sbb-notes"
+        ]
+      },
+      "task": {
+        "text": "Engineering had to balance those product goals against the long-term cost of maintaining increasingly complex partner-specific functionality.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex took part in the discussions, explaining the technical implications of including too many features. With the product stakeholders, the team prioritised functionality, agreed a minimum viable product and defined a manageable scope.",
+        "detail": "Alex worked with the product team to translate business requirements into a clearly defined technical scope.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "result": {
+        "text": "They reached a compromise between the product team's ambitions and engineering's concerns about maintainability.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "reflection": {
+        "text": "Alex's view is that agreeing a minimum viable product, scoping carefully and keeping communication open is the most efficient way for technical and non-technical stakeholders to work together.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "conflict-resolution",
+        "collaboration",
+        "communication",
+        "working-with-ambiguity",
+        "prioritisation",
+        "cross-functional-ownership"
+      ],
+      "questions": [
+        "Tell me about a time you disagreed with product stakeholders.",
+        "How do you handle conflicting product and engineering priorities?",
+        "How do you handle unclear requirements?",
+        "How do you work with non-technical stakeholders?"
+      ],
+      "attribution": "collaborative",
+      "attributionNote": "A discussion between product and engineering. Alex explained the technical implications; product and engineering agreed the scope together.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-aws-cost-review",
+      "title": "Finding savings in ZIM’s AWS bill",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "While studying for the AWS Certified Cloud Practitioner certification, Alex became interested in how ZIM used its cloud infrastructure.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "cv"
+        ]
+      },
+      "task": {
+        "text": "Alex set out to find where ZIM could reduce its AWS costs without compromising performance.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex independently reviewed the AWS services ZIM used, documented what each was for, identified where there was room to scale back, and presented the findings to the CEO and CTO.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "result": {
+        "text": "ZIM reduced its AWS bill by approximately 30%, with no reported negative impact on performance.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "initiative",
+        "communication",
+        "problem-solving",
+        "continuous-improvement"
+      ],
+      "questions": [
+        "Tell me about a time you improved something without being asked.",
+        "Have you identified opportunities to save money?",
+        "Tell me about a time you explained something technical to a non-technical stakeholder."
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex researched the services and presented the recommendations. This does not claim Alex implemented every infrastructure change.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-sql-performance",
+      "title": "Speeding up the eSIM retrieval endpoint",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "At ZIM, the API endpoint that fetched customers' eSIMs was responding slowly.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "task": {
+        "text": "Alex set out to find the cause and make the endpoint more responsive.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex traced the SQL queries the endpoint ran and read through the backend code. That showed a number of repeated queries, and one query that needed better indexing to run faster.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "result": {
+        "text": "Response times fell from roughly 2–9 seconds to 0.5–1.5 seconds.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "problem-solving",
+        "attention-to-detail",
+        "continuous-improvement"
+      ],
+      "questions": [
+        "Describe a difficult technical problem you solved.",
+        "How do you approach debugging?",
+        "Tell me about a time you improved performance."
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own investigation and optimisation.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-black-friday",
+      "title": "Fixing the Black Friday discount problem",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "During a Black Friday promotion at ZIM, customers who already had an eligible discount larger than the promotional offer couldn't use it.",
+        "detail": "Working in a fast-moving startup environment meant adapting to changing product requirements and priorities. The team had missed this case.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "task": {
+        "text": "The problem affected real customers in production, so it needed fixing quickly and safely.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex paused the current task, investigated, reproduced the behaviour in a development environment, and changed the promotion logic: customers could change the applied promotion, and the larger eligible discount was selected automatically.",
+        "detail": "Investigating, planning and reproducing the issue in the development environment took about 30 minutes. Alex then tested the fix, improved the relevant test coverage, and released it through the development environment and then to production.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "alex-confirmation"
+        ]
+      },
+      "result": {
+        "text": "Customers could use the most advantageous eligible discount instead of being limited to the Black Friday offer.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "ownership",
+        "prioritisation",
+        "problem-solving",
+        "customer-focus",
+        "learning-from-failure",
+        "balancing-speed-and-quality",
+        "adaptability"
+      ],
+      "questions": [
+        "Tell me about a production incident you resolved.",
+        "Tell me about a time you had to respond to an urgent problem.",
+        "Describe a situation that didn’t go according to plan.",
+        "Tell me about a time you fixed an urgent production problem."
+      ],
+      "attribution": "individual",
+      "attributionNote": "The original oversight was a team one. Alex personally investigated and implemented the fix.",
+      "status": "approved",
+      "visibility": "public",
+      "reflection": {
+        "text": "This experience reinforced for Alex the importance of testing promotional logic against existing customer entitlements, rather than considering each promotion in isolation. It also showed that resolving a production issue means addressing the underlying problem and strengthening the tests to prevent it recurring.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-confirmation"
+        ]
+      }
+    },
+    {
+      "id": "zim-sns-migration",
+      "title": "Moving notifications from Firebase to AWS SNS",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "ZIM's notifications used Firebase. Moving them to AWS SNS was expected to improve cost efficiency, reliability, scalability and integration with the rest of ZIM's AWS environment.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "task": {
+        "text": "Research and implement a migration from Firebase to AWS SNS.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex researched the options, evaluated the migration against cost, reliability, scalability and AWS integration, broke the work into manageable stages, tested it in a sandbox environment, and implemented the migration.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "result": {
+        "text": "Alex completed the migration from Firebase to AWS SNS, bringing the notification infrastructure into closer alignment with ZIM's existing AWS architecture.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "technical-decision-making",
+        "ownership",
+        "problem-solving",
+        "continuous-improvement",
+        "adaptability"
+      ],
+      "questions": [
+        "Tell me about a technical trade-off you made.",
+        "How do you evaluate alternative architectures?",
+        "Tell me about a project you owned end to end."
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own research and implementation. Cost, reliability, scalability and AWS integration were the reasons for the migration, not measured results.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-multi-tenancy",
+      "title": "Making the platform multi-tenant",
+      "projects": [
+        "zim-connections",
+        "zim-sbb"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "ZIM's platform was moving from a single application to several partner brands and app identities, and each new partner risked a fork of the codebase.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "task": {
+        "text": "Support multiple partner brands on shared infrastructure without duplicating implementations.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "action": {
+        "text": "Alex collaborated with another developer over several months to design and implement a multi-tenant architecture: shared infrastructure, with partner-specific behaviour kept in configuration rather than in the core.",
+        "detail": "They broke the work into small, measurable tasks and regularly demonstrated progress to the team, celebrating each step to keep momentum on a long, complicated project.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "cv",
+          "zim-github"
+        ]
+      },
+      "result": {
+        "text": "Adding a partner became a configuration change rather than a fork. As of the September 2026 CV, the platform ran 4 production brands and 11 app identities on shared infrastructure, including ZIM@SBB for Swiss Federal Railways.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github",
+          "sbb-notes"
+        ]
+      },
+      "reflection": {
+        "text": "Alex's lesson: the interesting engineering in white-labelling is not the theming but keeping partner-specific behaviour out of the core.",
+        "provenance": "documented",
+        "sources": [
+          "zim-github",
+          "zim-linkedin"
+        ]
+      },
+      "competencies": [
+        "collaboration",
+        "ownership",
+        "technical-decision-making",
+        "problem-solving",
+        "communication"
+      ],
+      "questions": [
+        "Describe a project where teamwork was essential.",
+        "Tell me about a complex project you delivered.",
+        "How do you evaluate alternative architectures?"
+      ],
+      "attribution": "collaborative",
+      "attributionNote": "Alex collaborated with another developer to design and implement the architecture; it was shared work, not Alex's alone.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-live-chat",
+      "title": "Building real-time live chat",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "Customer conversations on ZIM's platform needed messages pushed to clients rather than polled, on both the React Native app and the web.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "task": {
+        "text": "Deliver real-time chat for customers on mobile and web.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "action": {
+        "text": "Alex owned the design, development and production rollout: a Socket.IO gateway on the NestJS backend with its own services, database schema and rate limiting, and shared React client hooks used by both the mobile app and the web.",
+        "detail": "Real-time events used WebSockets while other operations stayed on REST, so not every interaction moved to a persistent connection.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "result": {
+        "text": "The chat was rolled out to production. As of September 2026 it had supported 5,000+ conversations and 100,000+ messages.",
+        "provenance": "documented",
+        "sources": [
+          "cv",
+          "zim-github"
+        ]
+      },
+      "competencies": [
+        "ownership",
+        "cross-functional-ownership",
+        "customer-focus",
+        "technical-decision-making"
+      ],
+      "questions": [
+        "Tell me about a project you owned end to end.",
+        "How do you take a feature from idea to production?",
+        "Tell me about a technical trade-off you made."
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex owned the design, development and production rollout.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-sbb-quality",
+      "title": "Testing ZIM@SBB on real devices",
+      "projects": [
+        "zim-sbb"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "ZIM@SBB, a white-label eSIM app for Swiss Federal Railways, shipped in four languages. eSIMs can't be installed on a simulator, and travellers often buy and install them on weak or no signal.",
+        "provenance": "documented",
+        "sources": [
+          "sbb-notes",
+          "cv"
+        ]
+      },
+      "task": {
+        "text": "Make sure the full journey worked on real devices, in every language, before release.",
+        "provenance": "documented",
+        "sources": [
+          "sbb-notes"
+        ]
+      },
+      "action": {
+        "text": "Alex tested the full journey end to end on physical iPhones and Android phones: sign-in, expired sessions, permission prompts granted and denied, and buying and installing an eSIM on poor connectivity.",
+        "detail": "Alex also reviewed builds with the product team before each release, to get every string, asset and flow right in all four languages.",
+        "provenance": "documented",
+        "sources": [
+          "sbb-notes"
+        ]
+      },
+      "result": {
+        "text": "During pre-release testing, Alex identified two defects: missing Italian translation keys and a button that was truncated on smaller iPhones. Both came from AI first-pass translations, which had dropped two keys. A key-comparison script and on-device checks caught them, and both were fixed before release.",
+        "provenance": "firsthand",
+        "sources": [
+          "sbb-notes",
+          "alex-confirmation"
+        ]
+      },
+      "reflection": {
+        "text": "The lesson recorded: AI-generated translations need mechanical checks and on-device review, because they can silently drop keys or break layouts.",
+        "provenance": "documented",
+        "sources": [
+          "sbb-notes"
+        ]
+      },
+      "competencies": [
+        "attention-to-detail",
+        "customer-focus",
+        "collaboration"
+      ],
+      "questions": [
+        "Tell me about a time thorough testing mattered.",
+        "How do you ensure quality?",
+        "Tell me about a time you caught an important defect."
+      ],
+      "attribution": "collaborative",
+      "attributionNote": "Alex tested the journey on physical devices and personally identified both translation defects. The pre-release reviews were joint work with the product team. The records don't say who wrote the key-comparison script or made each correction.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-estimates-feedback",
+      "title": "Building contingency into estimates",
+      "projects": [],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "ZIM's small engineering team ran many projects and deadlines at once, and priorities often changed.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "task": {
+        "text": "Alex needed to make delivery estimates more reliable and leave enough time for testing.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "After being advised to add about 30% to deadlines, Alex began doing so: work expected to take three days would be planned for about four.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "result": {
+        "text": "That left room for the unexpected, for better testing, and for finishing one task properly before moving on to the next.",
+        "detail": "In Alex's words, it made progress calmer and smoother.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "handling-feedback",
+        "adaptability",
+        "prioritisation",
+        "continuous-improvement",
+        "balancing-speed-and-quality"
+      ],
+      "questions": [
+        "Tell me about a time you received constructive criticism.",
+        "How do you manage deadlines?",
+        "What have you changed about your working approach?"
+      ],
+      "attribution": "individual",
+      "attributionNote": "A change to Alex's own working practice, following advice.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-test-gate",
+      "title": "Growing the test suite and adding a CI gate",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "ZIM's production API served paying customers, so changes needed verifying before they reached users.",
+        "provenance": "documented",
+        "sources": [
+          "cv"
+        ]
+      },
+      "task": {
+        "text": "Give the team confidence to ship changes to the core API.",
+        "provenance": "documented",
+        "sources": [
+          "cv"
+        ]
+      },
+      "action": {
+        "text": "Alex grew the backend automated test suite to 2,623 tests across 88 suites, reaching 61% statement coverage, and established a CI/CD test gate on the core API.",
+        "provenance": "documented",
+        "sources": [
+          "cv"
+        ]
+      },
+      "result": {
+        "text": "Changes to the core API could merge only when the test suite passed.",
+        "provenance": "documented",
+        "sources": [
+          "cv"
+        ]
+      },
+      "competencies": [
+        "continuous-improvement",
+        "ownership",
+        "balancing-speed-and-quality"
+      ],
+      "questions": [
+        "Describe a time you improved testing or reliability.",
+        "How do you deliver quickly without compromising quality?",
+        "Tell me about a system you improved."
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own work.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "operafy-infrastructure",
+      "title": "Securing Operafy’s media on AWS",
+      "projects": [
+        "operafy"
+      ],
+      "situation": {
+        "text": "Operafy's 31 opera recordings and 20 covers were hotlinked from Wikimedia Commons, which meant relying on someone else's bandwidth and uptime, and URLs that could change and break the player.",
+        "provenance": "documented",
+        "sources": [
+          "operafy-infra-readme"
+        ]
+      },
+      "task": {
+        "text": "Move the media under Alex's own control, defined as code, without storing cloud credentials.",
+        "provenance": "documented",
+        "sources": [
+          "operafy-infra-readme"
+        ]
+      },
+      "action": {
+        "text": "Alex defined a private S3 bucket behind CloudFront in Terraform, deployed through GitHub Actions: pull requests run a plan, and an approved merge applies it using short-lived OIDC credentials, with no AWS keys stored.",
+        "detail": "When every role assumption was refused although the trust policy looked correct, Alex printed the token's own claims and found that the account's OIDC subject customisation used numeric owner and repository IDs. Matching that claim fixed it, and pinning the immutable IDs means renaming the repository can't hand the role to someone else.",
+        "provenance": "documented",
+        "sources": [
+          "operafy-infra-readme"
+        ]
+      },
+      "result": {
+        "text": "Deploys authenticate with short-lived credentials, and the media is served privately through CloudFront.",
+        "detail": "Alex also audited the AWS account against Cost Explorer and removed orphaned resources, cutting the monthly bill by 99%.",
+        "provenance": "documented",
+        "sources": [
+          "operafy-infra-readme"
+        ]
+      },
+      "reflection": {
+        "text": "When a token is rejected, read the token: guessing at the policy is slower and teaches you nothing.",
+        "provenance": "documented",
+        "sources": [
+          "operafy-infra-readme"
+        ]
+      },
+      "competencies": [
+        "problem-solving",
+        "technical-decision-making",
+        "initiative"
+      ],
+      "questions": [
+        "Describe a difficult technical problem you solved.",
+        "How do you balance cost, scalability and maintainability?",
+        "How do you approach debugging?"
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's personal project: Alex wrote the app, the Terraform infrastructure and the CI/CD pipeline.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "clash-fair-benchmarking",
+      "title": "Making a language benchmark fair",
+      "projects": [
+        "clash-of-langs"
+      ],
+      "situation": {
+        "text": "Typical language benchmarks do less work in one language, time compilation in another, or report one lucky run.",
+        "provenance": "documented",
+        "sources": [
+          "clash-readme",
+          "clash-benchmarking"
+        ]
+      },
+      "task": {
+        "text": "Build an arena that compares 24 programming languages fairly, each running as a real native process.",
+        "provenance": "documented",
+        "sources": [
+          "clash-readme"
+        ]
+      },
+      "action": {
+        "text": "Each harness regenerates its input from a shared seed and must produce the same checksum, or the battle is invalid. The headline figure is the median, and a winner is declared only when a two-sided Mann–Whitney U test gives p < 0.05; otherwise it's a draw.",
+        "detail": "Benchmarks run on a dedicated-CPU worker with one Docker image holding every runtime. Vercel hosts only the UI and a thin API, because Vercel functions can't run a JVM or arbitrary native binaries and shared hardware gives unstable timings.",
+        "provenance": "documented",
+        "sources": [
+          "clash-readme",
+          "clash-benchmarking"
+        ]
+      },
+      "result": {
+        "text": "Every result is scoped to one workload, implementation, runtime and machine, and battles can be replayed exactly from their URL.",
+        "provenance": "documented",
+        "sources": [
+          "clash-readme"
+        ]
+      },
+      "competencies": [
+        "attention-to-detail",
+        "technical-decision-making"
+      ],
+      "questions": [
+        "How do you ensure quality?",
+        "Tell me about a technical trade-off you made."
+      ],
+      "attribution": "individual",
+      "attributionNote": "A personal open-source project, designed, built and maintained by Alex.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "sol-accessibility",
+      "title": "Designing SOL for accessibility",
+      "projects": [
+        "sol"
+      ],
+      "situation": {
+        "text": "Alex spent a long time looking for a macOS wallpaper: live wallpapers felt too bright and distracting, static ones boring or too personal. So Alex built SOL, a native Swift and AppKit app that shows the solar system as a live wallpaper, with each planet at its real position.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "sol-readme"
+        ]
+      },
+      "task": {
+        "text": "Make the app usable with assistive technologies, although its main display is drawn only on the wallpaper, which they can't read.",
+        "provenance": "documented",
+        "sources": [
+          "sol-audit"
+        ]
+      },
+      "action": {
+        "text": "Alex ran a written accessibility audit (17 October 2026) against Apple's guidance and the App Store's Accessibility Nutrition Labels. That led to an Explore the Sky menu describing each planet's position, a Simplified Menu for VoiceOver users, Reduce Motion support, and every accessibility option being free.",
+        "detail": "Hand testing showed VoiceOver ignored changes inside the custom menu rows, which is why the Simplified Menu exists. Alex also removed an unsupported Larger Text claim from the draft App Store listing.",
+        "provenance": "documented",
+        "sources": [
+          "sol-audit"
+        ]
+      },
+      "result": {
+        "text": "The confirmed defects were fixed, but accessibility isn't fully verified yet: VoiceOver has been checked by hand only in part.",
+        "provenance": "documented",
+        "sources": [
+          "sol-audit"
+        ],
+        "detail": "Full Keyboard Access, light appearance, Grayscale and display scaling remain untested, so only Dark Interface is declarable today."
+      },
+      "reflection": {
+        "text": "Checking the accessibility tree is not the same as testing with VoiceOver.",
+        "provenance": "documented",
+        "sources": [
+          "sol-audit"
+        ]
+      },
+      "competencies": [
+        "customer-focus",
+        "attention-to-detail",
+        "initiative",
+        "adaptability"
+      ],
+      "questions": [
+        "How do you approach accessibility?",
+        "How do you consider end users?",
+        "Describe a project you started independently."
+      ],
+      "attribution": "individual",
+      "attributionNote": "A personal project that Alex designed and built alone.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "total-guess-evaluation",
+      "title": "Measuring retrieval instead of assuming",
+      "projects": [
+        "total-guess"
+      ],
+      "situation": {
+        "text": "Total Guess includes a grocery assistant that answers from a database of 25,000 UK products, using retrieval-augmented generation.",
+        "provenance": "documented",
+        "sources": [
+          "tg-readme"
+        ]
+      },
+      "task": {
+        "text": "Compare full-text, normalised full-text, vector and hybrid retrieval fairly.",
+        "provenance": "documented",
+        "sources": [
+          "tg-retrieval"
+        ]
+      },
+      "action": {
+        "text": "Alex wrote and labelled 72 evaluation queries before any embeddings existed, so no label could favour a vector result, and graded strictly.",
+        "provenance": "documented",
+        "sources": [
+          "tg-retrieval"
+        ]
+      },
+      "result": {
+        "text": "nDCG@10 rose from 0.582 (full-text) to 0.819 (normalised hybrid), and the zero-result rate fell from 20.8% to 0%.",
+        "detail": "The evaluation also showed where simpler won: on UK vocabulary queries, a 20-entry term list scored 0.940 nDCG@10, above vector search's 0.751. Hybrid did worse on some short product-type queries, and each query was labelled by one person, so small differences aren't significant.",
+        "provenance": "documented",
+        "sources": [
+          "tg-retrieval",
+          "tg-readme"
+        ]
+      },
+      "reflection": {
+        "text": "Building the labelled set before the fix paid off: two of the five predicted full-text failures turned out not to be failures once measured.",
+        "provenance": "documented",
+        "sources": [
+          "tg-retrieval"
+        ]
+      },
+      "competencies": [
+        "problem-solving",
+        "technical-decision-making",
+        "learning-from-failure",
+        "continuous-improvement"
+      ],
+      "questions": [
+        "Tell me about a technical trade-off you made.",
+        "Tell me about a time an assumption turned out to be wrong."
+      ],
+      "attribution": "individual",
+      "attributionNote": "A personal project: Alex built the retrieval system, its evaluation and the assistant.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "aws-learning",
+      "title": "Learning AWS as the role grew",
+      "projects": [
+        "operafy",
+        "total-guess"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "As Alex's role at ZIM grew into full-stack work, Alex was deploying more to the cloud than at the start.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "task": {
+        "text": "Improve AWS knowledge to contribute more confidently to cloud decisions.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "action": {
+        "text": "Alex studied for AWS certifications, earning AWS Certified AI Practitioner (March 2026) and AWS Certified Cloud Practitioner (April 2026), began studying for Solutions Architect – Associate, and applied the learning in side projects including Operafy and Total Guess.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview",
+          "cv"
+        ]
+      },
+      "result": {
+        "text": "By Alex's account, this led to more responsibility for cloud work and decisions at ZIM.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ]
+      },
+      "competencies": [
+        "adaptability",
+        "initiative",
+        "continuous-improvement"
+      ],
+      "questions": [
+        "Tell me about a time you learned a new technology.",
+        "How have you adapted to changing responsibilities?"
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own learning. Certifications on their own don't establish professional expertise.",
+      "status": "approved",
+      "visibility": "public"
+    }
+  ],
+  "competencies": [
+    {
+      "id": "collaboration",
+      "name": "Collaboration",
+      "group": "core",
+      "description": "Working with colleagues and other teams towards a shared result.",
+      "aliases": [
+        "teamwork",
+        "team player",
+        "working with others",
+        "work with other developers",
+        "working with a colleague",
+        "collaborate",
+        "collaborating",
+        "collaborative"
+      ],
+      "stories": [
+        "zim-multi-tenancy",
+        "zim-sbb-feature-scope",
+        "zim-sbb-quality"
+      ],
+      "questions": [
+        "Tell me about a time Alex worked closely with another team.",
+        "How does Alex collaborate with product stakeholders?",
+        "Describe a project where teamwork was essential."
+      ]
+    },
+    {
+      "id": "communication",
+      "name": "Communication",
+      "group": "core",
+      "description": "Explaining technical findings and constraints so others can decide.",
+      "aliases": [
+        "communicate",
+        "communicating",
+        "explaining technical",
+        "explain technical",
+        "presenting",
+        "presentation",
+        "non-technical stakeholder"
+      ],
+      "stories": [
+        "zim-aws-cost-review",
+        "zim-sbb-feature-scope",
+        "zim-multi-tenancy"
+      ],
+      "questions": [
+        "Tell me about a time Alex explained something technical to a non-technical stakeholder.",
+        "How does Alex communicate technical constraints?",
+        "How does Alex prevent misunderstandings?"
+      ]
+    },
+    {
+      "id": "problem-solving",
+      "name": "Problem-solving",
+      "group": "core",
+      "description": "Finding the real cause of a problem and fixing it.",
+      "aliases": [
+        "problem solving",
+        "solve problems",
+        "solved a problem",
+        "difficult problem",
+        "hard problem",
+        "technical problem",
+        "debugging",
+        "troubleshooting"
+      ],
+      "stories": [
+        "zim-sql-performance",
+        "zim-black-friday",
+        "operafy-infrastructure",
+        "zim-aws-cost-review",
+        "zim-sns-migration",
+        "zim-multi-tenancy",
+        "total-guess-evaluation"
+      ],
+      "questions": [
+        "Describe a difficult technical problem Alex solved.",
+        "How does Alex approach debugging?",
+        "Tell me about a time Alex improved performance."
+      ]
+    },
+    {
+      "id": "attention-to-detail",
+      "name": "Attention to detail",
+      "group": "core",
+      "description": "Checking the details that decide whether something really works.",
+      "aliases": [
+        "detail oriented",
+        "thorough",
+        "thoroughness",
+        "quality assurance",
+        "caught a defect",
+        "catch defects",
+        "thorough testing"
+      ],
+      "stories": [
+        "zim-sbb-quality",
+        "clash-fair-benchmarking",
+        "sol-accessibility",
+        "zim-sql-performance"
+      ],
+      "questions": [
+        "Tell me about a time Alex caught an important defect.",
+        "How does Alex ensure quality?",
+        "Describe a situation where thorough testing mattered."
+      ]
+    },
+    {
+      "id": "ownership",
+      "name": "Ownership & accountability",
+      "group": "core",
+      "description": "Taking responsibility for work from start to finish, including when it goes wrong.",
+      "aliases": [
+        "accountability",
+        "accountable",
+        "took ownership",
+        "owned end to end",
+        "end to end"
+      ],
+      "stories": [
+        "zim-live-chat",
+        "zim-black-friday",
+        "zim-sns-migration",
+        "zim-test-gate",
+        "zim-multi-tenancy"
+      ],
+      "questions": [
+        "Tell me about a project Alex owned end to end.",
+        "How does Alex take responsibility for production systems?",
+        "Describe a situation where Alex took initiative."
+      ]
+    },
+    {
+      "id": "adaptability",
+      "name": "Adaptability",
+      "group": "core",
+      "description": "Changing approach, and learning new things, as circumstances change.",
+      "aliases": [
+        "adapt",
+        "adaptable",
+        "adapting",
+        "changed approach",
+        "change approach",
+        "new technology",
+        "changing responsibilities"
+      ],
+      "stories": [
+        "aws-learning",
+        "zim-estimates-feedback",
+        "zim-black-friday",
+        "zim-sns-migration",
+        "sol-accessibility"
+      ],
+      "questions": [
+        "Tell me about a time Alex learned a new technology.",
+        "How has Alex adapted to changing responsibilities?",
+        "Describe a situation where Alex had to change approach."
+      ]
+    },
+    {
+      "id": "prioritisation",
+      "name": "Prioritisation",
+      "group": "core",
+      "description": "Deciding what matters most, and acting on it.",
+      "aliases": [
+        "prioritise",
+        "prioritize",
+        "priorities",
+        "prioritization",
+        "competing priorities",
+        "urgent problem",
+        "deadlines"
+      ],
+      "stories": [
+        "zim-black-friday",
+        "zim-estimates-feedback",
+        "zim-sbb-feature-scope"
+      ],
+      "questions": [
+        "How does Alex handle competing priorities?",
+        "Tell me about a time Alex had to respond to an urgent problem.",
+        "How does Alex manage deadlines?"
+      ]
+    },
+    {
+      "id": "conflict-resolution",
+      "name": "Conflict resolution",
+      "group": "core",
+      "description": "Reaching agreement when priorities pull in different directions.",
+      "aliases": [
+        "conflict",
+        "disagreement",
+        "disagreements",
+        "disagree",
+        "disagreed",
+        "compromise",
+        "push back"
+      ],
+      "stories": [
+        "zim-sbb-feature-scope"
+      ],
+      "questions": [
+        "Tell me about a time Alex disagreed with stakeholders.",
+        "How does Alex handle conflicting product and engineering priorities?",
+        "Describe a situation where Alex helped reach a compromise."
+      ]
+    },
+    {
+      "id": "handling-feedback",
+      "name": "Handling feedback",
+      "group": "core",
+      "description": "Acting on advice and changing how Alex works.",
+      "aliases": [
+        "feedback",
+        "criticism",
+        "constructive criticism",
+        "advice",
+        "critique"
+      ],
+      "stories": [
+        "zim-estimates-feedback"
+      ],
+      "questions": [
+        "Tell me about a time Alex received constructive criticism.",
+        "How does Alex respond to feedback?",
+        "What has Alex changed about the way Alex works?"
+      ],
+      "gap": "One example. Who gave the advice isn't recorded."
+    },
+    {
+      "id": "learning-from-failure",
+      "name": "Learning from failure",
+      "group": "core",
+      "description": "Responding to mistakes and wrong assumptions, and changing what happens next.",
+      "aliases": [
+        "failure",
+        "failed",
+        "mistake",
+        "mistakes",
+        "went wrong",
+        "go wrong",
+        "according to plan",
+        "learn from"
+      ],
+      "stories": [
+        "zim-black-friday",
+        "total-guess-evaluation"
+      ],
+      "questions": [
+        "Tell me about a mistake Alex learned from.",
+        "Describe a situation that didn't go according to plan.",
+        "How does Alex respond when something goes wrong?"
+      ],
+      "gap": "No personal mistake by Alex is documented: the Black Friday oversight was a team one."
+    },
+    {
+      "id": "initiative",
+      "name": "Initiative",
+      "group": "core",
+      "description": "Spotting a problem or opportunity and acting without being asked.",
+      "aliases": [
+        "proactive",
+        "without being asked",
+        "own initiative",
+        "self-starter",
+        "save money"
+      ],
+      "stories": [
+        "zim-aws-cost-review",
+        "sol-accessibility",
+        "aws-learning",
+        "operafy-infrastructure"
+      ],
+      "questions": [
+        "Tell me about a time Alex improved something without being asked.",
+        "Has Alex identified opportunities to save money?",
+        "Describe a project Alex started independently."
+      ]
+    },
+    {
+      "id": "customer-focus",
+      "name": "Customer focus",
+      "group": "core",
+      "description": "Shaping decisions around the people who use the software.",
+      "aliases": [
+        "end users",
+        "end user",
+        "user experience",
+        "customer issue",
+        "customer focused"
+      ],
+      "stories": [
+        "zim-black-friday",
+        "sol-accessibility",
+        "zim-sbb-quality",
+        "zim-live-chat"
+      ],
+      "questions": [
+        "How does Alex consider end users?",
+        "Tell me about a time Alex prioritised a customer issue.",
+        "How does Alex approach accessibility?"
+      ]
+    },
+    {
+      "id": "balancing-speed-and-quality",
+      "name": "Balancing speed and quality",
+      "group": "mindset",
+      "description": "Moving quickly without skipping the checks that keep users safe.",
+      "aliases": [
+        "speed and quality",
+        "quality and speed",
+        "deliver quickly",
+        "move fast",
+        "speed versus quality"
+      ],
+      "stories": [
+        "zim-black-friday",
+        "zim-test-gate",
+        "zim-estimates-feedback"
+      ],
+      "questions": [
+        "How does Alex deliver quickly without compromising quality?",
+        "Tell me about a time Alex fixed an urgent production problem.",
+        "How does Alex decide how much testing is appropriate?"
+      ]
+    },
+    {
+      "id": "working-with-ambiguity",
+      "name": "Working with ambiguity",
+      "group": "mindset",
+      "description": "Turning loosely defined requests into a clear, agreed scope.",
+      "aliases": [
+        "ambiguity",
+        "ambiguous",
+        "unclear requirements",
+        "vague requirements",
+        "define scope",
+        "project scope"
+      ],
+      "stories": [
+        "zim-sbb-feature-scope"
+      ],
+      "questions": [
+        "How does Alex handle unclear requirements?",
+        "Tell me about a time Alex helped define project scope.",
+        "How does Alex work with non-technical stakeholders?"
+      ],
+      "gap": "One example, from the white-label scope discussions."
+    },
+    {
+      "id": "technical-decision-making",
+      "name": "Technical decision-making",
+      "group": "mindset",
+      "description": "Weighing trade-offs such as cost, reliability and maintainability before choosing.",
+      "aliases": [
+        "decision making",
+        "technical decision",
+        "technical decisions",
+        "decisions",
+        "trade-off",
+        "trade-offs",
+        "tradeoff",
+        "alternative architectures",
+        "architecture choice"
+      ],
+      "stories": [
+        "zim-multi-tenancy",
+        "zim-sns-migration",
+        "operafy-infrastructure",
+        "clash-fair-benchmarking",
+        "zim-live-chat",
+        "total-guess-evaluation"
+      ],
+      "questions": [
+        "Tell me about a technical trade-off Alex made.",
+        "How does Alex evaluate alternative architectures?",
+        "How does Alex balance cost, scalability and maintainability?"
+      ]
+    },
+    {
+      "id": "cross-functional-ownership",
+      "name": "Cross-functional ownership",
+      "group": "mindset",
+      "description": "Carrying work across design, backend, clients and release, and across product and engineering.",
+      "aliases": [
+        "cross-functional",
+        "cross functional",
+        "idea to production",
+        "product and engineering"
+      ],
+      "stories": [
+        "zim-live-chat",
+        "zim-sbb-feature-scope"
+      ],
+      "questions": [
+        "How does Alex take a feature from idea to production?",
+        "Tell me about a project involving engineering and product.",
+        "How does Alex coordinate work across different responsibilities?"
+      ]
+    },
+    {
+      "id": "continuous-improvement",
+      "name": "Continuous improvement",
+      "group": "mindset",
+      "description": "Making working systems and working habits better over time.",
+      "aliases": [
+        "improvement",
+        "improve",
+        "improved",
+        "improving",
+        "better over time"
+      ],
+      "stories": [
+        "zim-test-gate",
+        "zim-sql-performance",
+        "zim-estimates-feedback",
+        "zim-aws-cost-review",
+        "zim-sns-migration",
+        "total-guess-evaluation",
+        "aws-learning"
+      ],
+      "questions": [
+        "Tell me about a system Alex improved.",
+        "How does Alex improve working practices?",
+        "Describe a time Alex improved testing or reliability."
+      ]
+    }
+  ],
+  "interests": {
+    "personal": [
+      {
+        "id": "building-things",
+        "title": "Building things",
+        "text": "Alex enjoys building and assembling things: custom PCs in the past, and even IKEA furniture, with a good cup of tea. The appeal is seeing how individual parts fit together into something functional, and sometimes beautiful. Software gives Alex the same satisfaction.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "learning-italian",
+        "title": "Learning Italian",
+        "text": "Alex is learning Italian, which doesn't come naturally. Consistent practice and small daily improvements have worked better than occasional bursts of effort, and Alex takes the same approach to software development.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      }
+    ],
+    "technical": [
+      {
+        "id": "creative-problem-solving",
+        "title": "Creative problem-solving",
+        "text": "Alex enjoys solving real problems and presenting the solution elegantly. Alex sees a lot of creativity in software, especially where technical work meets thoughtful UI and UX.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "cloud-infrastructure",
+        "title": "Cloud infrastructure",
+        "text": "How systems are designed, deployed, secured and optimised, as in Alex's AWS work at ZIM and the Operafy infrastructure.",
+        "projects": [
+          "zim-connections",
+          "operafy"
+        ],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "ai-evidence",
+        "title": "AI and evidence-based engineering",
+        "text": "Practical AI that can be evaluated and grounded in reliable information, as in Total Guess.",
+        "projects": [
+          "total-guess"
+        ],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "performance-experimentation",
+        "title": "Performance and experimentation",
+        "text": "Benchmarking, programming languages and reproducible experiments, as in Clash of Langs.",
+        "projects": [
+          "clash-of-langs"
+        ],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "native-accessibility",
+        "title": "Native applications and accessibility",
+        "text": "Native app development, interface design and accessibility, as in SOL.",
+        "projects": [
+          "sol"
+        ],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      }
+    ]
+  },
+  "background": {
+    "motivation": [
+      {
+        "id": "from-finance",
+        "title": "From finance to software",
+        "text": "Alex studied economics and worked in finance, and first approached software as a valuable technical skill to bring to the financial industry. While learning to program, Alex found a real enjoyment in building products that people use, and decided to pursue software development professionally, while staying interested in finance and investment.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      }
+    ],
+    "workingEnvironment": [
+      {
+        "id": "small-teams",
+        "title": "How Alex works best",
+        "text": "Alex works best in a small engineering team with close collaboration: solving problems together, breaking complex projects into manageable tasks, demonstrating progress as it happens and celebrating small wins, and building software that is both functional and elegant, with thoughtful user experience.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      }
+    ]
+  }
+}

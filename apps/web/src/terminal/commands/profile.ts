@@ -58,7 +58,7 @@ export const about: Command = {
     blocks.push(
       paragraph([
         text('Next: ', 'muted'),
-        ...joined([command('projects'), command('skills'), command('approach'), command('contact')]),
+        ...joined([command('projects'), command('skills'), command('soft-skills'), command('interests'), command('approach'), command('contact')]),
       ]),
     );
     return { blocks };

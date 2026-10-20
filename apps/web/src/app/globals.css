@@ -95,6 +95,27 @@
     border-color: var(--color-term-accent);
     color: var(--color-term-accent);
   }
+  /* The two interviews: the defining actions, so they stand out from the other chips. */
+  .term-chip-primary {
+    border-color: color-mix(in srgb, var(--color-term-accent) 60%, transparent);
+    color: var(--color-term-accent);
+  }
+  /* The main choices on the welcome screen. */
+  .term-action {
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--color-term-accent) 60%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--color-term-accent) 8%, transparent);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 120ms ease, background-color 120ms ease;
+  }
+  .term-action:hover {
+    border-color: var(--color-term-accent);
+    background: color-mix(in srgb, var(--color-term-accent) 14%, transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

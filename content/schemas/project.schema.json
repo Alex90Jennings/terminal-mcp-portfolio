@@ -51,7 +51,8 @@
           "enum": [
             "employment",
             "personal",
-            "client"
+            "client",
+            "portfolio"
           ]
         },
         "organisation": {

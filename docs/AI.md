@@ -15,7 +15,7 @@ flowchart LR
     checks["Origin · size · schema<br/>AI configured?"] --> limits["Rate limits (fail closed)<br/>Budget reservation (fail closed)"]
     limits --> loop["Chat loop (packages/assistant)"]
   end
-  loop <-->|tool calls| mcp["In-process MCP client<br/>→ the six portfolio tools"]
+  loop <-->|tool calls| mcp["In-process MCP client<br/>→ the seven portfolio tools"]
   loop <-->|stream| model["ChatModel<br/>Bedrock · Claude API · scripted"]
   route -->|server-sent events| terminal
 ```
@@ -64,9 +64,17 @@ Those are addressed by the prompt's rules, the always-visible sources and the ev
 
 **It also can't read negation, and that's deliberate.** "The portfolio doesn't record an 82% accuracy figure" is withheld when 82% isn't in the tool results, even though the sentence denies it. This happened in the Haiku evaluation (October 2026): the visitor asked "Is Total Guess's hybrid search 82% accurate?"; 82% appears nowhere in the portfolio (the measured result is an nDCG@10 of 0.819); the sentence made no false claim, but the gate withheld it. **The gate was left unchanged.** Exempting negated sentences would let a sentence that only looks negated ("not only 82% accurate but…") carry an unverified figure to the visitor, and that's exactly what fail-closed exists to prevent. The fix belongs in the prompt instead: refer to an unrecorded figure from the visitor without repeating the number.
 
-**Presentation guards (after the check).** Released sentences pass through two deterministic rewrites, applied after the figure check so they can't affect it:
+**Absence claims.** A partial lookup once led the model to say the portfolio didn't record things it does record: Clash of Langs' reason for not using Vercel, and ZIM@SBB's responsibilities. There are now two structural safeguards:
+- **A leak check on every sentence.** A sentence that repeats eight or more consecutive words of the system prompt, contains a credential format or names a secret setting is withheld, and the visitor is told only that internal configuration was withheld. Questions are cleaned of escape, control and invisible characters before they reach the model. See [AI_GUARDRAILS.md](AI_GUARDRAILS.md).
+- **Follow-ups come from evidence, not another model call.** The `done` event names the STAR stories the answer told (examples this turn retrieved whose action and result the answer retells, or whose title it names). The terminal offers the full story, another example, and Alex's role on the one project the answer was about; nothing else.
+- **Retrieval says what it left out.** `get_project` reports the sections it retrieved, the sections with content it didn't, and whether the record is complete. The chat loop passes the visitor's question as `relatedTo`, so a partial record also carries the omitted passages that match it, at most four, never whole records. For "Why doesn't Clash of Langs run on Vercel?", that brings in "Vercel hosts only the UI and a thin API".
+- **Examples count as part of a project.** A published STAR example can hold a fact its project's record doesn't (the SNS migration and the AWS cost review are told only in ZIM Connections' examples). So `get_project` lists the project's examples, adds the example passages that match the question (`relatedFromExamples`, each with its basis), and reports `complete: false` while the project has examples, even when every section was fetched. `search_projects` also names the examples that match. With no published examples (as now), the output is exactly as before.
+- **A fail-closed check on whole-section claims.** A sentence saying the portfolio doesn't record a project's responsibilities, decisions, challenges (or another section) is withheld when that section has content but wasn't retrieved this turn, and the visitor sees a notice. The project is the first one the sentence names, else the last one named earlier in the answer. To check this, the loop loads each project's full record once per answer, for verification only: those records are never evidence for the figure check and never reach the model. Claims about a specific fact aren't checked this way. Replayed against 138 recorded answers, a word-matching version withheld 10 to 13 correct "not documented" sentences per run, while the section-level rule withheld only the one false claim. Specific facts are covered by the retrieval safeguard and the prompt instead. A project's examples count as one more section: "the portfolio has no examples of…" about a project is withheld until `get_examples` has either returned everything that matched or told each of that project's examples.
+
+**Presentation guards (after the checks).** Released sentences pass through deterministic rewrites, applied after the checks so they can't affect them:
 - internal project ids become display names (`zim-sbb` → ZIM@SBB), matching whole ids only, never inside URLs or repository names;
-- Markdown bold markers and heading hashes are removed, because the terminal shows plain text and would print them literally.
+- Markdown bold markers and heading hashes are removed, because the terminal shows plain text and would print them literally;
+- a pasted "Sources:" line is removed, because the terminal already lists the sources under the answer.
 
 ## Conversation history
 

@@ -6,6 +6,7 @@
   "scripts": {
     "knowledge": "npm --prefix ../../packages/knowledge run build --silent",
     "dev": "npm run knowledge && next dev",
+    "dev:preview": "KNOWLEDGE_PREVIEW=drafts npm run knowledge && next dev",
     "build": "npm run knowledge && next build",
     "start": "next start",
     "typecheck": "npm run knowledge && next typegen && tsc --noEmit",
@@ -16,6 +17,7 @@
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "0.35.0",
     "@anthropic-ai/sdk": "0.135.0",
+    "@aws-sdk/client-s3": "3.1153.0",
     "@aws-sdk/credential-provider-web-identity": "3.972.81",
     "@portfolio/assistant": "0.1.0",
     "@portfolio/knowledge": "0.1.0",
@@ -23,6 +25,7 @@
     "@upstash/ratelimit": "2.2.0",
     "@upstash/redis": "1.39.0",
     "@vercel/functions": "3.10.1",
+    "@vercel/oidc-aws-credentials-provider": "3.3.13",
     "next": "16.4.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",

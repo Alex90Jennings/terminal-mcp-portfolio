@@ -43,7 +43,10 @@ describe('experienceOf', () => {
   it('keeps employment, education and certifications as separate sections', () => {
     expect(Object.keys(experience)).toEqual(['employment', 'education', 'certifications', 'citations']);
     expect(experience.education.map(({ institution }) => institution)).toEqual(['QA Ltd.', 'Boolean UK', 'University of Bristol']);
-    expect(experience.certifications.map(({ progress }) => progress)).toEqual(['earned', 'earned', 'in-progress']);
+    // Earned and in-progress certifications are kept apart, and only earned ones are counted (two held, one being studied for).
+    expect(experience.certifications.earned.map(({ name }) => name)).toEqual(['AWS Certified AI Practitioner', 'AWS Certified Cloud Practitioner']);
+    expect(experience.certifications.earnedCount).toBe(2);
+    expect(experience.certifications.inProgress.map(({ name, progress }) => [name, progress])).toEqual([['AWS Certified Solutions Architect – Associate', 'in-progress']]);
   });
 
   it('draws each role’s responsibilities from its linked projects, attribution intact', () => {

@@ -53,7 +53,7 @@ variable "allowed_models" {
 }
 
 variable "create_oidc_provider" {
-  description = "Create the Vercel OIDC identity provider. Set false if the account already has one for this team."
+  description = "Create the Vercel OIDC identity provider. infra/cv owns it, so leave false unless infra/cv isn't used."
   type        = bool
-  default     = true
+  default     = false
 }

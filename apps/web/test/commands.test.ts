@@ -20,7 +20,7 @@ describe('help', () => {
 });
 
 describe('projects', () => {
-  it('lists all six projects with their focus and tags, in order', () => {
+  it('lists all seven projects with their focus and tags, in order', () => {
     const text = output('projects');
     kb.projects.forEach((project, index) => {
       expect(text).toContain(`[${index + 1}] ${project.name}`);
@@ -68,7 +68,7 @@ describe('projects', () => {
     const project = kb.getProject('operafy');
     const text = output('projects operafy');
     expect(text).toContain(project?.tagline);
-    expect(text).toContain('My role');
+    expect(text).toContain("Alex's role");
     expect(text).toContain('Terraform');
     expect(hrefsIn(run('projects operafy').blocks)).toEqual(project?.links.map(({ url }) => url));
   });
@@ -104,7 +104,7 @@ describe('projects', () => {
     expect(commandsIn(result.blocks)).toContain('projects sol architecture');
   });
 
-  it.each(['projects 0', 'projects 7', 'projects kubernetes'])('reports %s as not found and lists the projects', (input) => {
+  it.each(['projects 0', 'projects 8', 'projects kubernetes'])('reports %s as not found and lists the projects', (input) => {
     const result = run(input);
     expect(blocksToText(result.blocks)).toMatch(/^No project called/);
     expect(commandsIn(result.blocks)).toEqual(kb.projects.map(({ id }) => `projects ${id}`));

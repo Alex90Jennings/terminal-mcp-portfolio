@@ -8,6 +8,8 @@ export interface CommandContext {
   commands: readonly Command[];
   /** Whether natural-language questions can be answered by the AI assistant. */
   aiAvailable: boolean;
+  /** Whether Alex's CV can be downloaded from /api/cv (the deployment is configured with it). */
+  cvAvailable?: boolean;
 }
 
 export interface Command {

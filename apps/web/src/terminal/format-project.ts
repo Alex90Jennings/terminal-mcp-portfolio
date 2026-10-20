@@ -1,4 +1,4 @@
-import { PROJECT_CONTEXT_LABELS, RESPONSIBILITY_SCOPE_LABELS, type PortfolioProject } from '@portfolio/knowledge/runtime';
+import { PROJECT_CONTEXT_LABELS, RESPONSIBILITY_SCOPE_LABELS, projectEvidence, type KnowledgeBase, type PortfolioProject } from '@portfolio/knowledge/runtime';
 import { bullets, command, heading, joined, link, paragraph, subheading, text, type Block, type Inline } from './output';
 
 export const PROJECT_SECTIONS = ['overview', 'architecture', 'challenges', 'decisions', 'lessons', 'sources', 'all'] as const;
@@ -21,7 +21,8 @@ export function resolveSection(input: string | undefined): ProjectSection | unde
   return (PROJECT_SECTIONS as readonly string[]).includes(key) ? (key as ProjectSection) : SECTION_ALIASES[key];
 }
 
-export function formatProject(project: PortfolioProject, section: ProjectSection): Block[] {
+/** With `kb`, the overview also shows the stories and skills the project demonstrates. */
+export function formatProject(project: PortfolioProject, section: ProjectSection, kb?: KnowledgeBase): Block[] {
   const blocks: Block[] = [heading(project.name), ...summary(project)];
   const parts: Record<Exclude<ProjectSection, 'all' | 'overview'>, () => Block[]> = {
     architecture: () => architecture(project),
@@ -32,9 +33,9 @@ export function formatProject(project: PortfolioProject, section: ProjectSection
   };
 
   if (section === 'overview') {
-    blocks.push(...overview(project), ...linkSection(project), ...more(project));
+    blocks.push(...overview(project, kb), ...linkSection(project), ...more(project));
   } else if (section === 'all') {
-    blocks.push(...overview(project));
+    blocks.push(...overview(project, kb));
     for (const build of Object.values(parts)) blocks.push(...build());
   } else {
     const content = parts[section]();
@@ -53,24 +54,38 @@ function summary(project: PortfolioProject): Block[] {
   return [paragraph(joined(meta.map((part) => text(part, 'accent')))), paragraph(project.tagline)];
 }
 
-function overview(project: PortfolioProject): Block[] {
+/** Alex's role and what the project shows come first; the description, challenges and technology list follow. */
+function overview(project: PortfolioProject, kb?: KnowledgeBase): Block[] {
   const blocks: Block[] = [];
-  if (project.overview.length > 0) blocks.push(subheading('Overview'), bullets(project.overview.map(({ text: fact }) => [fact])));
   if (project.responsibilities.length > 0) {
     blocks.push(
-      subheading('My role'),
+      subheading("Alex's role"),
       bullets(project.responsibilities.map((item) => [item.text, text(` (${RESPONSIBILITY_SCOPE_LABELS[item.scope]})`, 'muted')])),
     );
   }
-  if (project.technologies.length > 0) {
-    blocks.push(subheading('Technology'), paragraph(joined(project.technologies.map(({ name }) => name))));
-  }
+  if (kb !== undefined) blocks.push(...demonstrates(project, kb));
+  if (project.overview.length > 0) blocks.push(subheading('About the project'), bullets(project.overview.map(({ text: fact }) => [fact])));
   if (project.challenges.length > 0) {
     blocks.push(
       subheading('Engineering challenges'),
       bullets(project.challenges.map(({ title }) => [title])),
     );
   }
+  if (project.technologies.length > 0) {
+    blocks.push(subheading('Technology'), paragraph(joined(project.technologies.map(({ name }) => name))));
+  }
+  return blocks;
+}
+
+/** The skills and STAR stories this project evidences, each a link to the full example or skill. */
+function demonstrates(project: PortfolioProject, kb: KnowledgeBase): Block[] {
+  const { stories, competencies, skills } = projectEvidence(kb, project.id);
+  if (stories.length + competencies.length + skills.length === 0) return [];
+  const lines: Inline[][] = [];
+  if (competencies.length > 0) lines.push([text('Soft skills: ', 'muted'), ...joined(competencies.map(({ id, name }) => command(name, `soft-skills ${id}`)))]);
+  if (skills.length > 0) lines.push([text('Technical skills: ', 'muted'), ...joined(skills.map(({ name }) => text(name)))]);
+  const blocks: Block[] = [subheading('What it demonstrates'), ...lines.map((line) => paragraph(line))];
+  if (stories.length > 0) blocks.push(subheading('STAR examples'), bullets(stories.map((story) => [command(story.title, `star ${story.id}`)])));
   return blocks;
 }
 

@@ -1,7 +1,8 @@
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { costOf, estimateRequestTokens, estimateTokens, worstCaseCallCost, type ModelPrice } from './cost.ts';
-import { collectCitations, projectsMentioned, toPlainText, withDisplayNames, type Citation } from './evidence.ts';
+import { collectCitations, projectsMentioned, storiesTold, toPlainText, withDisplayNames, type Citation } from './evidence.ts';
+import { RetrievalLedger } from './absence.ts';
 import { SentenceGate, type Withheld } from './gate.ts';
 import { addUsage, NO_USAGE, type ChatModel, type ContentPart, type ModelMessage, type ModelRequest, type ToolSpec, type Usage } from './model.ts';
 import { SYSTEM_PROMPT } from './prompt.ts';
@@ -52,6 +53,8 @@ export interface ChatOutcome {
   toolCalls: { name: string; isError: boolean }[];
   sources: Citation[];
   projects: { id: string; name: string }[];
+  /** The examples (STAR stories) this turn retrieved that the answer tells. */
+  stories: { id: string; title: string }[];
   /** Sentences never shown because their figures weren't in this turn's tool results. */
   withheld: Withheld[];
   /** Set when `stop` is "error": the underlying failure, for server logs only. */
@@ -68,6 +71,14 @@ const NOTICES: Partial<Record<ChatStop, string>> = {
 export const withheldNotice = (count: number): string =>
   `${count === 1 ? 'One statement was' : `${count} statements were`} withheld because ${count === 1 ? 'its figures' : 'their figures'} couldn’t be matched to the portfolio data. ` +
   'This check covers numbers only, so please rely on the sources below.';
+
+export const leakNotice = (count: number): string =>
+  `${count === 1 ? 'One statement was' : `${count} statements were`} withheld because ${count === 1 ? 'it' : 'they'} repeated internal configuration. ` +
+  'Ask about Alex’s work instead.';
+
+export const absenceNotice = (count: number): string =>
+  `${count === 1 ? 'One statement was' : `${count} statements were`} withheld because ${count === 1 ? 'it' : 'they'} said the portfolio doesn’t record something ` +
+  'before the whole project had been checked. Ask about that detail directly for a full lookup.';
 
 /**
  * One visitor question, answered from the portfolio's MCP tools. The model may
@@ -92,7 +103,25 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
   const evidence: string[] = [];
   const results: unknown[] = [];
   const displayNames = withDisplayNames(options.projects);
-  const gate = new SentenceGate(() => evidence, (text) => onEvent({ type: 'text', delta: text }), (text) => toPlainText(displayNames(text)));
+  // Full records for the absence check only: never evidence, never sent to the model.
+  const records = new Map<string, Readonly<Record<string, unknown>>>();
+  const examples = new Map<string, string[]>();
+  await Promise.all(
+    options.projects.map(async ({ id }) => {
+      const full = await callTool(mcp, 'get_project', { project: id });
+      const structured = full.structured as { project?: Record<string, unknown>; examples?: { id: string }[] } | undefined;
+      if (full.isError || structured?.project === undefined) return;
+      records.set(id, structured.project);
+      examples.set(id, (structured.examples ?? []).map((example) => example.id));
+    }),
+  );
+  const ledger = new RetrievalLedger(options.projects, records, examples);
+  const gate = new SentenceGate(
+    () => evidence,
+    (text) => onEvent({ type: 'text', delta: text }),
+    (text) => toPlainText(displayNames(text)),
+    (sentence, released) => ledger.check(sentence, released),
+  );
 
   let usage = NO_USAGE;
   let rounds = 0;
@@ -143,12 +172,18 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
         calls.map(async (call, index) => {
           const label = toolLabel(call.name, call.input);
           onEvent({ type: 'tool', name: call.name, label, status: 'running' });
-          const result = await callTool(mcp, call.name, call.input);
+          // A partial project record also brings the omitted passages that bear on the question.
+          const input =
+            call.name === 'get_project' && typeof call.input === 'object' && call.input !== null
+              ? { relatedTo: options.question.slice(0, 500), ...(call.input as Record<string, unknown>) }
+              : call.input;
+          const result = await callTool(mcp, call.name, input);
           toolCalls.push({ name: call.name, isError: result.isError });
           onEvent({ type: 'tool', name: call.name, label, status: result.isError ? 'error' : 'done' });
           if (!result.isError) {
             results.push(result.structured);
             evidence.push(result.text);
+            ledger.record(call.name, result.structured);
           }
           toolResults[index] = { type: 'tool_result', callId: call.id, content: result.text, isError: result.isError };
         }),
@@ -171,7 +206,12 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
 
   const notice = NOTICES[stop];
   if (notice !== undefined) onEvent({ type: 'notice', message: notice });
-  if (gate.withheld.length > 0) onEvent({ type: 'notice', message: withheldNotice(gate.withheld.length) });
+  const leaks = gate.withheld.filter(({ leak }) => leak !== undefined).length;
+  const absences = gate.withheld.filter(({ project }) => project !== undefined).length;
+  const figures = gate.withheld.length - absences - leaks;
+  if (figures > 0) onEvent({ type: 'notice', message: withheldNotice(figures) });
+  if (absences > 0) onEvent({ type: 'notice', message: absenceNotice(absences) });
+  if (leaks > 0) onEvent({ type: 'notice', message: leakNotice(leaks) });
 
   const answer = gate.text.trim();
   return {
@@ -183,6 +223,13 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
     toolCalls,
     sources: collectCitations(results),
     projects: projectsMentioned(answer, options.projects).map(({ id, name }) => ({ id, name })),
+    stories: storiesTold(
+      answer,
+      results.flatMap((result) => {
+        const examples = (result as { examples?: unknown } | undefined)?.examples;
+        return Array.isArray(examples) ? (examples as Parameters<typeof storiesTold>[1]) : [];
+      }),
+    ),
     withheld: gate.withheld,
     ...(error !== undefined && { error }),
   };

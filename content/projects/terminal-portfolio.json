@@ -1,0 +1,317 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "terminal-portfolio",
+  "name": "Terminal Portfolio",
+  "aliases": [
+    "portfolio-mcp",
+    "terminal-mcp-portfolio"
+  ],
+  "order": 7,
+  "focus": "Grounded AI assistant and MCP server",
+  "tagline": "This portfolio: a terminal-style site whose verified, source-cited knowledge base is also a public MCP server and the only source for its AI assistant.",
+  "listingTags": [
+    "MCP",
+    "TypeScript",
+    "Next.js"
+  ],
+  "context": {
+    "kind": "portfolio"
+  },
+  "visibility": "public",
+  "topics": [
+    "Model Context Protocol",
+    "AI grounding",
+    "LLM evaluation",
+    "rate limiting",
+    "cost controls",
+    "knowledge base validation",
+    "terminal UI"
+  ],
+  "sources": [
+    {
+      "id": "readme",
+      "label": "Terminal Portfolio README",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio"
+    },
+    {
+      "id": "mcp-doc",
+      "label": "docs/MCP.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio/blob/main/docs/MCP.md"
+    },
+    {
+      "id": "ai-doc",
+      "label": "docs/AI.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio/blob/main/docs/AI.md"
+    },
+    {
+      "id": "evaluation-doc",
+      "label": "docs/EVALUATION.md",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio/blob/main/docs/EVALUATION.md"
+    },
+    {
+      "id": "bedrock-readme",
+      "label": "infra/bedrock README",
+      "kind": "documentation",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio/blob/main/infra/bedrock/README.md"
+    },
+    {
+      "id": "commit-history",
+      "label": "Terminal Portfolio commit history",
+      "kind": "repository",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio/commits/main"
+    },
+    {
+      "id": "author",
+      "label": "Alex, 20 Oct 2026",
+      "kind": "author-statement"
+    },
+    {
+      "id": "live-site",
+      "label": "www.builtbyaj.io",
+      "kind": "website",
+      "url": "https://www.builtbyaj.io"
+    }
+  ],
+  "overview": [
+    {
+      "text": "Alex's portfolio, built in TypeScript and Next.js around an interactive terminal. A structured knowledge base, in which every claim cites its sources, feeds the terminal, a public read-only MCP server with seven tools and four resources, and an AI assistant.",
+      "sources": [
+        "readme",
+        "mcp-doc"
+      ]
+    },
+    {
+      "text": "The assistant answers only from the portfolio's MCP tools and lists the sources under each answer. Every sentence is checked before it is shown: one whose figures don't appear in that turn's tool results is withheld.",
+      "sources": [
+        "readme",
+        "ai-doc"
+      ]
+    },
+    {
+      "text": "Per-visitor rate limits and spending limits of $10 a day and $50 a month are checked before any model call; if they can't be checked, the request is refused.",
+      "sources": [
+        "ai-doc"
+      ]
+    },
+    {
+      "text": "Deployed on Vercel in October 2026 at www.builtbyaj.io.",
+      "sources": [
+        "author",
+        "live-site"
+      ]
+    }
+  ],
+  "technologies": [
+    {
+      "name": "TypeScript",
+      "category": "language",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Next.js 16",
+      "category": "frontend",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "React 19",
+      "category": "frontend",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Node.js",
+      "category": "backend",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Model Context Protocol SDK",
+      "category": "ai",
+      "sources": [
+        "mcp-doc"
+      ]
+    },
+    {
+      "name": "Claude API",
+      "category": "ai",
+      "sources": [
+        "ai-doc"
+      ]
+    },
+    {
+      "name": "Amazon Bedrock",
+      "category": "ai",
+      "sources": [
+        "ai-doc",
+        "bedrock-readme"
+      ]
+    },
+    {
+      "name": "Zod",
+      "category": "backend",
+      "sources": [
+        "mcp-doc"
+      ]
+    },
+    {
+      "name": "Upstash Redis",
+      "category": "data",
+      "sources": [
+        "mcp-doc"
+      ]
+    },
+    {
+      "name": "Terraform",
+      "category": "devops",
+      "sources": [
+        "bedrock-readme"
+      ]
+    },
+    {
+      "name": "Vitest",
+      "category": "testing",
+      "sources": [
+        "readme"
+      ]
+    },
+    {
+      "name": "Playwright",
+      "category": "testing",
+      "sources": [
+        "readme"
+      ]
+    }
+  ],
+  "responsibilities": [
+    {
+      "text": "Designed and directed the development of an AI-powered engineering portfolio, defining its requirements, architecture, security constraints and evaluation standards. Used Claude Code as an AI-assisted development tool, reviewing implementation decisions, testing behaviour and validating the results.",
+      "scope": "individual",
+      "sources": [
+        "author",
+        "commit-history"
+      ]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "Every claim in the knowledge base names its sources and is validated by a build step; claims marked unverified are kept out of everything public. The terminal and the MCP server read the same generated bundle, so there is no second copy of the data.",
+        "sources": [
+          "readme",
+          "mcp-doc"
+        ]
+      },
+      {
+        "text": "The MCP server has seven read-only tools and four resources, served over Streamable HTTP at /api/mcp (stateless, JSON responses) and over stdio.",
+        "sources": [
+          "mcp-doc"
+        ]
+      },
+      {
+        "text": "The assistant's chat loop knows models only through one interface, with one adapter for the Claude API and Amazon Bedrock, and a scripted model for tests and local development. It calls the portfolio tools through an in-process MCP client, in at most four tool rounds per answer.",
+        "sources": [
+          "ai-doc"
+        ]
+      }
+    ],
+    "diagrams": [
+      {
+        "title": "How an answer is produced",
+        "format": "mermaid",
+        "source": "flowchart LR\n  terminal[Terminal in the browser] -- POST /api/chat --> route[Chat route: checks, rate limits, budget]\n  route --> loop[Chat loop]\n  loop -- tool calls --> mcp[In-process MCP client: portfolio tools]\n  loop -- stream --> model[Claude API, Bedrock or scripted model]\n  route -- checked sentences, server-sent events --> terminal",
+        "sources": [
+          "ai-doc"
+        ]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "Keeping the assistant's figures grounded",
+      "problem": "A language model can restate a figure wrongly or produce one that the portfolio doesn't contain.",
+      "approach": [
+        "Every sentence is checked before it is shown: its figures must appear in that turn's tool results, or the sentence is withheld.",
+        "A sentence saying the portfolio doesn't record a project's section is withheld when that section has content but wasn't retrieved that turn."
+      ],
+      "sources": [
+        "ai-doc"
+      ]
+    },
+    {
+      "title": "Sharing a Redis database safely",
+      "problem": "The rate limits and the AI budget use a Redis database that can be shared with other applications.",
+      "approach": [
+        "Every portfolio key starts with `portfolio:`, and limiter names can't reach another namespace.",
+        "The portfolio only increments counters and sets their expiry; it never deletes, scans, renames or flushes keys, and a test checks this."
+      ],
+      "sources": [
+        "mcp-doc"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "AI requests fail closed",
+      "decision": "The chat route checks the request, the visitor's rate limits and a daily and monthly budget before any model call, and refuses the request if any of these checks can't be completed.",
+      "rationale": "Every answer costs money, so an unavailable limit or budget store must not mean unlimited spending.",
+      "tradeoffs": [
+        "If the store is down, the assistant is unavailable; the terminal's commands still work."
+      ],
+      "sources": [
+        "ai-doc"
+      ]
+    },
+    {
+      "title": "Choosing the model by evaluation",
+      "decision": "Candidate models answer a fixed, versioned set of questions through the real chat endpoint, scored by deterministic rules, and every answer is reviewed by a person before any model change.",
+      "rationale": "It makes the choice of model objective and repeatable, and catches what automated scoring misses.",
+      "sources": [
+        "evaluation-doc"
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "text": "Automated scores can miss things in both directions: a person reviewing the October 2026 evaluation found one unsupported claim the scorer had passed, and one correct answer it had failed.",
+      "sources": [
+        "evaluation-doc"
+      ]
+    }
+  ],
+  "limitations": [
+    {
+      "text": "As of October 2026 it isn't deployed, the AWS infrastructure for Bedrock hasn't been applied, and only one candidate model has been evaluated.",
+      "sources": [
+        "readme",
+        "bedrock-readme",
+        "evaluation-doc"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "label": "Live site",
+      "url": "https://www.builtbyaj.io",
+      "kind": "live"
+    },
+    {
+      "label": "Source on GitHub",
+      "url": "https://github.com/Alex90Jennings/terminal-mcp-portfolio",
+      "kind": "source"
+    }
+  ],
+  "undocumented": [
+    "Usage figures (none recorded since it was deployed in October 2026)",
+    "Hosting costs"
+  ]
+}

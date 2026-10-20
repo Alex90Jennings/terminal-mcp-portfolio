@@ -81,40 +81,70 @@ export function createSearchIndex(projects: readonly PortfolioProject[]): Indexe
   }));
 }
 
+/** Fields that say what a project is: a term found here counts in full, in each. */
+const DEFINING_FIELDS = new Set<SearchField>(['name', 'focus', 'topics', 'technologies']);
+/** Narrative fields: a term counts in its best two only, so a word repeated across a long write-up doesn't outweigh a project that is about it. */
+const NARRATIVE_FIELDS_COUNTED = 2;
+
 /**
- * Ranks projects by weighted term overlap. Each query term counts once per
- * field, at the field's weight, and a whole-phrase match earns a bonus. A
- * project the query names outright ranks first (see NAMED_PROJECT_BONUS).
+ * How much a project's matches count, by the strength of the evidence it is: production work for an employer (on the CV)
+ * a little more than personal projects, and this portfolio's own project (the site being searched) as supporting context.
+ */
+const CONTEXT_WEIGHTS: Record<PortfolioProject['context']['kind'], number> = { employment: 1.25, client: 1, personal: 1, portfolio: 0.6 };
+
+/**
+ * Umbrella terms visitors use for more specific wording: "AI" for LLM and retrieval work. A query term scores as its best
+ * variant, never the sum, so the umbrella can't outweigh a direct match.
+ */
+const UMBRELLA_TERMS: Record<string, readonly string[]> = { ai: ['llm', 'rag', 'retrieval'] };
+
+/**
+ * Ranks projects by weighted term overlap. Each query term counts in full in each defining field and in its two best
+ * narrative fields, at the fields' weights; a whole-phrase match earns a bonus. Scores are scaled by the share of the
+ * query's terms the project matches, and weighted by the evidence the
+ * project is (CONTEXT_WEIGHTS), and ties go to the curated project order. A project the query names outright ranks first
+ * (see NAMED_PROJECT_BONUS).
  */
 export function search(index: readonly IndexedProject[], query: string, limit = 5): SearchHit[] {
   const terms = [...new Set(tokenise(query))];
   if (terms.length === 0) return [];
   const phrase = normalise(query);
 
-  const hits: SearchHit[] = [];
+  const hits: (SearchHit & { order: number })[] = [];
   for (const { project, passages, names } of index) {
     const named = Math.max(0, ...names.filter((name) => name.every((term) => terms.includes(term))).map((name) => name.length));
-    let score = named * NAMED_PROJECT_BONUS;
+    const fieldScore = (term: string) => {
+      const weights = (Object.keys(FIELD_WEIGHTS) as SearchField[])
+        .filter((field) => passages.some((passage) => passage.field === field && passage.tokens.has(term)))
+        .map((field) => ({ field, weight: FIELD_WEIGHTS[field] }));
+      const defining = weights.filter(({ field }) => DEFINING_FIELDS.has(field)).reduce((sum, { weight }) => sum + weight, 0);
+      const narrative = weights
+        .filter(({ field }) => !DEFINING_FIELDS.has(field))
+        .map(({ weight }) => weight)
+        .sort((a, b) => b - a)
+        .slice(0, NARRATIVE_FIELDS_COUNTED)
+        .reduce((sum, weight) => sum + weight, 0);
+      return defining + narrative;
+    };
+    const termScores = terms.map((term) => Math.max(fieldScore(term), ...(UMBRELLA_TERMS[term] ?? []).map(fieldScore)));
+    // Coverage: a project matching every term of the query beats one matching half of it ("native macOS" vs React Native).
+    const coverage = termScores.filter((score) => score > 0).length / terms.length;
+    let content = termScores.reduce((sum, score) => sum + score, 0);
     const scored: { passage: IndexedPassage; score: number }[] = [];
-
-    for (const field of Object.keys(FIELD_WEIGHTS) as SearchField[]) {
-      const inField = passages.filter((passage) => passage.field === field);
-      const matched = new Set(terms.filter((term) => inField.some((passage) => passage.tokens.has(term))));
-      score += matched.size * FIELD_WEIGHTS[field];
-
-      for (const passage of inField) {
-        const passageTerms = terms.filter((term) => passage.tokens.has(term)).length;
-        if (passageTerms === 0) continue;
-        const phraseBonus = terms.length > 1 && passage.normalised.includes(phrase) ? 1 : 0;
-        score += phraseBonus * FIELD_WEIGHTS[field];
-        scored.push({ passage, score: (passageTerms + phraseBonus) * FIELD_WEIGHTS[field] });
-      }
+    for (const passage of passages) {
+      const passageTerms = terms.filter((term) => passage.tokens.has(term) || (UMBRELLA_TERMS[term] ?? []).some((variant) => passage.tokens.has(variant))).length;
+      if (passageTerms === 0) continue;
+      const phraseBonus = terms.length > 1 && passage.normalised.includes(phrase) ? 1 : 0;
+      content += phraseBonus * FIELD_WEIGHTS[passage.field];
+      scored.push({ passage, score: (passageTerms + phraseBonus) * FIELD_WEIGHTS[passage.field] });
     }
 
+    const score = named * NAMED_PROJECT_BONUS + content * coverage * CONTEXT_WEIGHTS[project.context.kind];
     if (score === 0) continue;
     hits.push({
       projectId: project.id,
       projectName: project.name,
+      order: project.order,
       score: Math.round(score * 100) / 100,
       matches: scored
         .sort((a, b) => b.score - a.score)
@@ -123,7 +153,34 @@ export function search(index: readonly IndexedProject[], query: string, limit = 
     });
   }
 
-  return hits.sort((a, b) => b.score - a.score || a.projectName.localeCompare(b.projectName)).slice(0, limit);
+  return hits
+    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .slice(0, limit)
+    .map(({ order: _order, ...hit }) => hit);
+}
+
+/**
+ * The passages of one project, in the given fields only, that share terms with
+ * the query, best first. Used to show what a partial record left out that
+ * bears on the question.
+ */
+export function searchWithin(
+  index: readonly IndexedProject[],
+  projectId: string,
+  query: string,
+  fields: readonly SearchField[],
+  limit = 4,
+): SearchMatch[] {
+  const terms = [...new Set(tokenise(query))];
+  const entry = index.find(({ project }) => project.id === projectId);
+  if (terms.length === 0 || entry === undefined) return [];
+  return entry.passages
+    .filter((passage) => fields.includes(passage.field))
+    .map((passage) => ({ passage, score: terms.filter((term) => passage.tokens.has(term)).length }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ passage }) => ({ field: passage.field, text: passage.text, sources: passage.sources }));
 }
 
 export function tokenise(text: string): string[] {

@@ -43,6 +43,7 @@ describe('applyChatEvent', () => {
         stop: 'complete',
         sources: [{ label: 'SOL README' }],
         projects: [{ id: 'sol', name: 'SOL' }],
+        stories: [],
         withheldStatements: 0,
         conversation: { turns: [], issuedAt: 0, signature: 'v1.x' },
       },
@@ -62,7 +63,7 @@ describe('applyChatEvent', () => {
 
   it('keeps an error status through the final done event', () => {
     let answer = applyChatEvent(waitingAnswer([]), { type: 'error', message: 'Problem.' });
-    answer = applyChatEvent(answer, { type: 'done', answer: '', stop: 'error', sources: [], projects: [], withheldStatements: 0, conversation: { turns: [], issuedAt: 0, signature: 's' } });
+    answer = applyChatEvent(answer, { type: 'done', answer: '', stop: 'error', sources: [], projects: [], stories: [], withheldStatements: 0, conversation: { turns: [], issuedAt: 0, signature: 's' } });
     expect(answer).toMatchObject({ status: 'error', message: 'Problem.' });
   });
 });
@@ -83,8 +84,8 @@ describe('questions and the ask command', () => {
     expect(run('ask what is sol', { aiAvailable: true }).ask?.question).toBe('what is sol');
   });
 
-  it('ask without a question shows how to use it', () => {
-    expect(output('ask', { aiAvailable: true })).toMatch(/^Usage: ask/);
+  it('ask without a question shows how to use the interview, with questions to try', () => {
+    expect(output('ask', { aiAvailable: true })).toMatch(/^Interview\nAsk anything about Alex/);
   });
 
   it('commands never go to the assistant, even with AI enabled', () => {

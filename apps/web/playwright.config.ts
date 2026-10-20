@@ -29,6 +29,9 @@ export default defineConfig({
       AI_QUESTIONS_PER_MINUTE: '60',
       AI_QUESTIONS_PER_DAY: '1000',
       CHAT_TRANSCRIPT_SECRET: 'playwright-test-secret-not-used-anywhere-else',
+      // No CV in tests: /api/cv answers 404 and nothing is fetched from S3.
+      CV_S3_BUCKET: '',
+      CV_AWS_ROLE_ARN: '',
     },
   },
 });

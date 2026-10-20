@@ -12,7 +12,7 @@ test('the welcome screen has no axe violations', async ({ page }) => {
 });
 
 test('every kind of output has no axe violations', async ({ page }) => {
-  for (const command of ['help', 'about', 'projects', 'projects sol all', 'skills', 'approach', 'contact', 'history', 'nope', 'what is sol?']) {
+  for (const command of ['help', 'first-round', 'technical', 'about', 'experience', 'education', 'cv', 'interview', 'projects', 'projects zim-connections', 'projects sol all', 'skills', 'soft-skills', 'star zim-black-friday full', 'interests', 'approach', 'contact', 'history', 'nope', 'what is sol?']) {
     await runCommand(page, command);
   }
   await page.getByRole('textbox', { name: 'Command' }).fill('projects zim');
@@ -37,7 +37,7 @@ test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('nothing transitions or animates', async ({ page }) => {
-    const chip = page.getByRole('navigation', { name: 'Quick commands' }).getByRole('button', { name: 'help' });
+    const chip = page.getByRole('navigation', { name: 'Quick commands' }).getByRole('button', { name: 'About' });
     const durations = await chip.evaluate((element) => getComputedStyle(element).transitionDuration);
     expect(durations.split(',').every((value) => parseFloat(value) === 0)).toBe(true);
   });

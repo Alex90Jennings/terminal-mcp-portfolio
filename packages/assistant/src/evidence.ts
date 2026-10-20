@@ -39,6 +39,28 @@ export function projectsMentioned<T extends { id: string; name: string }>(answer
   return projects.filter(({ name }) => text.includes(name.toLowerCase()));
 }
 
+/** Words too common to show that an answer tells a particular story. */
+const COMMON = new Set('alex that this with from were what when which their there would could about into than then them they each been have more most also only over such very will your just like after before because while where'.split(' '));
+const contentWords = (text: string) => new Set((text.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter((word) => word.length > 3 && !COMMON.has(word)));
+
+/**
+ * The examples this turn retrieved that the answer actually tells: most of the words of the story's action and result
+ * appear in the answer, or it names the story's title. Retrieved but untold examples are left out, so a follow-up never
+ * points at a story the visitor hasn't heard.
+ */
+export function storiesTold(answer: string, examples: readonly { id: string; title: string; action?: { text: string }; result?: { text: string } }[]): { id: string; title: string }[] {
+  const said = contentWords(answer);
+  const lower = answer.toLowerCase();
+  return examples
+    .filter((example) => {
+      if (lower.includes(example.title.toLowerCase())) return true;
+      const words = [...contentWords(`${example.action?.text ?? ''} ${example.result?.text ?? ''}`)];
+      return words.length > 0 && words.filter((word) => said.has(word)).length / words.length >= 0.5;
+    })
+    .map(({ id, title }) => ({ id, title }))
+    .filter((story, index, all) => all.findIndex(({ id }) => id === story.id) === index);
+}
+
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
@@ -56,12 +78,17 @@ export function withDisplayNames(projects: readonly { id: string; name: string }
 }
 
 /**
- * Removes Markdown the terminal would show literally: bold markers and heading
- * hashes. The prompt asks for plain text; this guarantees it for the two forms
- * models most often slip into. Single asterisks and underscores are left alone.
+ * Removes what the terminal would show wrongly: Markdown bold markers and
+ * heading hashes, which it would print literally, and a pasted "Sources:" line,
+ * which repeats the source list it already shows under the answer. The prompt
+ * asks for neither; this guarantees it. Single asterisks and underscores are
+ * left alone.
  */
 export function toPlainText(text: string): string {
-  return text.replace(/\*\*/g, '').replace(/(^|\n)#{1,6} +/g, '$1');
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/(^|\n)#{1,6} +/g, '$1')
+    .replace(/(^|\n)[ \t]*Sources?:[^\n]*/gi, '$1');
 }
 
 export interface GroundingReport {

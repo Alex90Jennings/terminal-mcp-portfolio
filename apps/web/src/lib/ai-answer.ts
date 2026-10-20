@@ -11,6 +11,8 @@ export interface AiAnswer {
   notices: string[];
   sources: DoneEvent['sources'];
   projects: DoneEvent['projects'];
+  /** STAR stories the answer told. */
+  stories: DoneEvent['stories'];
   /** Why there is no answer, for `error` and `unavailable`. */
   message?: string;
   /** Local results shown when the assistant is unavailable. */
@@ -24,6 +26,7 @@ export const waitingAnswer = (fallback: Block[]): AiAnswer => ({
   notices: [],
   sources: [],
   projects: [],
+  stories: [],
   fallback,
 });
 
@@ -50,6 +53,8 @@ export function applyChatEvent(answer: AiAnswer, event: ChatStreamEvent): AiAnsw
         text: event.answer,
         sources: event.sources,
         projects: event.projects,
+        // Absent from servers that predate follow-ups.
+        stories: event.stories ?? [],
       };
   }
 }

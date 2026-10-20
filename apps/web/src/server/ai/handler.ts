@@ -12,6 +12,7 @@ import {
   type TranscriptTurn,
 } from '@portfolio/assistant';
 import { z } from 'zod';
+import { cleanInput } from '@/lib/clean-input';
 import type { Limiter } from '../rate-limit';
 import { toMicros, type BudgetStore } from './budget';
 import type { AiConfig, AiConfigResult } from './config';
@@ -20,7 +21,8 @@ export const MAX_QUESTION_CHARS = 500;
 const MAX_BODY_BYTES = 64 * 1024;
 
 const RequestSchema = z.strictObject({
-  question: z.string().trim().min(1).max(MAX_QUESTION_CHARS),
+  // Cleaned before the length check, so control or invisible characters can't pad a question past it or hide in it.
+  question: z.string().max(MAX_QUESTION_CHARS * 4).transform(cleanInput).pipe(z.string().min(1).max(MAX_QUESTION_CHARS)),
   conversation: z
     .strictObject({
       turns: z
@@ -43,6 +45,8 @@ export type ChatStreamEvent =
       stop: ChatOutcome['stop'];
       sources: ChatOutcome['sources'];
       projects: ChatOutcome['projects'];
+      /** STAR stories the answer told, for follow-ups. */
+      stories: ChatOutcome['stories'];
       /** Sentences never shown because their figures weren't in this turn's tool results. */
       withheldStatements: number;
       conversation: SignedTranscript;
@@ -204,6 +208,7 @@ export function createChatHandler(deps: ChatDeps): (request: Request) => Promise
             stop: outcome.stop,
             sources: outcome.sources,
             projects: outcome.projects,
+            stories: outcome.stories,
             withheldStatements: outcome.withheld.length,
             conversation: await signTranscript(turns, config.transcriptSecret, now().getTime()),
           });

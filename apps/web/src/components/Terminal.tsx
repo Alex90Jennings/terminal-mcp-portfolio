@@ -9,6 +9,7 @@ import { complete } from '@/terminal/complete';
 import { execute } from '@/terminal/execute';
 import { browse, idleCursor, remember } from '@/terminal/history';
 import type { Block } from '@/terminal/output';
+import { cleanInput } from '@/lib/clean-input';
 import { MAX_INPUT_LENGTH } from '@/terminal/parse';
 import { registry } from '@/terminal/registry';
 import type { CommandContext } from '@/terminal/types';
@@ -24,7 +25,18 @@ interface Entry {
   answer?: AiAnswer;
 }
 
-const QUICK_COMMANDS = ['help', 'projects', 'about', 'skills', 'approach', 'contact'] as const;
+/** The primary navigation: each chip runs an ordinary command, labelled in plain words. */
+export const QUICK_COMMANDS = [
+  { label: 'First Round Interview', command: 'first-round', primary: true },
+  { label: 'Technical Interview', command: 'technical', primary: true },
+  { label: 'About', command: 'about', primary: false },
+  { label: 'Experience', command: 'experience', primary: false },
+  { label: 'Projects', command: 'projects', primary: false },
+  { label: 'Soft skills', command: 'soft-skills', primary: false },
+  { label: 'Education', command: 'education', primary: false },
+  { label: 'Interests', command: 'interests', primary: false },
+  { label: 'Contact', command: 'contact', primary: false },
+] as const;
 
 const user = (kb.profile.name.split(' ')[0] ?? 'guest').toLowerCase();
 const PROMPT = `${user}@portfolio:~$`;
@@ -32,7 +44,7 @@ const PROMPT = `${user}@portfolio:~$`;
 /** Touch devices: don't summon the on-screen keyboard after tapping a command. */
 const isCoarsePointer = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
-export function Terminal({ aiEnabled = false }: { aiEnabled?: boolean }) {
+export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled?: boolean; cvAvailable?: boolean }) {
   const [entries, setEntries] = useState<Entry[]>(() => [{ id: 0, blocks: welcome({ kb }) }]);
   const [value, setValue] = useState('');
   const [history, setHistory] = useState<string[]>([]);
@@ -48,8 +60,8 @@ export function Terminal({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const askingRef = useRef<{ id: number; controller: AbortController } | undefined>(undefined);
 
   const context: CommandContext = useMemo(
-    () => ({ kb, history, commands: registry.commands, aiAvailable: aiEnabled }),
-    [history, aiEnabled],
+    () => ({ kb, history, commands: registry.commands, aiAvailable: aiEnabled, cvAvailable }),
+    [history, aiEnabled, cvAvailable],
   );
 
   const updateAnswer = useCallback((id: number, update: (answer: AiAnswer) => AiAnswer) => {
@@ -97,7 +109,9 @@ export function Terminal({ aiEnabled = false }: { aiEnabled?: boolean }) {
   );
 
   const run = useCallback(
-    (line: string, { refocus }: { refocus: boolean }) => {
+    (typed: string, { refocus }: { refocus: boolean }) => {
+      // Shown, remembered and run as cleaned text, so escape or bidirectional characters can't disguise it.
+      const line = cleanInput(typed);
       const nextHistory = remember(history, line);
       const result = execute(line, registry, { ...context, history: nextHistory });
       setHistory(nextHistory);
@@ -291,10 +305,10 @@ export function Terminal({ aiEnabled = false }: { aiEnabled?: boolean }) {
       <nav aria-label="Quick commands" className="shrink-0 border-t border-term-border bg-term-chrome px-2 py-1.5 sm:px-4">
         {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops list semantics when list-style is none */}
         <ul className="flex gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible" role="list">
-          {QUICK_COMMANDS.map((name) => (
-            <li key={name} className="shrink-0">
-              <button type="button" className="term-chip" onClick={() => run(name, { refocus: true })}>
-                {name}
+          {QUICK_COMMANDS.map(({ label, command, primary }) => (
+            <li key={command} className="shrink-0">
+              <button type="button" className={primary ? 'term-chip term-chip-primary' : 'term-chip'} onClick={() => run(command, { refocus: true })}>
+                {label}
               </button>
             </li>
           ))}

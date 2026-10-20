@@ -1,0 +1,679 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "sources": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cv",
+              "repository",
+              "documentation",
+              "profile",
+              "store-listing",
+              "website",
+              "author-statement"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stories": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "projects": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          "organisation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "situation": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "provenance",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "task": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "provenance",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "action": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "provenance",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "provenance",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "reflection": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              }
+            },
+            "required": [
+              "text",
+              "provenance",
+              "sources"
+            ],
+            "additionalProperties": false
+          },
+          "competencies": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          "questions": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "attribution": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "collaborative",
+              "team"
+            ]
+          },
+          "attributionNote": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "needs-review",
+              "incomplete"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "draft"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "situation",
+          "task",
+          "action",
+          "result",
+          "competencies",
+          "attribution",
+          "attributionNote",
+          "status",
+          "visibility"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "competencies": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "core",
+              "mindset"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aliases": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "stories": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          "questions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "gap": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "group",
+          "description",
+          "questions"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "interests": {
+      "default": {
+        "personal": [],
+        "technical": []
+      },
+      "type": "object",
+      "properties": {
+        "personal": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projects": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "needs-review",
+                  "incomplete"
+                ]
+              },
+              "visibility": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "private",
+                  "draft"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "provenance",
+              "sources",
+              "status",
+              "visibility"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "technical": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projects": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "needs-review",
+                  "incomplete"
+                ]
+              },
+              "visibility": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "private",
+                  "draft"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "provenance",
+              "sources",
+              "status",
+              "visibility"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "background": {
+      "default": {
+        "motivation": [],
+        "workingEnvironment": []
+      },
+      "type": "object",
+      "properties": {
+        "motivation": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projects": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "needs-review",
+                  "incomplete"
+                ]
+              },
+              "visibility": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "private",
+                  "draft"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "provenance",
+              "sources",
+              "status",
+              "visibility"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "workingEnvironment": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projects": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "provenance": {
+                "type": "string",
+                "enum": [
+                  "documented",
+                  "firsthand",
+                  "inferred"
+                ]
+              },
+              "sources": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "needs-review",
+                  "incomplete"
+                ]
+              },
+              "visibility": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "private",
+                  "draft"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "provenance",
+              "sources",
+              "status",
+              "visibility"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

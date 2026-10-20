@@ -3,7 +3,7 @@ import { TOOL_MODULES } from '@portfolio/mcp-server';
 import { describe, expect, it } from 'vitest';
 import { ScriptedModel, demoScript } from '@portfolio/assistant';
 import { beforeAll } from 'vitest';
-import { CASE_SET_VERSION, CASES, DECLINE, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
+import { CASE_SET_VERSION, CASES, DECLINE, FIFTY_THOUSAND_USERS, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
 import { markdownSummary, rescoreMeta, runModel, scoreRuns, type EvaluationReport, type ModelRun } from '../evaluation/run';
 import { SCORER_VERSION, SELECTION, STOP_LABELS, assess, presentationOf, caseSetFingerprint, recommend, refusalCause, scoreTurn, violates, type ModelSummary, type RunStop, type TurnRecord } from '../evaluation/score';
 import { counterBudget, memoryCounters } from '@/server/ai/budget';
@@ -13,10 +13,12 @@ const knowledgeText = JSON.stringify(bundle);
 const turns = CASES.flatMap((evalCase) => evalCase.turns.map((spec) => ({ evalCase, spec })));
 
 describe('the question set', () => {
-  it('has about 35 conversations covering every project and category', () => {
+  it('has about 35 conversations covering every project it was written for, and every category', () => {
     expect(CASES.length).toBeGreaterThanOrEqual(34);
     expect(CASES.length).toBeLessThanOrEqual(40);
-    expect(new Set(CASES.flatMap(({ projects }) => projects))).toEqual(new Set(serverKb.projects.map(({ id }) => id)));
+    // The Terminal Portfolio project was added after this set; the set is frozen, so it isn't covered.
+    const addedLater = new Set(['terminal-portfolio']);
+    expect(new Set(CASES.flatMap(({ projects }) => projects))).toEqual(new Set(serverKb.projects.map(({ id }) => id).filter((id) => !addedLater.has(id))));
     const categories = new Set(CASES.map(({ category }) => category));
     for (const category of ['technical', 'architectural', 'behavioural', 'attribution', 'semantic', 'synthesis', 'adversarial', 'undocumented']) {
       expect(categories, category).toContain(category);
@@ -179,7 +181,7 @@ describe('presentation diagnostics', () => {
   });
 
   it('records the scorer version', () => {
-    expect(SCORER_VERSION).toBe('2026-10-20.2');
+    expect(SCORER_VERSION).toBe('2026-10-20.4');
   });
 });
 
@@ -348,7 +350,7 @@ describe('recommend', () => {
     byCategory: {},
     outcomes: { pass: Math.round(passRate * 46), quality: 46 - Math.round(passRate * 46), truncated: 0, round_limit: 0, cost_limit: 0, refusal: 0 },
     truncated: 0,
-    presentation: { suggestsContact: 0, contactUnprompted: 0, markdown: 0, internals: 0, selfCorrection: 0 },
+    presentation: { suggestsContact: 0, contactUnprompted: 0, markdown: 0, narration: 0, sourceList: 0, internals: 0, selfCorrection: 0 },
     latencyMs: { firstTextP50: 1, firstTextP95: 1, totalP50: 1, totalP95: 1 },
     costUsd: { total: 1, perTurn: 0.03 },
     ...extra,
@@ -610,7 +612,7 @@ describe('the seven presentation issues (human review, 2026-10-20)', () => {
   });
 });
 
-describe('case set 2026-10-20.1', () => {
+describe('case set 2026-10-20.1 (still holds in 2026-10-20.2)', () => {
   const sol = CASES.find(({ id }) => id === 'sol-accessibility-overclaim')!.turns[0]!.facts![0]!;
 
   it.each([
@@ -630,9 +632,9 @@ describe('case set 2026-10-20.1', () => {
     },
   );
 
-  it('is a new version with a new fingerprint, so it is never compared directly with 2026-10-19.2', () => {
-    expect(CASE_SET_VERSION).toBe('2026-10-20.1');
-    expect(caseSetFingerprint()).not.toBe('7e5f986b32e240c0');
+  it('is a new version with a new fingerprint, so it is never compared directly with earlier ones', () => {
+    expect(CASE_SET_VERSION).toBe('2026-10-20.2');
+    for (const earlier of ['7e5f986b32e240c0', '7f9ebbf45ad63d5b']) expect(caseSetFingerprint()).not.toBe(earlier);
     expect(CASES).toHaveLength(38);
     expect(CASES.reduce((sum, { turns: t }) => sum + t.length, 0)).toBe(46);
   });
@@ -647,5 +649,64 @@ describe('case set 2026-10-20.1', () => {
     });
     const current = { ...old, caseSetVersion: CASE_SET_VERSION, caseSetFingerprint: caseSetFingerprint() };
     expect(rescoreMeta(current, 'run.json')).not.toHaveProperty('recordedWithCaseSet');
+  });
+});
+
+describe('case set 2026-10-20.2: sem-users-messages', () => {
+  const spec = CASES.find(({ id }) => id === 'sem-users-messages')!.turns[0]!;
+  const zim = serverKb.getProject('zim-connections')!.sources[0]!.label;
+  const scored = (answer: string) =>
+    scoreTurn(spec, record({ answer, toolsCalled: ['search_projects', 'get_project'], sources: [{ label: zim }] }), serverKb, knowledgeText);
+
+  it.each([
+    'ZIM serves 50,000+ users, and the live chat had carried 100,000+ messages as of September 2026.',
+    "Its user count rose from under 1,000 to 50,000+ over Alex's time there, a team result. As of September 2026 the chat had supported 100,000+ messages.",
+    'The platform grew to more than 50,000 users with the team. The chat had handled 100,000+ messages as of September 2026.',
+  ])('passes a correct answer however the growth is worded: %j', (answer) => {
+    expect(scored(answer)).toMatchObject({ pass: true, missingRequired: [] });
+  });
+
+  it.each([
+    ['a wrong quantity', 'The platform has 5,000+ users, and the chat carried 100,000+ messages.'],
+    ['a tenfold quantity', 'The platform has 500,000 users, and the chat carried 100,000+ messages.'],
+    ['messages counted as users', 'The platform has 100,000+ users and 50,000+ messages.'],
+  ])('fails %s', (_, answer) => {
+    expect(scored(answer).pass).toBe(false);
+  });
+
+  it('fails the growth credited to Alex alone', () => {
+    const score = scored('Alex single-handedly scaled the platform to 50,000+ users. The chat carried 100,000+ messages as of September 2026.');
+    expect(score.violations.map(({ kind }) => kind)).toContain('attribution');
+    expect(score.pass).toBe(false);
+  });
+
+  it('the generalised fact still occurs in the verified knowledge', () => {
+    expect(FIFTY_THOUSAND_USERS.test(knowledgeText)).toBe(true);
+  });
+});
+
+describe('diagnostics for narration, source lists and retrieval metadata (scorer 2026-10-20.3)', () => {
+  const projectList = serverKb.projects.map(({ id, name }) => ({ id, name }));
+  it.each([
+    ["I haven't looked up Alex's individual responsibilities for this system, so ask if you'd like those checked.", 'narration'],
+    ['My search returned nothing for Kubernetes.', 'narration'],
+    ['Sources: CV (September 2026), ZIM Connections project record.', 'sourceList'],
+  ] as const)('flags %j as %s', (answer, flag) => {
+    expect(presentationOf(answer, projectList)[flag]).toBe(true);
+  });
+
+  it.each([
+    ['This is a partial record, so the challenges may say more.', ['partial record']],
+    ['The omittedSections list includes challenges.', ['omittedSections']],
+  ] as const)('flags retrieval metadata in %j', (answer, expected) => {
+    expect(presentationOf(answer, projectList).internals).toEqual(expected);
+  });
+
+  it.each([
+    'Total Guess retrieves 50 candidates from each strategy and fuses them with Reciprocal Rank Fusion.',
+    'The audit used several sources of evidence, including Cost Explorer.',
+    'Alex searched for orphaned resources and removed them.',
+  ])('does not flag an ordinary answer: %j', (answer) => {
+    expect(presentationOf(answer, projectList)).toMatchObject({ narration: false, sourceList: false, internals: [] });
   });
 });

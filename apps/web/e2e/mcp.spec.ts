@@ -15,7 +15,7 @@ test('the official MCP client connects over Streamable HTTP and uses tools and r
 
   expect(client.getServerVersion()?.name).toBe('alex-jennings-portfolio');
   const { tools } = await client.listTools();
-  expect(tools.map(({ name }) => name)).toEqual(['list_projects', 'get_project', 'search_projects', 'get_profile', 'get_experience', 'get_skills']);
+  expect(tools.map(({ name }) => name)).toEqual(['list_projects', 'get_project', 'search_projects', 'get_profile', 'get_experience', 'get_skills', 'get_examples']);
 
   const search = await client.callTool({ name: 'search_projects', arguments: { query: 'Docker' } });
   expect((search.structuredContent as { results: { projectId: string }[] }).results[0]?.projectId).toBe('clash-of-langs');
@@ -24,7 +24,7 @@ test('the official MCP client connects over Streamable HTTP and uses tools and r
   expect(Object.keys(experience.structuredContent ?? {})).toEqual(['employment', 'education', 'certifications', 'citations']);
 
   const { resources } = await client.listResources();
-  expect(resources).toHaveLength(9);
+  expect(resources).toHaveLength(10);
   const { contents } = await client.readResource({ uri: 'portfolio://projects/operafy' });
   expect(contents[0] && 'text' in contents[0] ? contents[0].text : '').toContain('## Sources');
 

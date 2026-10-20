@@ -1,5 +1,5 @@
 import type { KnowledgeBase } from './query.ts';
-import type { PortfolioProject, Profile, Responsibility, Skill, Source } from './schema.ts';
+import type { Competency, PortfolioProject, Profile, Provenance, Responsibility, Skill, Source, Story, StoryPart } from './schema.ts';
 
 /*
  * Read-only views over the knowledge base, shared by every consumer (terminal,
@@ -9,7 +9,7 @@ import type { PortfolioProject, Profile, Responsibility, Skill, Source } from '.
 /** How each responsibility scope is described to readers. */
 export const RESPONSIBILITY_SCOPE_LABELS = {
   individual: 'own work',
-  collaborative: 'with the team',
+  collaborative: 'collaborative',
   team: 'team effort',
 } as const satisfies Record<Responsibility['scope'], string>;
 
@@ -17,6 +17,7 @@ export const PROJECT_CONTEXT_LABELS = {
   employment: 'Professional work',
   personal: 'Personal project',
   client: 'Client work',
+  portfolio: 'Personal project: this portfolio',
 } as const satisfies Record<PortfolioProject['context']['kind'], string>;
 
 export const SKILL_CATEGORY_LABELS = {
@@ -114,10 +115,23 @@ export interface EmploymentEntry {
   projects: ExperienceProject[];
 }
 
+/**
+ * Earned certifications and the ones being studied for, kept apart so a count
+ * or a list can never turn studying into holding a qualification.
+ */
+export interface CertificationsView {
+  /** Certifications Alex holds. */
+  earned: Profile['certifications'];
+  /** How many Alex holds: only `earned` counts. */
+  earnedCount: number;
+  /** Certifications Alex is studying for: not held. */
+  inProgress: Profile['certifications'];
+}
+
 export interface ExperienceView {
   employment: EmploymentEntry[];
   education: Profile['education'];
-  certifications: Profile['certifications'];
+  certifications: CertificationsView;
   /** Resolves the source ids used by employment, education and certifications (profile sources). */
   citations: Source[];
 }
@@ -149,7 +163,75 @@ export function experienceOf(kb: KnowledgeBase): ExperienceView {
   return {
     employment,
     education: profile.education,
-    certifications: profile.certifications,
+    certifications: certificationsOf(profile.certifications),
     citations: citationsFor(profile.sources, profileContent),
   };
+}
+
+export function certificationsOf(certifications: Profile['certifications']): CertificationsView {
+  const earned = certifications.filter(({ progress }) => progress === 'earned');
+  return { earned, earnedCount: earned.length, inProgress: certifications.filter(({ progress }) => progress !== 'earned') };
+}
+
+/**
+ * What a project shows about Alex: its published STAR stories, the soft skills those stories demonstrate (most often
+ * shown first), and the technical skills linked to it. All from existing links; nothing is inferred.
+ */
+export function projectEvidence(kb: KnowledgeBase, projectId: string): { stories: Story[]; competencies: Competency[]; skills: Skill[] } {
+  const stories = kb.findStories({ project: projectId });
+  const counts = new Map<string, number>();
+  for (const story of stories) for (const id of story.competencies) counts.set(id, (counts.get(id) ?? 0) + 1);
+  const competencies = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .flatMap(([id]) => {
+      const competency = kb.getCompetency(id);
+      return competency ? [competency] : [];
+    });
+  return { stories, competencies, skills: kb.skills.filter((skill) => skill.projects.includes(projectId)) };
+}
+
+/** How each story attribution is described to readers. */
+export const STORY_ATTRIBUTION_LABELS = {
+  individual: "Alex's own work",
+  collaborative: 'Alex with others',
+  team: 'A team result Alex contributed to',
+} as const satisfies Record<Story['attribution'], string>;
+
+/** What a reader is told about where a part of a story comes from. Inferred parts are never published. */
+export const PROVENANCE_LABELS = {
+  documented: 'project records',
+  firsthand: "Alex's own account",
+  inferred: 'drafted, unconfirmed',
+} as const satisfies Record<Provenance, string>;
+
+export const COMPETENCY_GROUP_LABELS = {
+  core: 'Soft skills',
+  mindset: 'Engineering & product mindset',
+} as const satisfies Record<Competency['group'], string>;
+
+export const STAR_PARTS = ['situation', 'task', 'action', 'result'] as const;
+export type StarPart = (typeof STAR_PARTS)[number];
+
+/** One part of a story, short (`text`) or detailed (`text` and `detail`). Both come from the same facts. */
+export function storyPartText(part: StoryPart, version: 'short' | 'detailed'): string {
+  return version === 'detailed' && part.detail !== undefined ? `${part.text} ${part.detail}` : part.text;
+}
+
+/** A story's four parts (and reflection, in the detailed version), in order. */
+export function storyParts(story: Story, version: 'short' | 'detailed'): { part: StarPart | 'reflection'; text: string; provenance: Provenance }[] {
+  const parts = STAR_PARTS.map((part) => ({ part, text: storyPartText(story[part], version), provenance: story[part].provenance }));
+  return version === 'detailed' && story.reflection
+    ? [...parts, { part: 'reflection' as const, text: storyPartText(story.reflection, version), provenance: story.reflection.provenance }]
+    : parts;
+}
+
+/** The whole story as prose, e.g. for word counts and the review document. */
+export function storyText(story: Story, version: 'short' | 'detailed'): string {
+  return storyParts(story, version).map(({ text }) => text).join(' ');
+}
+
+/** Whether a story rests on project records, Alex's own account, or both. */
+export function storyBasis(story: Story): 'documented' | 'firsthand' | 'mixed' {
+  const kinds = new Set(storyParts(story, 'detailed').map(({ provenance }) => provenance));
+  return kinds.size === 1 && kinds.has('documented') ? 'documented' : kinds.has('documented') ? 'mixed' : 'firsthand';
 }

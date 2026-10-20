@@ -1,17 +1,17 @@
 import { askOrFallback } from '../ask';
-import { command, heading, joined, paragraph, subheading, text, type Block } from '../output';
+import { bullets, command, heading, paragraph, subheading, text, type Block } from '../output';
 import type { Command } from '../types';
+import { WELCOME_QUESTIONS, interviewGuide } from './recruiter';
 
 export const ask: Command = {
   name: 'ask',
   aliases: [],
-  summary: 'Ask the AI assistant about my work in plain English',
+  summary: 'Ask any question about Alex in plain English (either interview)',
   usage: 'ask <question>',
   run: (args, context) => {
     const question = args.join(' ').trim();
-    if (question === '') {
-      return { blocks: [paragraph([text('Usage: '), command('ask Which project best demonstrates Docker?')], 'muted')] };
-    }
+    // On its own, `ask` shows how to use the interview and questions to try.
+    if (question === '') return { blocks: interviewGuide(context) };
     return askOrFallback(question, context);
   },
 };
@@ -82,14 +82,27 @@ export const clear: Command = {
   run: () => ({ blocks: [], clear: true }),
 };
 
-/** The greeting shown on load. Not a command; built from the profile so nothing is hard-coded. */
-export function welcome(context: { kb: { profile: { name: string; title: string; bannerSkills: readonly string[] } } }): Block[] {
+/**
+ * The greeting shown on load. Not a command; built from the profile so nothing is hard-coded. It says what this is (a
+ * first-stage interview), that plain English works, where to look, and offers questions that run exactly as if typed.
+ * Kept short, so it fits a phone screen with the prompt still visible.
+ */
+export function welcome(context: { kb: { profile: { name: string; title: string } } }): Block[] {
   const { profile } = context.kb;
+  const firstName = profile.name.split(' ')[0];
   return [
     { kind: 'title', text: profile.name },
     paragraph(text(profile.title, 'accent')),
-    paragraph(joined(profile.bannerSkills.map((skill) => text(skill, 'muted')))),
-    paragraph('Welcome to my interactive portfolio.'),
-    paragraph([text('Type '), command('help'), text(' to get started, or try '), command('projects'), text('.')]),
+    paragraph(`Hi, I’m ${firstName}. Welcome to my interactive portfolio: think of it as a first-stage interview.`),
+    {
+      kind: 'actions',
+      label: 'Choose an interview',
+      items: [
+        { title: 'First Round Interview', detail: 'Background, experience, soft skills', command: 'first-round' },
+        { title: 'Technical Interview', detail: 'Engineering, architecture, trade-offs', command: 'technical' },
+      ],
+    },
+    paragraph(text('Or ask anything in plain English. Try:', 'muted')),
+    bullets(WELCOME_QUESTIONS.map((question) => [command(question)])),
   ];
 }

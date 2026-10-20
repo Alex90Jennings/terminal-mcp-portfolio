@@ -10,7 +10,7 @@ Amazon Bedrock. No access keys exist anywhere.
 
 | Resource | Why |
 | :-- | :-- |
-| `aws_iam_openid_connect_provider.vercel` | Trusts Vercel's OIDC issuer for your team (`https://oidc.vercel.com/<team>`), audience `https://vercel.com/<team>`. Skip it with `create_oidc_provider = false` if the account already has one. |
+| `aws_iam_openid_connect_provider.vercel` | Trusts Vercel's OIDC issuer for your team (`https://oidc.vercel.com/<team>`), audience `https://vercel.com/<team>`. Off by default (`create_oidc_provider = false`): `infra/cv` creates the provider. Set it to true only if `infra/cv` isn't applied. |
 | `aws_iam_role.bedrock_chat` | Assumable **only** by your Vercel project in the listed environments (default: production). Both `aud` and the exact `sub` (`owner:<team>:project:<project>:environment:<env>`) must match. Sessions last at most an hour. |
 | `aws_iam_role_policy.invoke_claude` | One action, `bedrock-mantle:CreateInference`, on this account's Bedrock projects in this region, and only when the `bedrock-mantle:Model` condition is one of the three candidate models. No file, fine-tuning, reservation or project-management permissions. |
 

@@ -37,7 +37,7 @@ export function execute(input: string, registry: Registry, context: CommandConte
 
   // A project number or name on its own opens that project.
   const project = context.kb.getProject(raw);
-  if (project !== undefined) return { blocks: formatProject(project, 'overview') };
+  if (project !== undefined) return { blocks: formatProject(project, 'overview', context.kb) };
 
   if (looksLikeQuestion(raw)) return askOrFallback(raw, context);
   return notFound(name, registry, context);
@@ -54,7 +54,8 @@ function notFound(name: string, registry: Registry, context: CommandContext): Co
   if (suggestions.length > 0) {
     blocks.push(paragraph([text('Did you mean ', 'muted'), ...joined(suggestions, ' or '), text('?', 'muted')]));
   } else {
-    const mentions = context.kb.search(name, 3);
+    // Only real content counts: a project's limitations include notes on where its facts come from ("from Alex's CV").
+    const mentions = context.kb.search(name, 3).filter((hit) => hit.matches.some(({ field }) => field !== 'limitations'));
     if (mentions.length > 0) {
       blocks.push(
         paragraph([

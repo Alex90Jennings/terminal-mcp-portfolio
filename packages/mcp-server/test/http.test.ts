@@ -47,7 +47,7 @@ describe('official client over Streamable HTTP', () => {
     await client.connect(transport as unknown as Transport);
 
     expect(client.getServerVersion()?.name).toBe('alex-jennings-portfolio');
-    expect((await client.listTools()).tools).toHaveLength(6);
+    expect((await client.listTools()).tools).toHaveLength(7);
     const result = await client.callTool({ name: 'get_project', arguments: { project: 'sol', sections: ['decisions'] } });
     expect(result.isError).toBeFalsy();
     expect((result.structuredContent as { project: { id: string } }).project.id).toBe('sol');
@@ -72,7 +72,7 @@ describe('protocol responses', () => {
     const response = await handler()(post(rpc('tools/list')));
     expect(response.status).toBe(200);
     const body = (await response.json()) as { result: { tools: unknown[] } };
-    expect(body.result.tools).toHaveLength(6);
+    expect(body.result.tools).toHaveLength(7);
   });
 
   it('accepts notifications with 202 and no body', async () => {

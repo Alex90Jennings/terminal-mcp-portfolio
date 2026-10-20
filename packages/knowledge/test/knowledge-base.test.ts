@@ -70,6 +70,13 @@ describe('search', () => {
     expect(named.resolveProjectId('ZIM')).toBe('zim-connections');
   });
 
+  it('searches only the given fields of one project, best match first', () => {
+    expect(kb.searchWithin('zim-sbb', 'which languages', ['overview'])).toEqual([{ field: 'overview', text: 'Four languages with i18next and Locize.', sources: ['cv'] }]);
+    expect(kb.searchWithin('zim-sbb', 'which languages', ['decisions'])).toEqual([]);
+    expect(kb.searchWithin('nope', 'languages', ['overview'])).toEqual([]);
+    expect(kb.searchWithin('zim-sbb', 'the and', ['overview'])).toEqual([]);
+  });
+
   it('ignores queries made only of stop words', () => {
     expect(kb.search('what is the')).toEqual([]);
   });

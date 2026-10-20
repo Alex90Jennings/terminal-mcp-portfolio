@@ -1,6 +1,8 @@
 import { editDistance } from '@portfolio/knowledge/runtime';
+import { interests, softSkills, star } from './commands/evidence';
 import { about, approach, contact, skills } from './commands/profile';
 import { projects } from './commands/projects';
+import { cv, education, experience, firstRound, interview, technical } from './commands/recruiter';
 import { ask, clear, help, history } from './commands/session';
 import type { Command } from './types';
 
@@ -37,4 +39,23 @@ export function createRegistry(commands: readonly Command[]): Registry {
 }
 
 /** Every built-in command, in the order `help` lists them. */
-export const registry = createRegistry([help, about, projects, skills, approach, contact, ask, history, clear]);
+export const registry = createRegistry([
+  help,
+  firstRound,
+  technical,
+  about,
+  experience,
+  projects,
+  softSkills,
+  star,
+  education,
+  interests,
+  skills,
+  approach,
+  cv,
+  interview,
+  contact,
+  ask,
+  history,
+  clear,
+]);

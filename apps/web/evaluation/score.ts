@@ -124,8 +124,16 @@ export const FACT_THRESHOLD = 2 / 3;
  * unprompted, and Markdown detected. Pass and fail are unchanged.
  * 2026-10-20.2: diagnostics only: "listed as an alias", "tagged as" and
  * similar metadata language counts as an internal identifier.
+ * 2026-10-20.3: diagnostics only: retrieval metadata (omitted sections, partial
+ * records) counts as an internal identifier; process narration and pasted
+ * source lists are reported.
+ * 2026-10-20.4: the sources of a project's published examples (STAR stories)
+ * count as relevant for that project, and the sources of interests and
+ * background always count, like profile sources. Before, an answer citing only
+ * a story's own sources (Alex's interview and confirmations) failed source
+ * relevance although they were exactly the right sources.
  */
-export const SCORER_VERSION = '2026-10-20.2';
+export const SCORER_VERSION = '2026-10-20.4';
 
 /**
  * Presentation diagnostics. They're reported, never part of pass or fail, so
@@ -142,6 +150,10 @@ export interface Presentation {
   contactUnprompted: boolean;
   /** Markdown the terminal would show literally (bold markers or headings). */
   markdown: boolean;
+  /** Narrates the lookup ("I haven't looked up…", "my search returned…") instead of answering. */
+  narration: boolean;
+  /** A pasted "Sources:" line, which the terminal already shows under the answer. */
+  sourceList: boolean;
   /** Internal identifiers or metadata shown to the visitor (project ids, tags, field or tool names). */
   internals: string[];
   /** The answer says it is correcting, retracting or apologising for an earlier answer. */
@@ -150,9 +162,12 @@ export interface Presentation {
 
 const CONTACT = /`contact`|\bcontact command\b/i;
 const MARKDOWN = /\*\*|(^|\n)#{1,6} /;
+const NARRATION =
+  /\bI (?:haven['’]t|have not|didn['’]t|did not) (?:looked?|check(?:ed)?|fetch(?:ed)?|retriev(?:ed|e)|search(?:ed)?)\b|\b(?:my|the) (?:lookup|search|retrieval)(?:es)? (?:returned|showed|found|didn['’]t)\b|\bI (?:looked|searched|fetched|retrieved)\b/i;
+const SOURCE_LIST = /(^|\n)\s*Sources?:/i;
 const SELF_CORRECTION = /\b(?:correct(?:ing)? my (?:previous|earlier)|my (?:previous|earlier) (?:answer|reply|wording|response)|I (?:also )?need to correct|I was wrong|(?:please )?disregard (?:that|those|my)|apologi[sz]e)\b/i;
 const INTERNAL_METADATA =
-  /\b(?:get_project|search_projects|list_projects|get_profile|get_experience|get_skills|listingTags)\b|\btag(?:s|ged)? (?:this|it|the project|for|as|with)\b|\bexplicitly tags\b|\b(?:listed|recorded|known) as an alias\b|\balias(?:es)? (?:of|for)\b|\b(?:responsibilities|undocumented|scope) (?:section|field|list|tag)\b/gi;
+  /\b(?:get_project|search_projects|list_projects|get_profile|get_experience|get_skills|listingTags|omittedSections|relatedFromOmitted|relatedTo)\b|\b(?:partial record|omitted sections?|retrieved sections?|sections? (?:I|that I) (?:fetched|retrieved))\b|\btag(?:s|ged)? (?:this|it|the project|for|as|with)\b|\bexplicitly tags\b|\b(?:listed|recorded|known) as an alias\b|\balias(?:es)? (?:of|for)\b|\b(?:responsibilities|undocumented|scope) (?:section|field|list|tag)\b/gi;
 
 export function presentationOf(answer: string, projects: readonly { id: string; name: string }[], spec?: Pick<TurnSpec, 'expect'>): Presentation {
   const ids = projects.filter(({ id, name }) => id.includes('-') && id.toLowerCase() !== name.toLowerCase()).map(({ id }) => id);
@@ -167,6 +182,8 @@ export function presentationOf(answer: string, projects: readonly { id: string; 
     suggestsContact,
     contactUnprompted: suggestsContact && !relevant,
     markdown: MARKDOWN.test(answer),
+    narration: NARRATION.test(answer),
+    sourceList: SOURCE_LIST.test(answer),
     internals: [...new Set(internals)],
     selfCorrection: SELF_CORRECTION.test(answer),
   };
@@ -174,12 +191,27 @@ export function presentationOf(answer: string, projects: readonly { id: string; 
 
 const accepts = (spec: TurnSpec, expectation: Expectation) => (Array.isArray(spec.expect) ? spec.expect : [spec.expect]).includes(expectation);
 
-/** Labels of every source that is relevant for these projects (profile and skills sources are always relevant). */
+/**
+ * Labels of every source that is relevant for these projects: their own sources and those cited by their published
+ * examples. Profile, skills, interest and background sources are always relevant.
+ */
 export function relevantSourceLabels(kb: KnowledgeBase, projectIds: readonly string[]): Set<string> {
   const labels = new Set<string>([...kb.profile.sources, ...kb.skillSources].map(({ label }) => label));
   for (const id of projectIds) for (const source of kb.getProject(id)?.sources ?? []) labels.add(source.label);
+  const { stories, interests, background, sources } = kb.evidence;
+  const evidenceLabel = new Map(sources.map(({ id, label }) => [id, label]));
+  const cited = [
+    ...stories.filter((story) => story.projects.some((id) => projectIds.includes(id))).flatMap((story) => STAR_PARTS_AND_REFLECTION.flatMap((part) => story[part]?.sources ?? [])),
+    ...[...interests.personal, ...interests.technical, ...background.motivation, ...background.workingEnvironment].flatMap((item) => item.sources),
+  ];
+  for (const id of cited) {
+    const label = evidenceLabel.get(id);
+    if (label !== undefined) labels.add(label);
+  }
   return labels;
 }
+
+const STAR_PARTS_AND_REFLECTION = ['situation', 'task', 'action', 'result', 'reflection'] as const;
 
 /** Sentences, split on terminal punctuation and line breaks. */
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+|\n+/).filter((sentence) => sentence.trim() !== '');
@@ -275,7 +307,7 @@ export interface ModelSummary {
   /** Turns the output limit cut off, whether or not they still passed. */
   truncated: number;
   /** Diagnostics, not criteria: how many answers suggest `contact`, show internals, or narrate a self-correction. */
-  presentation: { suggestsContact: number; contactUnprompted: number; markdown: number; internals: number; selfCorrection: number };
+  presentation: { suggestsContact: number; contactUnprompted: number; markdown: number; narration: number; sourceList: number; internals: number; selfCorrection: number };
   latencyMs: { firstTextP50: number | null; firstTextP95: number | null; totalP50: number; totalP95: number };
   costUsd: { total: number; perTurn: number };
 }
@@ -339,6 +371,8 @@ export function summarise(
       suggestsContact: scored.filter(({ score }) => score.presentation.suggestsContact).length,
       contactUnprompted: scored.filter(({ score }) => score.presentation.contactUnprompted).length,
       markdown: scored.filter(({ score }) => score.presentation.markdown).length,
+      narration: scored.filter(({ score }) => score.presentation.narration).length,
+      sourceList: scored.filter(({ score }) => score.presentation.sourceList).length,
       internals: scored.filter(({ score }) => score.presentation.internals.length > 0).length,
       selfCorrection: scored.filter(({ score }) => score.presentation.selfCorrection).length,
     },

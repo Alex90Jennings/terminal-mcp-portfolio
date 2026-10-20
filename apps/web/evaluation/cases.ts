@@ -16,8 +16,19 @@
  * usage figures presented as current). Only stricter or equivalent: no check
  * was loosened. Results record the version and fingerprint they were scored
  * with, so results from different versions are never compared directly.
+ * 2026-10-20.2: `sem-users-messages` accepts any wording of the growth to more
+ * than 50,000 users (not only the literal "50,000+ users"), and also fails the
+ * growth credited to Alex alone.
  */
-export const CASE_SET_VERSION = '2026-10-20.1';
+export const CASE_SET_VERSION = '2026-10-20.2';
+
+/**
+ * The growth to more than 50,000 users, however it's worded: "50,000+ users",
+ * "more than 50,000 users", "grew to 50,000+", "user count rose … to 50,000+".
+ * The number must be exactly 50,000 (not 5,000 or 500,000) and tied to users.
+ */
+export const FIFTY_THOUSAND_USERS =
+  /(?<![\d,.])50,?000\+\s+(?:active\s+)?users\b|\b(?:over|more than|above)\s+50,?000\s+users\b|\busers?\b[^.]{0,80}?\b(?:to|reach(?:ed|ing)?|over|more than)\s+(?<![\d,.])50,?000\+?(?![\d,])|\b(?:to|reach(?:ed|ing)?)\s+(?<![\d,.])50,?000\+?(?![\d,])[^.]{0,30}\busers?\b/i;
 
 export type Category = 'technical' | 'architectural' | 'behavioural' | 'attribution' | 'semantic' | 'synthesis' | 'adversarial' | 'undocumented';
 
@@ -80,10 +91,12 @@ export interface EvalCase {
   turns: TurnSpec[];
   /** Set where automatic scoring is approximate; a person confirms these. */
   review?: string;
+  /** STAR suite: the stories or interests the case is about, which its forbidden statements must not contradict. */
+  stories?: string[];
 }
 
-const fact = (label: string, pattern: RegExp, required = false): FactCheck => ({ label, pattern, ...(required && { required }) });
-const forbid = (kind: ViolationKind, label: string, pattern: RegExp, unlessNegated = false): ForbiddenCheck => ({
+export const fact = (label: string, pattern: RegExp, required = false): FactCheck => ({ label, pattern, ...(required && { required }) });
+export const forbid = (kind: ViolationKind, label: string, pattern: RegExp, unlessNegated = false): ForbiddenCheck => ({
   label,
   pattern,
   kind,
@@ -136,7 +149,7 @@ const NDCG_NOT_ACCURACY = forbid(
   /\b(accura(te|cy)|correct(ly)?|success rate)\b[^.]{0,50}(0?\.819|81\.9\s?%|82\s?%)|(0?\.819|81\.9\s?%|82\s?%)[^.]{0,50}\b(accura(te|cy)|correct(ly)?|success rate)\b/i,
   true,
 );
-const GROWTH_AS_ALEX_ALONE = [
+export const GROWTH_AS_ALEX_ALONE = [
   forbid('attribution', 'growth credited to Alex alone', /\bAlex\s+(single-handedly\s+|personally\s+|alone\s+)?(scaled|grew)\b/i, true),
   forbid('attribution', 'growth done alone', /\b(scaled|grew|growth)\b[^.]{0,50}\b(single-handedly|on (his|her|their) own|by (himself|herself|themselves)|alone)\b/i, true),
 ];
@@ -146,7 +159,7 @@ const USAGE_AS_CURRENT = forbid(
   'dated usage figures presented as current',
   /\b(now|currently|today)\b[^.]{0,30}\b(supports?|supporting|handles?|handling|serves?|serving|carries|carrying)\b[^.]{0,40}(5,?000|100,?000)/i,
 );
-const INVENTED_MANAGEMENT = forbid(
+export const INVENTED_MANAGEMENT = forbid(
   'claim',
   'invented management responsibility',
   /\b(managed|manages|managing|led|leads|supervised|line-managed)\s+(a team of\s+)?\d+|\b\d+\s+(developers|engineers|people|reports)\s+(reporting|under)\b|\b(team lead|engineering manager|head of)\b/i,
@@ -484,8 +497,8 @@ export const CASES: readonly EvalCase[] = [
         question: 'How many users does the ZIM platform have, and how many chat messages has it handled?',
         expect: 'answer',
         tools: [['get_project', 'get_experience', 'search_projects']],
-        facts: [fact('50,000+ users', /50,?000\+?\s+users/i, true), fact('100,000+ messages', /100,?000\+?\s+messages/i, true)],
-        forbidden: [...USERS_NOT_MESSAGES, USAGE_AS_CURRENT],
+        facts: [fact('50,000+ users', FIFTY_THOUSAND_USERS, true), fact('100,000+ messages', /100,?000\+?\s+messages/i, true)],
+        forbidden: [...USERS_NOT_MESSAGES, USAGE_AS_CURRENT, ...GROWTH_AS_ALEX_ALONE],
         projects: ['zim-connections'],
       },
     ],

@@ -16,7 +16,7 @@ test('a question streams a grounded answer with sources and project links', asyn
   await expect(answer.getByRole('list', { name: 'Portfolio lookups' })).toContainText('search_projects: Which project best demonstrates Terraform?');
   await expect(answer.getByText('Sources:')).toBeVisible();
   await expect(answer.getByRole('link', { name: /operafy-infra README/ })).toHaveAttribute('target', '_blank');
-  await answer.getByRole('button', { name: 'Operafy' }).last().click();
+  await answer.getByRole('button', { name: 'Operafy', exact: true }).last().click();
   await expect(answer.getByRole('heading', { level: 2, name: 'Operafy' })).toBeVisible();
 });
 

@@ -28,7 +28,7 @@
       "sources": ["cv"]
     },
     {
-      "text": "Came to software through an economics degree and a six-month software engineering bootcamp in 2022. As of the September 2026 CV, Alex was studying a software engineering degree apprenticeship (2024 – 2027).",
+      "text": "Came to software through an economics degree and a six-month software engineering bootcamp in 2022. As of the September 2026 CV, Alex was completing a software engineering degree apprenticeship (2024–2027).",
       "sources": ["cv", "github-profile"]
     }
   ],
@@ -142,8 +142,8 @@
         "sources": ["author-notes"]
       },
       {
-        "text": "Example: on ZIM@SBB, AI first-pass translations dropped two Italian keys and truncated a button on smaller iPhones. Alex caught both with a key-comparison script and on-device checks, and fixed them before release.",
-        "sources": ["author-notes"]
+        "text": "Example: on ZIM@SBB, AI first-pass translations dropped two Italian keys and truncated a button on smaller iPhones. Alex identified both during pre-release testing, helped by a key-comparison script and on-device checks, and both were fixed before release. The records don't say who wrote the script or made the fixes.",
+        "sources": ["author-notes", "employment-update"]
       }
     ]
   }

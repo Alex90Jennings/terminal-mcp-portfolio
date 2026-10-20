@@ -14,7 +14,7 @@ export const projects: Command = {
 
     // A multi-word name typed without quotes, e.g. `projects clash of langs`, wins over a section.
     const byFullName = args.length > 1 ? kb.getProject(args.join(' ')) : undefined;
-    if (byFullName !== undefined) return { blocks: formatProject(byFullName, 'overview') };
+    if (byFullName !== undefined) return { blocks: formatProject(byFullName, 'overview', kb) };
 
     const project = kb.getProject(target);
     if (project === undefined) return projectNotFound(kb, args.join(' '));
@@ -31,7 +31,7 @@ export const projects: Command = {
         ],
       };
     }
-    return { blocks: formatProject(project, resolved) };
+    return { blocks: formatProject(project, resolved, kb) };
   },
   complete: (args, { kb }) => {
     if (args.length <= 1) return kb.projects.map(({ id }) => id);

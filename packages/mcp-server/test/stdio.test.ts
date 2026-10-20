@@ -18,10 +18,10 @@ describe('stdio transport', () => {
     await client.connect(transport);
     try {
       expect(client.getServerVersion()?.name).toBe('alex-jennings-portfolio');
-      expect((await client.listTools()).tools.map(({ name }) => name)).toHaveLength(6);
+      expect((await client.listTools()).tools.map(({ name }) => name)).toHaveLength(7);
       const result = await client.callTool({ name: 'list_projects', arguments: {} });
-      expect((result.structuredContent as { projects: unknown[] }).projects).toHaveLength(6);
-      expect((await client.listResources()).resources.length).toBe(9);
+      expect((result.structuredContent as { projects: unknown[] }).projects).toHaveLength(7);
+      expect((await client.listResources()).resources.length).toBe(10);
     } finally {
       await client.close();
     }
