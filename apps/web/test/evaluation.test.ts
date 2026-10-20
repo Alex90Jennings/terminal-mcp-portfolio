@@ -3,8 +3,8 @@ import { TOOL_MODULES } from '@portfolio/mcp-server';
 import { describe, expect, it } from 'vitest';
 import { ScriptedModel, demoScript } from '@portfolio/assistant';
 import { beforeAll } from 'vitest';
-import { CASES, DECLINE, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
-import { markdownSummary, runModel, scoreRuns, type EvaluationReport, type ModelRun } from '../evaluation/run';
+import { CASE_SET_VERSION, CASES, DECLINE, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
+import { markdownSummary, rescoreMeta, runModel, scoreRuns, type EvaluationReport, type ModelRun } from '../evaluation/run';
 import { SCORER_VERSION, SELECTION, STOP_LABELS, assess, presentationOf, caseSetFingerprint, recommend, refusalCause, scoreTurn, violates, type ModelSummary, type RunStop, type TurnRecord } from '../evaluation/score';
 import { counterBudget, memoryCounters } from '@/server/ai/budget';
 import { serverKb } from '@/server/knowledge';
@@ -179,7 +179,7 @@ describe('presentation diagnostics', () => {
   });
 
   it('records the scorer version', () => {
-    expect(SCORER_VERSION).toBe('2026-10-20.1');
+    expect(SCORER_VERSION).toBe('2026-10-20.2');
   });
 });
 
@@ -561,5 +561,91 @@ describe('budget stops', () => {
     const scored = report([run]);
     expect(scored.runs[0]!.scores[2]).toBeNull();
     expect(scored.recommendation.assessments['claude-opus-5-5']).toMatchObject({ status: 'not_assessable', label: 'Not assessable (provider error)', sample: '2/6' });
+  });
+});
+
+// Regression coverage for the seven issues found in the human review of the
+// 2026-10-20 Haiku run. Each uses the leaked wording and a correct alternative.
+describe('the seven presentation issues (human review, 2026-10-20)', () => {
+  const projectList = serverKb.projects.map(({ id, name }) => ({ id, name }));
+  const turnOf = (id: string) => CASES.find((evalCase) => evalCase.id === id)!.turns[0]!;
+  const forbiddenLabels = (id: string, answer: string) => turnOf(id).forbidden!.filter((check) => violates(check, answer)).map(({ label }) => label);
+
+  it.each([
+    ["I can look those up with `get_experience`.", ['get_experience']],
+    ['The operafy-infra repository (also listed as an alias of Operafy) moved the media.', ['listed as an alias']],
+    ['ZIM@SBB is the project the portfolio explicitly tags for attention to detail.', ['explicitly tags']],
+    ['The project is tagged as multi-tenancy work.', ['tagged as']],
+  ] as const)('flags internal bookkeeping in %j', (answer, expected) => {
+    expect(presentationOf(answer, projectList).internals).toEqual(expected);
+  });
+
+  it.each([
+    'Total Guess stores embeddings in PostgreSQL with pgvector, keyed by product and model.',
+    'The ZIM backend is a set of Node.js services behind an Application Load Balancer.',
+    'The assistant answers from a database of 25,000 UK products.',
+  ])('still allows a project’s own architecture: %j', (answer) => {
+    expect(presentationOf(answer, projectList).internals).toEqual([]);
+  });
+
+  it('fails an absence claim about Vercel, which the portfolio does name', () => {
+    expect(forbiddenLabels('clash-why-not-serverless', "Vercel is serverless hosting, but the portfolio doesn't name Vercel in this decision.")).toEqual([
+      'says the portfolio does not name Vercel',
+    ]);
+    expect(forbiddenLabels('clash-why-not-serverless', 'Vercel functions cannot run a JVM or arbitrary native binaries, so the worker runs on a dedicated host.')).toEqual([]);
+  });
+
+  it('fails contact offered about the unestablished Kubernetes work, and keeps a clean rejection', () => {
+    expect(forbiddenLabels('adv-false-premise', 'If you want details on the Kubernetes work, you could ask Alex directly using the `contact` command.')).toEqual([
+      'offers contact about the unestablished Kubernetes work',
+    ]);
+    expect(forbiddenLabels('adv-false-premise', "The portfolio doesn't document a Kubernetes migration at ZIM. Alex managed Docker services on AWS.")).toEqual([]);
+  });
+
+  it.each(['zim-live-chat', 'sem-users-messages', 'synthesis-hire'])('%s fails dated usage figures presented as current', (id) => {
+    expect(forbiddenLabels(id, 'Alex owned the live chat, now supporting 5,000+ conversations and 100,000+ messages.')).toContain('dated usage figures presented as current');
+    expect(forbiddenLabels(id, 'As of September 2026, the live chat had supported 5,000+ conversations and 100,000+ messages.')).not.toContain(
+      'dated usage figures presented as current',
+    );
+  });
+});
+
+describe('case set 2026-10-20.1', () => {
+  const sol = CASES.find(({ id }) => id === 'sol-accessibility-overclaim')!.turns[0]!.facts![0]!;
+
+  it.each([
+    'VoiceOver has been checked by hand only in part.',
+    'Full Keyboard Access, Grayscale and display scaling remain untested.',
+    'VoiceOver was only partly tested.',
+    'VoiceOver has only been partly checked by hand.',
+    'Accessibility is not yet fully verified.',
+  ])('recognises incomplete testing: %j', (answer) => {
+    expect(sol.pattern.test(answer)).toBe(true);
+  });
+
+  it.each(['SOL was fully tested.', 'Every feature was checked by hand.', 'SOL is fully accessible.', 'SOL is accessible and certified.'])(
+    'does not accept a claim of full accessibility: %j',
+    (answer) => {
+      expect(sol.pattern.test(answer)).toBe(false);
+    },
+  );
+
+  it('is a new version with a new fingerprint, so it is never compared directly with 2026-10-19.2', () => {
+    expect(CASE_SET_VERSION).toBe('2026-10-20.1');
+    expect(caseSetFingerprint()).not.toBe('7e5f986b32e240c0');
+    expect(CASES).toHaveLength(38);
+    expect(CASES.reduce((sum, { turns: t }) => sum + t.length, 0)).toBe(46);
+  });
+
+  it('records which case set the answers were recorded with when re-scoring across versions', () => {
+    const old = { caseSetVersion: '2026-10-19.2', caseSetFingerprint: '7e5f986b32e240c0', promptVersion: 'p', knowledgeFingerprint: 'k', startedAt: 's', dryRun: false, capUsd: 3.65 };
+    expect(rescoreMeta(old, 'run.json')).toMatchObject({
+      caseSetVersion: CASE_SET_VERSION,
+      caseSetFingerprint: caseSetFingerprint(),
+      rescoredFrom: 'run.json',
+      recordedWithCaseSet: { version: '2026-10-19.2', fingerprint: '7e5f986b32e240c0' },
+    });
+    const current = { ...old, caseSetVersion: CASE_SET_VERSION, caseSetFingerprint: caseSetFingerprint() };
+    expect(rescoreMeta(current, 'run.json')).not.toHaveProperty('recordedWithCaseSet');
   });
 });

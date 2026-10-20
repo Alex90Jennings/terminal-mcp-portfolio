@@ -78,6 +78,21 @@ describe('choosing the right project (regression: "ZIM" fetched ZIM@SBB)', () =>
     expect(results[0]?.projectId).toBe(expected);
   });
 
+  it('finds Vercel in Clash of Langs, so "the portfolio doesn\'t name Vercel" is never true (regression: absence claim from a partial lookup)', async () => {
+    const { results } = structured<{ results: { projectId: string; matches: { field: string; text: string }[] }[] }>(
+      await call(client, 'search_projects', { query: 'Vercel' }),
+    );
+    expect(results[0]?.projectId).toBe('clash-of-langs');
+    expect(results[0]?.matches.some(({ field, text }) => field === 'challenges' && /Vercel/.test(text))).toBe(true);
+    // The sections Haiku fetched don't mention it; the whole project does.
+    const partial = structured<{ project: unknown }>(
+      await call(client, 'get_project', { project: 'clash-of-langs', sections: ['decisions', 'limitations', 'architecture', 'undocumented'] }),
+    );
+    expect(JSON.stringify(partial.project)).not.toMatch(/Vercel/);
+    const whole = structured<{ project: unknown }>(await call(client, 'get_project', { project: 'clash-of-langs' }));
+    expect(JSON.stringify(whole.project)).toMatch(/Vercel/);
+  });
+
   it('resolves "ZIM" to ZIM Connections, where the growth to 50,000+ users is recorded as a team result', async () => {
     const { project } = structured<{ project: { id: string; responsibilities: { text: string; scope: string }[] } }>(
       await call(client, 'get_project', { project: 'ZIM', sections: ['responsibilities'] }),

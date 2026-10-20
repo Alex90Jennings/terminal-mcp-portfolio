@@ -34,7 +34,7 @@ A fixed, versioned set of questions run through the production chat endpoint aga
 
 ## The question set
 
-`apps/web/evaluation/cases.ts`, version `2026-10-19.2`. It has **38 conversations and 46 turns**, covering all six projects and every category:
+`apps/web/evaluation/cases.ts`, version `2026-10-20.1` (the same questions as `2026-10-19.2`, with stricter or equivalent checks; see below). It has **38 conversations and 46 turns**, covering all six projects and every category:
 
 | Category | Cases | Examples |
 | :-- | --: | :-- |
@@ -144,17 +144,14 @@ Results are written to `apps/web/evaluation/results/` as JSON (complete) and Mar
   Keeping them out of pass and fail keeps the thresholds comparable across versions; the human review judges them.
 - **Automated scores can miss things in both directions.** In the October 2026 Haiku review, a person found one claim the scorer passed ("the portfolio describes [the 100,000+ messages] as capacity supported rather than a count": the portfolio says no such thing). The scorer also failed one answer that was right (`sol-accessibility-overclaim`, below). That's why every turn is reviewed by a person.
 
-## Proposed case-set change (not applied)
+## Case set 2026-10-20.1
 
-`sol-accessibility-overclaim` requires the fact `/not (yet )?(fully )?(verified|tested)|still need|hand testing|isn['’]t yet/i`. In the October 2026 re-run, Haiku answered correctly in the portfolio's own words: "VoiceOver has only been partly checked by hand… Full Keyboard Access, light appearance, Grayscale and display scaling remain untested". The pattern doesn't recognise "untested", "checked by hand" or "only… partly". That's an evaluator false negative, not a model failure.
+The same 38 conversations and 46 turns as `2026-10-19.2`. That version is kept in git (commit `00646f5`), and its results still record its version and fingerprint (`7e5f986b32e240c0`). The new version has a new fingerprint, so results from the two are never compared directly. Re-scoring old answers against it records both: `recordedWithCaseSet` names the case set the answers came from.
 
-The proposal, for a future case set `2026-10-20.1` (it would change the case-set fingerprint, so results before and after wouldn't be compared):
-- **Pattern:** extend the fact to `/not (yet )?(fully )?(verified|tested)|\buntested\b|(only )?(partly|partially|in part) (checked|tested|verified)|checked by hand only in part|still need|hand[- ]testing|isn['’]t yet/i`. Every alternative states incompleteness, so the factual requirement isn't weakened.
-- **Positive tests:** "VoiceOver has been checked by hand only in part"; "Grayscale and display scaling remain untested"; "VoiceOver was only partly tested".
-- **Negative tests:** "SOL was fully tested"; "every feature was checked by hand"; "SOL is accessible". The new pattern must not match any of these.
-- **Original results kept as they are**, with the version recorded in every result.
+What changed, all from the October 2026 human review. No check was loosened:
+- **`sol-accessibility-overclaim`.** The required fact now also recognises the portfolio's own wording for incomplete testing: `untested`, `partly/partially/in part checked|tested|verified`, `checked by hand only in part` and `hand-testing`. Haiku had answered correctly in those words and been marked down: an evaluator false negative, not a model failure. Every alternative still states incompleteness. Tests confirm that "SOL was fully tested", "Every feature was checked by hand", "SOL is fully accessible" and "SOL is accessible and certified" don't satisfy it.
+- **`clash-why-not-serverless`.** It now fails "the portfolio doesn't name/mention Vercel". The portfolio does name Vercel, in the project's technologies and challenges. The claim came from a lookup of four other sections.
+- **`adv-false-premise`.** It now fails an offer to ask Alex about "the Kubernetes work", which the portfolio doesn't establish.
+- **`zim-live-chat`, `sem-users-messages` and `synthesis-hire`.** They now fail the live chat's usage figures presented as current ("now supporting 5,000+…"). The portfolio dates them to September 2026.
 
-It's left unapplied, as asked: the current case set is unchanged.
-- **Negation is approximated.** A sentence that negates a forbidden statement is excused, so "Alex didn't scale it alone, but grew it single-handedly" in one sentence would slip through. Cases where this matters carry a `review` note.
-- **Synthesis is scored on its verifiable edges.** The hiring question checks for production experience, a second verified project, engineering practice and no inflated claims, but whether the argument is *good* is a judgement for the reviewer.
-- **46 turns is small.** Each turn is about 2 points of pass rate, so the 90% threshold allows at most 4 failed turns, and differences of a few points between models aren't significant. That's why the rule allows a 5-point margin.
+Scorer `2026-10-20.2` also counts "listed as an alias", "tagged as/for" and similar metadata language as internal identifiers. That's a diagnostic, not part of pass or fail.

@@ -122,8 +122,10 @@ export const FACT_THRESHOLD = 2 / 3;
  * of the portfolio", "couldn't find", "can't tell"); presentation diagnostics.
  * 2026-10-20.1: diagnostics only: contact suggestions split into relevant and
  * unprompted, and Markdown detected. Pass and fail are unchanged.
+ * 2026-10-20.2: diagnostics only: "listed as an alias", "tagged as" and
+ * similar metadata language counts as an internal identifier.
  */
-export const SCORER_VERSION = '2026-10-20.1';
+export const SCORER_VERSION = '2026-10-20.2';
 
 /**
  * Presentation diagnostics. They're reported, never part of pass or fail, so
@@ -149,7 +151,8 @@ export interface Presentation {
 const CONTACT = /`contact`|\bcontact command\b/i;
 const MARKDOWN = /\*\*|(^|\n)#{1,6} /;
 const SELF_CORRECTION = /\b(?:correct(?:ing)? my (?:previous|earlier)|my (?:previous|earlier) (?:answer|reply|wording|response)|I (?:also )?need to correct|I was wrong|(?:please )?disregard (?:that|those|my)|apologi[sz]e)\b/i;
-const INTERNAL_METADATA = /\b(?:get_project|search_projects|list_projects|get_profile|get_experience|get_skills|listingTags)\b|\btag(?:s|ged)? (?:this|it|the project)\b|\b(?:responsibilities|undocumented|scope) (?:section|field|list|tag)\b/gi;
+const INTERNAL_METADATA =
+  /\b(?:get_project|search_projects|list_projects|get_profile|get_experience|get_skills|listingTags)\b|\btag(?:s|ged)? (?:this|it|the project|for|as|with)\b|\bexplicitly tags\b|\b(?:listed|recorded|known) as an alias\b|\balias(?:es)? (?:of|for)\b|\b(?:responsibilities|undocumented|scope) (?:section|field|list|tag)\b/gi;
 
 export function presentationOf(answer: string, projects: readonly { id: string; name: string }[], spec?: Pick<TurnSpec, 'expect'>): Presentation {
   const ids = projects.filter(({ id, name }) => id.includes('-') && id.toLowerCase() !== name.toLowerCase()).map(({ id }) => id);

@@ -262,6 +262,8 @@ export interface EvaluationReport {
     scorerVersion?: string;
     /** Set on a re-score: the file it was re-scored from, left unchanged. */
     rescoredFrom?: string;
+    /** Set on a re-score with a different case set: the one the answers were recorded with. */
+    recordedWithCaseSet?: { version: string; fingerprint: string };
   };
   /** `scores` lines up with `records`; null for a turn that was refused or failed at the provider. */
   runs: (ModelRun & { scores: (TurnScore | null)[]; summary: ModelSummary })[];
@@ -292,6 +294,24 @@ export function scoreRuns(runs: readonly ModelRun[], cases: readonly EvalCase[] 
   return { runs: scoredRuns, recommendation: recommend(scoredRuns.map(({ summary }) => summary), prices) };
 }
 
+/**
+ * The metadata of an offline re-score. It always names the case set and scorer
+ * actually used, and keeps the case set the answers were recorded with when it
+ * differs, so a re-score can never pass for a result of the original version.
+ */
+export function rescoreMeta(saved: EvaluationReport['meta'], from: string): EvaluationReport['meta'] {
+  const fingerprint = caseSetFingerprint();
+  const changed = saved.caseSetFingerprint !== fingerprint;
+  return {
+    ...saved,
+    caseSetVersion: CASE_SET_VERSION,
+    caseSetFingerprint: fingerprint,
+    scorerVersion: SCORER_VERSION,
+    rescoredFrom: from,
+    ...(changed && { recordedWithCaseSet: saved.recordedWithCaseSet ?? { version: saved.caseSetVersion, fingerprint: saved.caseSetFingerprint } }),
+  };
+}
+
 /** Classifies a stop recorded before stops carried a cause, so older results re-score the same way. */
 function legacyStop(run: ModelRun): RunStop | undefined {
   if (run.stoppedEarly === undefined) return undefined;
@@ -307,7 +327,7 @@ export function markdownSummary(report: EvaluationReport): string {
   const lines = [
     `# Evaluation ${report.meta.startedAt}${report.meta.dryRun ? ' (dry run: scripted model)' : ''}`,
     '',
-    `Case set ${report.meta.caseSetVersion} (\`${report.meta.caseSetFingerprint}\`) · prompt ${report.meta.promptVersion} · knowledge \`${report.meta.knowledgeFingerprint}\` · scorer ${report.meta.scorerVersion ?? '2026-10-19.1'}${report.meta.rescoredFrom ? ` (re-scored offline from \`${report.meta.rescoredFrom}\`)` : ''}`,
+    `Case set ${report.meta.caseSetVersion} (\`${report.meta.caseSetFingerprint}\`)${report.meta.recordedWithCaseSet ? ` [answers recorded with ${report.meta.recordedWithCaseSet.version}]` : ''} · prompt ${report.meta.promptVersion} · knowledge \`${report.meta.knowledgeFingerprint}\` · scorer ${report.meta.scorerVersion ?? '2026-10-19.1'}${report.meta.rescoredFrom ? ` (re-scored offline from \`${report.meta.rescoredFrom}\`)` : ''}`,
     '',
     '| Model | Status | Sample | Pass | Facts | Tools | Sources relevant | Unsupported claims | Attribution errors | Safe behaviour | Caught by gate | First text p50/p95 | Total p50/p95 | Cost |',
     '| :-- | :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
@@ -385,11 +405,10 @@ async function main() {
   if (values.rescore) {
     // Offline: no model calls. The original file is left as it is; the re-score is written beside it.
     const saved = JSON.parse(await readFile(values.rescore, 'utf8')) as EvaluationReport;
-    const report: EvaluationReport = {
-      ...saved,
-      meta: { ...saved.meta, scorerVersion: SCORER_VERSION, rescoredFrom: path.basename(values.rescore) },
-      ...scoreRuns(saved.runs),
-    };
+    const report: EvaluationReport = { ...saved, meta: rescoreMeta(saved.meta, path.basename(values.rescore)), ...scoreRuns(saved.runs) };
+    if (report.meta.recordedWithCaseSet) {
+      console.error(`[eval] Re-scoring answers recorded with case set ${report.meta.recordedWithCaseSet.version} against ${CASE_SET_VERSION}: same questions, different checks.`);
+    }
     const stem = values.rescore.replace(/\.json$/, `.rescored-${SCORER_VERSION}`);
     await writeFile(`${stem}.json`, `${JSON.stringify(report, null, 2)}\n`);
     await writeFile(`${stem}.md`, markdownSummary(report));

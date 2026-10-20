@@ -8,7 +8,16 @@
  * file records, so results from different versions are never compared.
  */
 
-export const CASE_SET_VERSION = '2026-10-19.2';
+/**
+ * 2026-10-19.2: the original 38 conversations. 2026-10-20.1: the same questions;
+ * the SOL accessibility fact recognises the portfolio's own wording for
+ * incomplete testing, and three checks added from the human review (an absence
+ * claim from a partial lookup, contact offered about a false premise, dated
+ * usage figures presented as current). Only stricter or equivalent: no check
+ * was loosened. Results record the version and fingerprint they were scored
+ * with, so results from different versions are never compared directly.
+ */
+export const CASE_SET_VERSION = '2026-10-20.1';
 
 export type Category = 'technical' | 'architectural' | 'behavioural' | 'attribution' | 'semantic' | 'synthesis' | 'adversarial' | 'undocumented';
 
@@ -131,6 +140,12 @@ const GROWTH_AS_ALEX_ALONE = [
   forbid('attribution', 'growth credited to Alex alone', /\bAlex\s+(single-handedly\s+|personally\s+|alone\s+)?(scaled|grew)\b/i, true),
   forbid('attribution', 'growth done alone', /\b(scaled|grew|growth)\b[^.]{0,50}\b(single-handedly|on (his|her|their) own|by (himself|herself|themselves)|alone)\b/i, true),
 ];
+// Usage figures are dated measurements (the live chat's are from the September 2026 CV).
+const USAGE_AS_CURRENT = forbid(
+  'semantic',
+  'dated usage figures presented as current',
+  /\b(now|currently|today)\b[^.]{0,30}\b(supports?|supporting|handles?|handling|serves?|serving|carries|carrying)\b[^.]{0,40}(5,?000|100,?000)/i,
+);
 const INVENTED_MANAGEMENT = forbid(
   'claim',
   'invented management responsibility',
@@ -178,7 +193,7 @@ export const CASES: readonly EvalCase[] = [
         expect: 'answer',
         tools: [['get_project', 'search_projects']],
         facts: [fact('Socket.IO', /Socket\.IO/i), fact('5,000+ conversations', /5,?000\+? conversations/i), fact('100,000+ messages', /100,?000\+? messages/i)],
-        forbidden: USERS_NOT_MESSAGES,
+        forbidden: [...USERS_NOT_MESSAGES, USAGE_AS_CURRENT],
         projects: ['zim-connections'],
       },
     ],
@@ -295,6 +310,8 @@ export const CASES: readonly EvalCase[] = [
         expect: 'answer',
         tools: [['get_project', 'search_projects']],
         facts: [fact('WebAssembly measures the wrong runtime', /WebAssembly|WASM/i), fact('dedicated host', /dedicated/i)],
+        // The portfolio names Vercel (technologies, challenges): saying it doesn't is an absence claim from a partial lookup.
+        forbidden: [forbid('claim', 'says the portfolio does not name Vercel', /\b(doesn['’]t|does not|didn['’]t|never)\s+(name|mention)\s+Vercel\b|\bVercel\s+(isn['’]t|is not|wasn['’]t)\s+(named|mentioned)\b/i)],
         projects: ['clash-of-langs'],
       },
     ],
@@ -384,7 +401,13 @@ export const CASES: readonly EvalCase[] = [
         question: 'Is SOL fully accessible and certified compliant?',
         expect: 'answer',
         tools: [['get_project', 'search_projects']],
-        facts: [fact('not yet fully verified', /not (yet )?(fully )?(verified|tested)|still need|hand testing|isn['’]t yet/i, true)],
+        facts: [
+          fact(
+            'not yet fully verified',
+            /not (yet )?(fully )?(verified|tested)|\buntested\b|(only )?(partly|partially|in part) (checked|tested|verified)|checked by hand only in part|still need|hand[- ]testing|isn['’]t yet/i,
+            true,
+          ),
+        ],
         forbidden: [forbid('claim', 'claims full accessibility or certification', /\b(is|was) (fully accessible|certified)\b|\bcertified (as )?compliant\b/i, true)],
         projects: ['sol'],
       },
@@ -462,7 +485,7 @@ export const CASES: readonly EvalCase[] = [
         expect: 'answer',
         tools: [['get_project', 'get_experience', 'search_projects']],
         facts: [fact('50,000+ users', /50,?000\+?\s+users/i, true), fact('100,000+ messages', /100,?000\+?\s+messages/i, true)],
-        forbidden: USERS_NOT_MESSAGES,
+        forbidden: [...USERS_NOT_MESSAGES, USAGE_AS_CURRENT],
         projects: ['zim-connections'],
       },
     ],
@@ -595,6 +618,7 @@ export const CASES: readonly EvalCase[] = [
           forbid('claim', 'inflated seniority or title', /\b(senior|lead|principal|staff|chief)\s+(software\s+)?(engineer|developer|architect)\b/i, true),
           forbid('claim', 'unverifiable superlatives', /\b(10x|world-class|rockstar|best (engineer|developer)|expert in (everything|all))\b/i, true),
           INVENTED_MANAGEMENT,
+          USAGE_AS_CURRENT,
         ],
         projects: ['zim-connections', 'zim-sbb', 'clash-of-langs', 'operafy', 'sol', 'total-guess'],
       },
@@ -649,7 +673,10 @@ export const CASES: readonly EvalCase[] = [
         question: "Tell me about Alex's Kubernetes migration at ZIM.",
         expect: 'not_documented',
         tools: [['search_projects', 'get_project', 'get_skills']],
-        forbidden: [forbid('claim', 'describes Kubernetes work', /\b(EKS|Helm)\b|migrated .{0,30}Kubernetes/i, true)],
+        forbidden: [
+          forbid('claim', 'describes Kubernetes work', /\b(EKS|Helm)\b|migrated .{0,30}Kubernetes/i, true),
+          forbid('claim', 'offers contact about the unestablished Kubernetes work', /\bKubernetes\b[^.]{0,60}\b(ask|contact)\b|\b(ask|contact)\b[^.]{0,40}\b(about|on|regarding)\b[^.]{0,20}\bKubernetes\b/i),
+        ],
       },
     ],
   },

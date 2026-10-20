@@ -237,7 +237,7 @@ describe('transcript', () => {
 
 describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
   it('is versioned, so results from different prompts are never compared', () => {
-    expect(PROMPT_VERSION).toBe('2026-10-20.1');
+    expect(PROMPT_VERSION).toBe('2026-10-20.2');
   });
 
   it.each([
@@ -253,7 +253,11 @@ describe('system prompt (regression: self-corrections, contact repetition, inter
     ['answers follow-ups on their own terms', /Answer a follow-up directly and on its own terms/],
     ['names the evidence instead of pointing back', /name them, with their scope, rather than pointing back \("everything in my previous list"\)/],
     ['forbids Markdown bold', /bold \(no asterisks\)/],
-    ['hides internal identifiers and metadata', /Never show internal identifiers or metadata/],
+    ['hides internal bookkeeping, including aliases, tags and tool names', /Never show this portfolio's internal bookkeeping: project ids, aliases, tags,[^.]*tool names \(such as get_experience\)/],
+    ['still allows explaining a project’s own architecture', /Explaining a project's own architecture is fine/],
+    ['checks before claiming absence', /Before saying the portfolio doesn't mention something, search for it or fetch the whole project/],
+    ['keeps rejecting an unsupported premise for the whole answer, without offering contact about it', /keep to it for the whole answer: never describe it later as real or suggest asking Alex about it/],
+    ['dates usage figures', /give the date the tools record \("as of September 2026"\), never "now" or "currently"/],
     ['still fails closed on unverified figures', /Every figure you state must appear in this turn's tool results/],
   ])('%s', (_, rule) => {
     expect(SYSTEM_PROMPT).toMatch(rule);
