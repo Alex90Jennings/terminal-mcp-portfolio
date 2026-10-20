@@ -290,7 +290,7 @@
   ],
   "limitations": [
     {
-      "text": "As of October 2026 it isn't deployed, the AWS infrastructure for Bedrock hasn't been applied, and only one candidate model has been evaluated.",
+      "text": "As of October 2026 the AWS infrastructure for Bedrock hasn't been applied (the live assistant uses the Claude API directly), and only one candidate model has been evaluated.",
       "sources": [
         "readme",
         "bedrock-readme",

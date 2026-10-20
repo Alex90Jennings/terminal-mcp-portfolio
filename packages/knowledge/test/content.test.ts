@@ -22,6 +22,12 @@ describe('portfolio content', () => {
     ]);
   });
 
+  it('records the Terminal Portfolio as deployed, with nothing left saying otherwise', () => {
+    const text = JSON.stringify(kb.projects.find(({ id }) => id === 'terminal-portfolio'));
+    expect(text).toContain('www.builtbyaj.io');
+    expect(text).not.toMatch(/isn['’]t deployed|not (yet )?deployed|runs locally/i);
+  });
+
   it('gives every project an overview and technologies', () => {
     for (const project of kb.projects) {
       expect(project.overview.length, project.id).toBeGreaterThan(0);
