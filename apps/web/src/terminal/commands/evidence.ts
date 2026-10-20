@@ -1,8 +1,9 @@
 import {
   COMPETENCY_GROUP_LABELS,
+  STAR_PARTS,
   STORY_ATTRIBUTION_LABELS,
   storyBasis,
-  storyParts,
+  storyPartText,
   type Competency,
   type Interest,
   type KnowledgeBase,
@@ -12,12 +13,10 @@ import { bullets, command, heading, joined, paragraph, subheading, text, type Bl
 import type { Command } from '../types';
 
 /*
- * Soft skills, STAR stories and interests. Everything shown comes from the
+ * Soft skills, stories and interests. Everything shown comes from the
  * published evidence in the knowledge base: a competency appears only with a
  * real example, and drafts never reach a public build.
  */
-
-const PART_LABELS = { situation: 'Situation', task: 'Task', action: 'Action', result: 'Result', reflection: 'Reflection' } as const;
 
 const BASIS = {
   documented: 'Based on project records',
@@ -33,7 +32,7 @@ function previewNotice(kb: KnowledgeBase): Block[] {
 function storyBlocks(story: Story, kb: KnowledgeBase, version: 'short' | 'detailed'): Block[] {
   const blocks: Block[] = [heading(story.title)];
   if (story.organisation) blocks.push(paragraph(story.organisation, 'muted'));
-  for (const { part, text: body } of storyParts(story, version)) blocks.push(subheading(PART_LABELS[part]), paragraph(body));
+  blocks.push(paragraph(toldAsOne(story, version)));
   const competencies = story.competencies.flatMap((id) => {
     const competency = kb.getCompetency(id);
     return competency ? [command(competency.name, `soft-skills ${competency.id}`)] : [];
@@ -46,11 +45,21 @@ function storyBlocks(story: Story, kb: KnowledgeBase, version: 'short' | 'detail
   if (story.projects.length > 0) {
     blocks.push(paragraph([text('Projects: ', 'muted'), ...joined(story.projects.map((id) => command(kb.getProject(id)?.name ?? id, `projects ${id}`)))]));
   }
-  if (version === 'short' && hasMore(story)) blocks.push(paragraph([text('More detail: ', 'muted'), command(`star ${story.id} full`)]));
+  if (version === 'short' && hasMore(story)) blocks.push(paragraph([text('More detail: ', 'muted'), command(`stories ${story.id} full`)]));
   return blocks;
 }
 
-const hasMore = (story: Story) => [story.situation, story.task, story.action, story.result].some((part) => part.detail !== undefined) || story.reflection !== undefined;
+/**
+ * The story as one paragraph, without part labels. Most of it is what Alex did: the action is always told in full,
+ * while the background, the task and the outcome stay short unless the detailed version is asked for.
+ */
+function toldAsOne(story: Story, version: 'short' | 'detailed'): string {
+  const parts = STAR_PARTS.map((part) => storyPartText(story[part], part === 'action' ? 'detailed' : version));
+  if (version === 'detailed' && story.reflection) parts.push(storyPartText(story.reflection, 'detailed'));
+  return parts.join(' ');
+}
+
+const hasMore = (story: Story) => [story.situation, story.task, story.result].some((part) => part.detail !== undefined) || story.reflection !== undefined;
 
 function noEvidence(kb: KnowledgeBase, what: string): CommandResult {
   return { blocks: [...previewNotice(kb), paragraph(`No ${what} are published yet.`, 'muted')] };
@@ -103,7 +112,7 @@ function listCompetencies(kb: KnowledgeBase): CommandResult {
       })),
     });
   }
-  blocks.push(paragraph([text('Choose one to see a real example, or see ', 'muted'), command('soft-skills questions'), text(' and ', 'muted'), command('star', 'star'), text('.', 'muted')]));
+  blocks.push(paragraph([text('Choose one to see a real example, or see ', 'muted'), command('soft-skills questions'), text(' and ', 'muted'), command('stories'), text('.', 'muted')]));
   return { blocks };
 }
 
@@ -116,7 +125,7 @@ function showCompetency(kb: KnowledgeBase, competency: Competency): CommandResul
   } else {
     blocks.push(paragraph(text('Example', 'accent', true)), ...storyBlocks(strongest, kb, 'short'));
   }
-  if (others.length > 0) blocks.push(subheading('More examples'), bullets(others.map((story) => [command(story.title, `star ${story.id}`)])));
+  if (others.length > 0) blocks.push(subheading('More examples'), bullets(others.map((story) => [command(story.title, `stories ${story.id}`)])));
   if (competency.gap) blocks.push(paragraph([text('Evidence gap: ', 'muted'), competency.gap]));
   blocks.push(paragraph([text('Interview questions: ', 'muted'), command(`soft-skills questions ${competency.id}`)]));
   return { blocks };
@@ -129,27 +138,27 @@ function questions(kb: KnowledgeBase, only: Competency | undefined): CommandResu
     if (!only) blocks.push(subheading(competency.name));
     blocks.push(bullets(competency.questions.map((question) => [question])));
     const best = competency.stories[0];
-    if (best && kb.getStory(best)) blocks.push(paragraph([text('Best answered by: ', 'muted'), command(kb.getStory(best)!.title, `star ${best}`)]));
+    if (best && kb.getStory(best)) blocks.push(paragraph([text('Best answered by: ', 'muted'), command(kb.getStory(best)!.title, `stories ${best}`)]));
   }
   return { blocks };
 }
 
-export const star: Command = {
-  name: 'star',
-  aliases: ['stories', 'examples'],
-  summary: 'STAR stories: real examples from my work, told as Situation, Task, Action, Result (also in the First Round Interview)',
-  usage: 'star [story] [full]',
+export const stories: Command = {
+  name: 'stories',
+  aliases: ['examples'],
+  summary: 'Real examples from my work, each told as a short story (also in the First Round Interview)',
+  usage: 'stories [story] [full]',
   run: (args, { kb }) => {
     const stories = kb.evidence.stories;
     if (stories.length === 0) return noEvidence(kb, 'stories');
-    // `star list` and `star show <id>` are accepted as well as `star` and `star <id>`.
+    // `stories list` and `stories show <id>` are accepted as well as `stories` and `stories <id>`.
     const words = args.filter((word, index) => !(index === 0 && (word === 'show' || word === 'list')));
     if (words.length === 0) return listStories(kb);
     const full = words.at(-1) === 'full' || words.at(-1) === 'detailed';
     const target = (full ? words.slice(0, -1) : words).join(' ');
     const story = /^\d+$/.test(target) ? stories[Number(target) - 1] : kb.getStory(target);
     if (story === undefined) {
-      return { blocks: [paragraph(`No story called "${target}".`, 'error'), paragraph([text('See '), command('star'), text(' for the list.')], 'muted')] };
+      return { blocks: [paragraph(`No story called "${target}".`, 'error'), paragraph([text('See '), command('stories'), text(' for the list.')], 'muted')] };
     }
     return { blocks: [...previewNotice(kb), ...storyBlocks(story, kb, full ? 'detailed' : 'short')] };
   },
@@ -171,12 +180,12 @@ function listStories(kb: KnowledgeBase): CommandResult {
         items: kb.evidence.stories.map((story, index) => ({
           marker: `[${index + 1}]`,
           lines: [
-            [command(story.title, `star ${story.id}`)],
+            [command(story.title, `stories ${story.id}`)],
             [text([story.organisation ?? kb.getProject(story.projects[0] ?? '')?.name, STORY_ATTRIBUTION_LABELS[story.attribution]].filter(Boolean).join(' · '), 'muted')],
           ],
         })),
       },
-      paragraph([text('Open one by name or number, e.g. ', 'muted'), command(`star ${kb.evidence.stories[0]!.id}`)]),
+      paragraph([text('Open one by name or number, e.g. ', 'muted'), command(`stories ${kb.evidence.stories[0]!.id}`)]),
     ],
   };
 }

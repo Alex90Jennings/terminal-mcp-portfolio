@@ -45,20 +45,20 @@ Ask the terminal a question in plain English, or use `ask <question>`. Answers c
 ## The interview
 
 The welcome screen frames the terminal as a first-stage interview, with example questions to click (each runs exactly as if typed). There are two ways in, both to the same assistant:
-- the **First Round Interview** (`first-round`): background, experience, soft skills and STAR questions;
+- the **First Round Interview** (`first-round`): background, experience, soft skills and competency questions;
 - the **Technical Interview** (`technical`): engineering, architecture and the decisions behind it.
 
-The chips under the prompt cover the main areas: About, Experience, Projects, Soft skills, First Round Interview, Education, Interests, Technical Interview and Contact. `star` and `ask` still work.
+The chips under the prompt cover the main areas: About, Experience, Projects, Soft skills, First Round Interview, Education, Interests, Technical Interview and Contact. `stories` and `ask` still work.
 
 Recruiter-friendly commands:
 - `experience`;
 - `education`, which keeps earned certifications apart from those in progress;
 - `cv`, a summary with a download link to `/api/cv`, which streams the PDF from a private S3 bucket using Vercel OIDC (see [docs/CV_DOWNLOAD.md](docs/CV_DOWNLOAD.md); the CV is never read for facts);
-- `interview`, which offers questions to try. After an AI answer, follow-ups are offered only from what it referenced: the full STAR story it told, another example, or Alex's role on the one project it was about. No extra AI call is made.
+- `interview`, which offers questions to try. After an AI answer, follow-ups are offered only from what it referenced: the full story it told, another example, or Alex's role on the one project it was about. No extra AI call is made.
 
 ## Soft skills, stories and interests
 
-Soft skills are shown through real STAR examples (`soft-skills`, `star`), alongside `interests`. Each example says who did what and whether it comes from the project records or Alex's own account. Every story and interest is reviewed and approved by Alex before it is published; drafts can be previewed locally with `npm run dev:preview -w @portfolio/web`. See [docs/EVIDENCE.md](docs/EVIDENCE.md).
+Soft skills are shown through real examples (`soft-skills`, `stories`), each told as one paragraph built from the STAR evidence, alongside `interests`. Each example says who did what and whether it comes from the project records or Alex's own account. Every story and interest is reviewed and approved by Alex before it is published; drafts can be previewed locally with `npm run dev:preview -w @portfolio/web`. See [docs/EVIDENCE.md](docs/EVIDENCE.md).
 
 ## MCP
 

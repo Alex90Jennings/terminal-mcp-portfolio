@@ -1,5 +1,5 @@
 import { editDistance } from '@portfolio/knowledge/runtime';
-import { interests, softSkills, star } from './commands/evidence';
+import { interests, softSkills, stories } from './commands/evidence';
 import { about, approach, contact, skills } from './commands/profile';
 import { projects } from './commands/projects';
 import { cv, education, experience, firstRound, interview, technical } from './commands/recruiter';
@@ -47,7 +47,7 @@ export const registry = createRegistry([
   experience,
   projects,
   softSkills,
-  star,
+  stories,
   education,
   interests,
   skills,

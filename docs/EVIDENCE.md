@@ -77,18 +77,18 @@ Where the evidence for a competency is thin, its `gap` says so plainly, and the 
 ## How it's used
 
 **Terminal:**
-- `soft-skills` lists the 17 competencies; `soft-skills <name|number>` shows the strongest example as STAR, with more examples and any evidence gap.
+- `soft-skills` lists the 17 competencies; `soft-skills <name|number>` shows the strongest example, with more examples and any evidence gap.
 - `soft-skills questions [name]` lists interview questions.
-- `star` lists the stories; `star <id>` tells the short version and `star <id> full` the detailed one.
+- `stories` lists the stories; `stories <id>` tells the short version and `stories <id> full` the detailed one. A story is shown as one paragraph, with no Situation, Task, Action or Result labels and no mention of STAR anywhere on the site. The short version tells the action in full (most of the story is what Alex did) and keeps the background, task and outcome short; the detailed version adds their detail and the reflection.
 - `interests` shows personal and technical interests, motivation and working style.
-- Each project page lists, under **What it demonstrates**, the soft skills its stories show and its technical skills, and under **STAR examples** its stories, each a link.
+- Each project page lists, under **What it demonstrates**, the soft skills its stories show and its technical skills, and under **Examples** its stories, each a link.
 - `experience` shows each role's responsibilities (with scope) and the stories from that role.
 
 With nothing published, each command says so; in a preview each output starts with a preview notice.
 
 **MCP** (see [MCP.md](MCP.md)): `get_examples` tells stories by competency, project, keywords or id, with `exclude` for "another example", and reports `matched` and `complete` so a client never mistakes a partial list for the whole. `get_skills` lists soft skills with their examples; `get_profile` adds interests and background. `get_project` and `search_projects` point at a project's published examples, so a fact told only in an example is never reported as undocumented (see [AI.md](AI.md)). Each story part carries a user-facing `basis` ("project records" or "Alex's own account"); review status, visibility and raw provenance never leave the bundle.
 
-**AI assistant** (prompt `2026-10-20.9`): picks the format from the question. A factual question gets a direct answer; "is Alex good at X?" gets one concise example; "tell me about a time…" gets Situation, Task, Action and Result lines, with the reflection where one exists. It keeps the attribution note, says "by Alex's account" where it matters, never describes Alex with unsupported adjectives, and for "another example" calls `get_examples` again with the stories already told excluded. The figure check, the absence check and the presentation guards apply unchanged.
+**AI assistant** (prompt `2026-10-20.10`): picks the format from the question. A factual question gets a direct answer; "is Alex good at X?" gets one concise example; "tell me about a time…" gets one flowing paragraph (a sentence of background, a short clause on what needed doing, most of it on what Alex did, then the outcome, with the reflection where one exists), never labelled parts or the word STAR. Each answer opens with one short, friendly line, and greetings or small talk get a warm reply that invites a question about Alex. It keeps the attribution note, says "by Alex's account" where it matters, never describes Alex with unsupported adjectives, and for "another example" calls `get_examples` again with the stories already told excluded. The figure check, the absence check and the presentation guards apply unchanged.
 
 ## Evaluation
 

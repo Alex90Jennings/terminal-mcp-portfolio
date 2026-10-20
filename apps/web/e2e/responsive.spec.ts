@@ -50,11 +50,11 @@ test("the copyright line sits below the terminal, always on screen", async ({
 test.describe("on phones", () => {
   test.skip(({ isMobile }) => !isMobile, "touch behaviour");
 
-  test("the welcome fits the screen: the suggested questions and the prompt are visible without scrolling", async ({
+  test("the welcome fits the screen: the greeting and the prompt are visible without scrolling", async ({
     page,
   }) => {
     await expect(
-      output(page).getByRole("button", { name: "Why should we hire Alex?" }),
+      output(page).getByRole("button", { name: "help", exact: true }),
     ).toBeInViewport();
     await expect(prompt(page)).toBeInViewport();
   });
@@ -63,7 +63,7 @@ test.describe("on phones", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.reload();
     await expect(
-      output(page).getByRole("button", { name: "Why should we hire Alex?" }),
+      output(page).getByRole("button", { name: "help", exact: true }),
     ).toBeInViewport();
     await expect(prompt(page)).toBeInViewport();
   });

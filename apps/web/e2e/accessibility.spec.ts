@@ -12,7 +12,7 @@ test('the welcome screen has no axe violations', async ({ page }) => {
 });
 
 test('every kind of output has no axe violations', async ({ page }) => {
-  for (const command of ['help', 'first-round', 'technical', 'about', 'experience', 'education', 'cv', 'interview', 'projects', 'projects zim-connections', 'projects sol all', 'skills', 'soft-skills', 'star zim-black-friday full', 'interests', 'approach', 'contact', 'history', 'nope', 'what is sol?']) {
+  for (const command of ['help', 'first-round', 'technical', 'about', 'experience', 'education', 'cv', 'interview', 'projects', 'projects zim-connections', 'projects sol all', 'skills', 'soft-skills', 'stories zim-black-friday full', 'interests', 'approach', 'contact', 'history', 'nope', 'what is sol?']) {
     await runCommand(page, command);
   }
   await page.getByRole('textbox', { name: 'Command' }).fill('projects zim');

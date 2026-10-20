@@ -11,7 +11,7 @@ export interface AiAnswer {
   notices: string[];
   sources: DoneEvent['sources'];
   projects: DoneEvent['projects'];
-  /** STAR stories the answer told. */
+  /** Stories the answer told. */
   stories: DoneEvent['stories'];
   /** Why there is no answer, for `error` and `unavailable`. */
   message?: string;

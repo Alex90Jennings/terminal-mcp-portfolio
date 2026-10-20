@@ -1,7 +1,7 @@
 import { askOrFallback } from '../ask';
-import { bullets, command, heading, paragraph, subheading, text, type Block } from '../output';
+import { command, heading, paragraph, subheading, text, type Block } from '../output';
 import type { Command } from '../types';
-import { WELCOME_QUESTIONS, interviewGuide } from './recruiter';
+import { interviewGuide } from './recruiter';
 
 export const ask: Command = {
   name: 'ask',
@@ -84,8 +84,8 @@ export const clear: Command = {
 
 /**
  * The greeting shown on load. Not a command; built from the profile so nothing is hard-coded. It says what this is (a
- * first-stage interview), that plain English works, where to look, and offers questions that run exactly as if typed.
- * Kept short, so it fits a phone screen with the prompt still visible.
+ * first-stage interview) and that plain English works, then hands straight over to the prompt. Kept short, so it fits a
+ * phone screen with the prompt still visible.
  */
 export function welcome(context: { kb: { profile: { name: string; title: string } } }): Block[] {
   const { profile } = context.kb;
@@ -94,15 +94,10 @@ export function welcome(context: { kb: { profile: { name: string; title: string 
     { kind: 'title', text: profile.name },
     paragraph(text(profile.title, 'accent')),
     paragraph(`Hi, I’m ${firstName}. Welcome to my interactive portfolio: think of it as a first-stage interview.`),
-    {
-      kind: 'actions',
-      label: 'Choose an interview',
-      items: [
-        { title: 'First Round Interview', detail: 'Background, experience, soft skills', command: 'first-round' },
-        { title: 'Technical Interview', detail: 'Engineering, architecture, trade-offs', command: 'technical' },
-      ],
-    },
-    paragraph(text('Or ask anything in plain English. Try:', 'muted')),
-    bullets(WELCOME_QUESTIONS.map((question) => [command(question)])),
+    paragraph([
+      text(`Ask me anything to get to know ${firstName}, and why you should hire him. Try `, 'muted'),
+      command('help'),
+      text(' if you can’t think of anything to ask:', 'muted'),
+    ]),
   ];
 }

@@ -57,12 +57,12 @@ test('Tab on an empty prompt moves focus on, so keyboard users are never trapped
   await expect(page.getByRole('navigation', { name: 'Quick commands' }).getByRole('button', { name: 'First Round Interview' })).toBeFocused();
 });
 
-test('the welcome screen’s suggested questions are reachable with Shift+Tab and run with Enter', async ({ page }) => {
+test('the greeting’s help link is reachable with Shift+Tab and runs with Enter', async ({ page }) => {
   await expect(prompt(page)).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.getByRole('button', { name: 'Why should we hire Alex?' })).toBeFocused();
+  await expect(output(page).getByRole('button', { name: 'help', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('list', { name: 'Portfolio lookups' }).last()).toContainText('Why should we hire Alex?');
+  await expect(output(page).getByRole('heading', { name: 'Commands' })).toBeVisible();
 });
 
 test('output links are reachable with Shift+Tab and run with Enter', async ({ page }) => {

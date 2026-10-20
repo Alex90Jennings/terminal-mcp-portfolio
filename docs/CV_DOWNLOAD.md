@@ -10,7 +10,7 @@ Browser ── GET /api/cv ──▶ Vercel function ── OIDC ──▶ STS: 
 
 - **Bucket and object:** `s3://cv-alex-jennings/cv-alex-jennings.pdf`, in eu-west-1.
 - **Route:** `apps/web/src/app/api/cv/route.ts`. The logic is in `apps/web/src/server/cv.ts`.
-- **Terminal:** `cv` links `/api/cv` when the deployment is configured, and shows a summary otherwise.
+- **Terminal:** `cv` links `/api/cv` when the deployment is configured, and shows a summary otherwise. Plain-English requests for the CV ("How can I download Alex's CV?") run `cv` directly instead of going to the AI assistant, and the assistant is told to point to `cv` when the CV comes up. The CV's contents are never AI knowledge.
 - **Infrastructure:** `infra/cv/` (Terraform). Applied on 2026-10-20; the Vercel variables and a production deploy are still to do.
 
 ## How authentication works

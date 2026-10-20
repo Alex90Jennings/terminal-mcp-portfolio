@@ -26,7 +26,6 @@ export function commandsIn(blocks: readonly Block[]): string[] {
     if (block.kind === 'paragraph') visit(block.content);
     if (block.kind === 'list') block.items.forEach((item) => item.lines.forEach(visit));
     if (block.kind === 'definitions') block.rows.forEach((row) => [row.term, row.detail].forEach(visit));
-    if (block.kind === 'actions') found.push(...block.items.map(({ command }) => command));
   }
   return found;
 }

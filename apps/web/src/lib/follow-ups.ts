@@ -8,7 +8,7 @@ export interface FollowUp {
 }
 
 /**
- * Follow-ups for a finished answer, from what it actually referenced: a STAR story it told (the full story, another
+ * Follow-ups for a finished answer, from what it actually referenced: a story it told (the full story, another
  * example) and the one project it was about (Alex's role there). Nothing is suggested that the answer didn't touch, and
  * no AI call is made to find suggestions. Project links already appear in the answer's "Projects" line.
  */
@@ -17,7 +17,7 @@ export function followUps(answer: Pick<AiAnswer, 'status' | 'projects' | 'storie
   const suggestions: FollowUp[] = [];
   const story = answer.stories.find(({ id }) => kb.getStory(id) !== undefined);
   if (story !== undefined) {
-    suggestions.push({ label: 'See the full STAR story', input: `star ${story.id} full` }, { label: 'Another example', input: 'Can you give me another example?' });
+    suggestions.push({ label: 'See the full story', input: `stories ${story.id} full` }, { label: 'Another example', input: 'Can you give me another example?' });
   }
   const [only, ...others] = answer.projects;
   const project = only !== undefined && others.length === 0 ? kb.getProject(only.id) : undefined;

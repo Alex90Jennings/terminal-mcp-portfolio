@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { CASES } from '../evaluation/cases';
 import { STAR_CASE_SET_VERSION, STAR_CASES } from '../evaluation/cases-star';
 import { STAR_V2_CASE_SET_VERSION, STAR_V2_CASES } from '../evaluation/cases-star-v2';
+import { STAR_V3_CASE_SET_VERSION, STAR_V3_CASES } from '../evaluation/cases-star-v3';
 import { CASES_V2 } from '../evaluation/cases-v2';
 import { BASELINE_V3_VERSION, CASES_V3 } from '../evaluation/cases-v3';
 import { SUITES, spentByEarlierEvaluations, suiteFor, type EvaluationReport } from '../evaluation/run';
@@ -31,9 +32,11 @@ const recorded = (file: string, caseId: string, turn = 1) => {
 };
 
 describe('versions', () => {
-  it('makes baseline v3 and STAR .5 the defaults, keeping every earlier version under its own name', () => {
+  it('makes baseline v3 and STAR .6 the defaults, keeping every earlier version under its own name', () => {
     expect(SUITES.baseline).toEqual({ version: BASELINE_V3_VERSION, cases: CASES_V3 });
-    expect(SUITES.star).toEqual({ version: STAR_V2_CASE_SET_VERSION, cases: STAR_V2_CASES });
+    expect(SUITES.star).toEqual({ version: STAR_V3_CASE_SET_VERSION, cases: STAR_V3_CASES });
+    expect(SUITES['star-v2']).toEqual({ version: STAR_V2_CASE_SET_VERSION, cases: STAR_V2_CASES });
+    expect(suiteFor(STAR_V2_CASE_SET_VERSION).cases).toBe(STAR_V2_CASES);
     expect(SUITES['star-v1'].cases).toBe(STAR_CASES);
     expect(suiteFor('2026-10-20.3').cases).toBe(CASES_V2);
     expect(suiteFor(STAR_CASE_SET_VERSION).cases).toBe(STAR_CASES);

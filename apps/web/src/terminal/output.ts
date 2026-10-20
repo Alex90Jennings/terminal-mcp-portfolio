@@ -27,9 +27,7 @@ export type Block =
   | { kind: 'paragraph'; content: Inline[]; tone?: Tone }
   | { kind: 'list'; items: ListItem[]; ordered?: boolean }
   /** Label/value rows, e.g. command names and their descriptions. */
-  | { kind: 'definitions'; rows: { term: Inline[]; detail: Inline[] }[] }
-  /** The main choices on a screen, shown as prominent buttons: each runs `command` exactly as if typed. */
-  | { kind: 'actions'; label: string; items: { title: string; detail: string; command: string }[] };
+  | { kind: 'definitions'; rows: { term: Inline[]; detail: Inline[] }[] };
 
 export interface CommandResult {
   blocks: Block[];
@@ -87,8 +85,6 @@ export function blocksToText(blocks: readonly Block[]): string {
             .join('\n');
         case 'definitions':
           return block.rows.map((row) => `${plain(row.term)}  ${plain(row.detail)}`).join('\n');
-        case 'actions':
-          return block.items.map(({ title, detail }) => `[${title}] ${detail}`).join('\n');
       }
     })
     .join('\n');

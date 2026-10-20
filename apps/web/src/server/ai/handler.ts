@@ -59,7 +59,7 @@ export type ChatStreamEvent =
       stop: ChatOutcome["stop"];
       sources: ChatOutcome["sources"];
       projects: ChatOutcome["projects"];
-      /** STAR stories the answer told, for follow-ups. */
+      /** Stories the answer told, for follow-ups. */
       stories: ChatOutcome["stories"];
       /** Sentences never shown because their figures weren't in this turn's tool results. */
       withheldStatements: number;

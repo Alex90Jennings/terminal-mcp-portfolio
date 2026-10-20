@@ -26,6 +26,7 @@ import { CASE_SET_VERSION, CASES, type EvalCase, type TurnSpec } from './cases';
 import { STAR_CASE_SET_VERSION, STAR_CASES } from './cases-star';
 import { ADVERSARIAL_CASE_SET_VERSION, ADVERSARIAL_CASES } from './cases-adversarial';
 import { STAR_V2_CASE_SET_VERSION, STAR_V2_CASES } from './cases-star-v2';
+import { STAR_V3_CASE_SET_VERSION, STAR_V3_CASES } from './cases-star-v3';
 import { BASELINE_V2_VERSION, CASES_V2 } from './cases-v2';
 import { BASELINE_V3_VERSION, CASES_V3 } from './cases-v3';
 
@@ -40,7 +41,9 @@ export const SUITES = {
   'baseline-v2': { version: BASELINE_V2_VERSION, cases: CASES_V2 },
   'baseline-v1': { version: CASE_SET_VERSION, cases: CASES },
   /** The current STAR suite. */
-  star: { version: STAR_V2_CASE_SET_VERSION, cases: STAR_V2_CASES },
+  star: { version: STAR_V3_CASE_SET_VERSION, cases: STAR_V3_CASES },
+  /** Earlier STAR suites, kept unchanged. star-v2 expects labelled parts (prompts up to 2026-10-20.9). */
+  'star-v2': { version: STAR_V2_CASE_SET_VERSION, cases: STAR_V2_CASES },
   /** The STAR suite as first run (star-2026-10-20.4). */
   'star-v1': { version: STAR_CASE_SET_VERSION, cases: STAR_CASES },
   /** Prompt injection, extraction, abuse and positive controls. */

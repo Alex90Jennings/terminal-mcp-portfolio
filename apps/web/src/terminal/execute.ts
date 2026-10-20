@@ -18,6 +18,12 @@ export function looksLikeQuestion(input: string): boolean {
   return input.trim().endsWith('?') || QUESTION_WORDS.has(first) || words.length >= 4;
 }
 
+const CV_WORDS = /\b(cv|resume|résumé|curriculum vitae)\b/i;
+const FILE_WORDS = /\b(download|get|copy|send|share|see|view|link|where|access|pdf|have|obtain|request)\b/i;
+
+/** A request for the CV document ("How can I download Alex's CV?"), not a question about what it says. */
+export const asksForCv = (input: string): boolean => CV_WORDS.test(input) && FILE_WORDS.test(input);
+
 /**
  * Runs one line of input. Commands are looked up in a fixed registry and
  * receive their arguments as plain strings: nothing is ever evaluated.
@@ -38,6 +44,10 @@ export function execute(input: string, registry: Registry, context: CommandConte
   // A project number or name on its own opens that project.
   const project = context.kb.getProject(raw);
   if (project !== undefined) return { blocks: formatProject(project, 'overview', context.kb) };
+
+  // Asking for the CV itself gets the `cv` command and its download link, not an AI answer: the CV is never AI knowledge.
+  const cv = registry.find('cv');
+  if (cv !== undefined && asksForCv(raw)) return cv.run([], context);
 
   if (looksLikeQuestion(raw)) return askOrFallback(raw, context);
   return notFound(name, registry, context);

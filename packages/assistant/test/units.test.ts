@@ -237,7 +237,7 @@ describe('transcript', () => {
 
 describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
   it('is versioned, so results from different prompts are never compared', () => {
-    expect(PROMPT_VERSION).toBe('2026-10-20.9');
+    expect(PROMPT_VERSION).toBe('2026-10-20.11');
   });
 
   it.each([
@@ -280,7 +280,11 @@ describe('system prompt (regression: self-corrections, contact repetition, inter
     ['doesn’t paste a source line', /don't paste URLs or a "Sources:" line/],
     ['doesn’t narrate lookups', /don't narrate your lookups or what you haven't checked/],
     ['shows rather than asserts soft skills', /Show, don't assert: describe what Alex did, never adjectives such as "excellent communicator"/],
-    ['matches the format to the question, using STAR only for behavioural questions', /A factual question gets a direct answer\.[^\n]*"Is Alex good at X\?" gets one concise example\. "Tell me about a time…" gets the example as short lines starting "Situation:"/],
+    ['matches the format to the question, telling a behavioural example as one paragraph that is mostly what Alex did', /A factual question gets a direct answer\.[^\n]*"Is Alex good at X\?" gets one concise example\. "Tell me about a time…" gets the example told as one flowing paragraph: [^\n]*most of the paragraph on what Alex did/],
+    ['never labels the parts of an example or names the STAR method', /Never label the parts \("Situation:", "Task:" and so on\) or name the STAR method/],
+    ['opens with a varied lead-in of its own, with no facts, stock phrases, repeats or flattery, and none on a decline', /a short lead-in in your own words that picks up what this visitor actually asked[^\n]*The lead-in states no facts of its own\. Avoid stock openers such as "Good question", "Great question" or "Happy to…", never open two answers in a conversation the same way, and don't flatter the visitor or praise Alex\. Skip the lead-in when declining/],
+    ['points to the cv command for the CV, without describing it', /If the visitor asks for Alex's CV or résumé, tell them the `cv` command shows a summary and a download link\. Never say the portfolio has no CV/],
+    ['answers small talk warmly without a lookup', /If the visitor only greets you or makes small talk[^\n]*reply warmly in a sentence or two, without looking anything up/],
     ['keeps attribution and each part’s basis as given', /Keep each example's attribution note, and each part's basis as given: a part from Alex's own account is "by Alex's account"[^.]*; a part from project records is not Alex's account/],
     ['tells a different example on request, or says it is the only one', /call get_examples again with the stories already told in `exclude`\. If none is left, say this is the only documented example/],
     ['dates usage figures', /give the date the tools record \("as of September 2026", "as of the September 2026 CV"\), never "now" or "currently"/],

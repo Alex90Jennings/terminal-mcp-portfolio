@@ -8,14 +8,6 @@ import type { Command, CommandContext } from '../types';
  * is written separately, so it can't drift from the records.
  */
 
-/** Questions offered on the welcome screen and by `interview`. Clicking one runs it exactly as if typed. */
-export const WELCOME_QUESTIONS = [
-  'Tell me about Alex.',
-  'What has Alex built?',
-  'Tell me about a time Alex solved a difficult problem.',
-  'Why should we hire Alex?',
-] as const;
-
 const questionLinks = (questions: readonly string[]): Block => bullets(questions.map((question) => [command(question)]));
 
 export const experience: Command = {
@@ -35,9 +27,9 @@ export const experience: Command = {
         );
       }
       const stories = uniqueStories(role.projects.flatMap(({ id }) => projectEvidence(kb, id).stories));
-      if (stories.length > 0) blocks.push(subheading('Examples from this role'), bullets(stories.map((story) => [command(story.title, `star ${story.id}`)])));
+      if (stories.length > 0) blocks.push(subheading('Examples from this role'), bullets(stories.map((story) => [command(story.title, `stories ${story.id}`)])));
     }
-    blocks.push(next([command('education'), command('soft-skills'), command('star'), command('projects')]));
+    blocks.push(next([command('education'), command('soft-skills'), command('stories'), command('projects')]));
     return { blocks };
   },
 };
@@ -73,7 +65,7 @@ export const education: Command = {
     const learning = kb.getStory('aws-learning');
     blocks.push(
       next([
-        ...(learning ? [command('How Alex learned AWS', `star ${learning.id}`)] : []),
+        ...(learning ? [command('How Alex learned AWS', `stories ${learning.id}`)] : []),
         command('From finance to software', 'interests'),
         command('experience'),
       ]),
@@ -133,7 +125,7 @@ export const cv: Command = {
 export const INTERVIEW_MODES = {
   'first-round': {
     title: 'First Round Interview',
-    purpose: 'A first-stage conversation, as with a recruiter or hiring manager: Alex’s background, experience, education, soft skills, motivation and interests. Competency questions are answered as STAR stories (Situation, Task, Action, Result).',
+    purpose: 'A first-stage conversation, as with a recruiter or hiring manager: Alex’s background, experience, education, soft skills, motivation and interests. Competency questions are answered with real examples from Alex’s work.',
     topics: 'Background · experience · education · collaboration · communication · problem-solving · feedback · conflict · ambiguity · motivation · interests',
     questions: [
       'Tell me about Alex.',
@@ -144,7 +136,7 @@ export const INTERVIEW_MODES = {
       'What would Alex bring to our team?',
     ],
     browse: [
-      ['STAR stories', 'star'],
+      ['stories', 'stories'],
       ['soft skills', 'soft-skills'],
       ['experience', 'experience'],
       ['education', 'education'],
@@ -212,7 +204,7 @@ export function interviewGuide(context: Pick<CommandContext, 'aiAvailable'>): Bl
 export const firstRound: Command = {
   name: 'first-round',
   aliases: ['first-round-interview', 'firstround', 'recruiter'],
-  summary: 'First Round Interview: background, experience, soft skills and STAR questions',
+  summary: 'First Round Interview: background, experience, soft skills and competency questions',
   run: (_args, context) => ({ blocks: interviewMode('first-round', context) }),
 };
 

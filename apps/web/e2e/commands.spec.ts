@@ -6,18 +6,20 @@ test.beforeEach(async ({ page }) => open(page));
 test('greets visitors as a first-stage interview and tells them how to start', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Alex Jennings' })).toBeVisible();
   await expect(output(page)).toContainText('think of it as a first-stage interview');
-  const interviews = output(page).getByRole('group', { name: 'Choose an interview' });
-  // The accessible name is the visible text, title then description (WCAG 2.5.3, label in name).
-  await expect(interviews.getByRole('button', { name: 'First Round Interview Background, experience, soft skills', exact: true })).toBeVisible();
-  await expect(interviews.getByRole('button', { name: 'Technical Interview Engineering, architecture, trade-offs', exact: true })).toBeVisible();
-  await expect(output(page)).toContainText('Or ask anything in plain English. Try:');
+  await expect(output(page)).toContainText('Ask me anything to get to know Alex, and why you should hire him. Try help if you can’t think of anything to ask:');
+  // No interview cards or suggested questions in the terminal: the interviews are the chips below it.
+  await expect(output(page).getByRole('button')).toHaveText(['help']);
   await expect(page).toHaveTitle(/Alex Jennings/);
 });
 
-test('a suggested question runs exactly as if typed', async ({ page }) => {
-  await output(page).getByRole('button', { name: 'What has Alex built?' }).click();
-  await expect(output(page).getByText('What has Alex built?', { exact: true }).last()).toBeVisible();
-  // Answered by the scripted assistant (see playwright.config.ts), as a typed question would be.
+test('the greeting’s help link runs help', async ({ page }) => {
+  await output(page).getByRole('button', { name: 'help', exact: true }).click();
+  await expect(output(page).getByRole('heading', { name: 'Commands' })).toBeVisible();
+});
+
+test('a typed question goes to the assistant', async ({ page }) => {
+  await runCommand(page, 'What has Alex built?');
+  // Answered by the scripted assistant (see playwright.config.ts).
   await expect(output(page).getByRole('list', { name: 'Portfolio lookups' }).last()).toContainText('What has Alex built?');
 });
 
@@ -30,7 +32,7 @@ test('every navigation chip opens its area', async ({ page }) => {
   }
 });
 
-test('a project page links its STAR stories and soft skills', async ({ page }) => {
+test('a project page links its stories and soft skills', async ({ page }) => {
   await runCommand(page, 'projects zim-connections');
   await output(page).getByRole('button', { name: 'Building real-time live chat' }).last().click();
   await expect(output(page).getByRole('heading', { level: 2, name: 'Building real-time live chat' })).toBeVisible();
@@ -130,7 +132,8 @@ test('only approved downloads are served: no content file, and no CV until one i
   }
 });
 
-test('the welcome screen’s interview buttons open each interview', async ({ page }) => {
-  await output(page).getByRole('group', { name: 'Choose an interview' }).getByRole('button', { name: /First Round Interview/ }).click();
-  await expect(output(page).getByRole('heading', { level: 2, name: 'First Round Interview' })).toBeVisible();
+test('a story reads as one paragraph, with no STAR labels', async ({ page }) => {
+  await runCommand(page, 'stories zim-black-friday full');
+  await expect(output(page).getByRole('heading', { level: 2, name: 'Fixing the Black Friday discount problem' })).toBeVisible();
+  await expect(output(page)).not.toContainText(/\bSTAR\b|Situation|Reflection/);
 });

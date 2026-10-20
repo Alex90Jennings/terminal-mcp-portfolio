@@ -337,7 +337,7 @@
         ]
       },
       "task": {
-        "text": "Research and implement a migration from Firebase to AWS SNS.",
+        "text": "The goal was to research and implement a migration from Firebase to AWS SNS.",
         "provenance": "firsthand",
         "sources": [
           "alex-interview"
@@ -391,7 +391,7 @@
         ]
       },
       "task": {
-        "text": "Support multiple partner brands on shared infrastructure without duplicating implementations.",
+        "text": "The goal was to support multiple partner brands on shared infrastructure without duplicating implementations.",
         "provenance": "documented",
         "sources": [
           "cv",
@@ -458,7 +458,7 @@
         ]
       },
       "task": {
-        "text": "Deliver real-time chat for customers on mobile and web.",
+        "text": "The goal was to deliver real-time chat for customers on mobile and web.",
         "provenance": "documented",
         "sources": [
           "cv",
@@ -514,7 +514,7 @@
         ]
       },
       "task": {
-        "text": "Make sure the full journey worked on real devices, in every language, before release.",
+        "text": "The full journey had to work on real devices, in every language, before release.",
         "provenance": "documented",
         "sources": [
           "sbb-notes"
@@ -624,7 +624,7 @@
         ]
       },
       "task": {
-        "text": "Give the team confidence to ship changes to the core API.",
+        "text": "The team needed confidence to ship changes to the core API.",
         "provenance": "documented",
         "sources": [
           "cv"
@@ -673,7 +673,7 @@
         ]
       },
       "task": {
-        "text": "Move the media under Alex's own control, defined as code, without storing cloud credentials.",
+        "text": "The goal was to move the media under Alex's own control, defined as code, without storing cloud credentials.",
         "provenance": "documented",
         "sources": [
           "operafy-infra-readme"
@@ -696,7 +696,7 @@
         ]
       },
       "reflection": {
-        "text": "When a token is rejected, read the token: guessing at the policy is slower and teaches you nothing.",
+        "text": "Alex's takeaway: when a token is rejected, read the token, because guessing at the policy is slower and teaches you nothing.",
         "provenance": "documented",
         "sources": [
           "operafy-infra-readme"
@@ -732,14 +732,14 @@
         ]
       },
       "task": {
-        "text": "Build an arena that compares 24 programming languages fairly, each running as a real native process.",
+        "text": "Alex set out to build an arena that compares 24 programming languages fairly, each running as a real native process.",
         "provenance": "documented",
         "sources": [
           "clash-readme"
         ]
       },
       "action": {
-        "text": "Each harness regenerates its input from a shared seed and must produce the same checksum, or the battle is invalid. The headline figure is the median, and a winner is declared only when a two-sided Mann–Whitney U test gives p < 0.05; otherwise it's a draw.",
+        "text": "In Alex's design, each harness regenerates its input from a shared seed and must produce the same checksum, or the battle is invalid. The headline figure is the median, and a winner is declared only when a two-sided Mann–Whitney U test gives p < 0.05; otherwise it's a draw.",
         "detail": "Benchmarks run on a dedicated-CPU worker with one Docker image holding every runtime. Vercel hosts only the UI and a thin API, because Vercel functions can't run a JVM or arbitrary native binaries and shared hardware gives unstable timings.",
         "provenance": "documented",
         "sources": [
@@ -782,7 +782,7 @@
         ]
       },
       "task": {
-        "text": "Make the app usable with assistive technologies, although its main display is drawn only on the wallpaper, which they can't read.",
+        "text": "The goal was to make the app usable with assistive technologies, although its main display is drawn only on the wallpaper, which they can't read.",
         "provenance": "documented",
         "sources": [
           "sol-audit"
@@ -841,7 +841,7 @@
         ]
       },
       "task": {
-        "text": "Compare full-text, normalised full-text, vector and hybrid retrieval fairly.",
+        "text": "The goal was to compare full-text, normalised full-text, vector and hybrid retrieval fairly.",
         "provenance": "documented",
         "sources": [
           "tg-retrieval"
@@ -901,7 +901,7 @@
         ]
       },
       "task": {
-        "text": "Improve AWS knowledge to contribute more confidently to cloud decisions.",
+        "text": "The aim was to improve Alex's AWS knowledge, to contribute more confidently to cloud decisions.",
         "provenance": "firsthand",
         "sources": [
           "alex-interview"

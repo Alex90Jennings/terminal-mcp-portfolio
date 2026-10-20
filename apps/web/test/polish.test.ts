@@ -7,7 +7,6 @@ import { QUICK_COMMANDS } from '@/components/Terminal';
 import { followUps } from '@/lib/follow-ups';
 import { kb } from '@/lib/knowledge';
 import { welcome } from '@/terminal/commands/session';
-import { WELCOME_QUESTIONS } from '@/terminal/commands/recruiter';
 import { blocksToText } from '@/terminal/output';
 import { commandsIn, hrefsIn, output, run } from './helpers';
 
@@ -17,27 +16,19 @@ describe('the welcome screen frames the terminal as an interview', () => {
   const blocks = welcome({ kb });
   const text = blocksToText(blocks);
 
-  it('says who Alex is, that this is an interactive portfolio and a first-stage interview, and that plain English works', () => {
+  it('says who Alex is, that this is an interactive portfolio and a first-stage interview, and invites any question', () => {
     expect(text).toMatch(/^Alex Jennings\nFull Stack Software Developer & Cloud Engineer/);
     expect(text).toMatch(/Hi, I’m Alex\. Welcome to my interactive portfolio: think of it as a first-stage interview\./);
-    expect(text).toMatch(/\[First Round Interview\] Background, experience, soft skills\n\[Technical Interview\] Engineering, architecture, trade-offs\nOr ask anything in plain English\. Try:/);
+    expect(text).toMatch(/Ask me anything to get to know Alex, and why you should hire him\. Try help if you can’t think of anything to ask:$/);
   });
 
-  it('links both interviews (the other areas are the chips below)', () => {
-    expect(commandsIn(blocks)).toEqual(expect.arrayContaining(['first-round', 'technical']));
+  it('links only help: no interview cards or example questions (the interviews are the chips below)', () => {
+    expect(commandsIn(blocks)).toEqual(['help']);
+    expect(text).not.toMatch(/First Round Interview|Technical Interview|Or ask anything/);
   });
 
-  it('offers four example questions, each run exactly as typed', () => {
-    expect([...WELCOME_QUESTIONS]).toEqual(['Tell me about Alex.', 'What has Alex built?', 'Tell me about a time Alex solved a difficult problem.', 'Why should we hire Alex?']);
-    for (const question of WELCOME_QUESTIONS) {
-      expect(commandsIn(blocks)).toContain(question);
-      // Clicking runs the link's text as input: with the assistant on, each one is a question for it.
-      expect(run(question, { aiAvailable: true }).ask?.question, question).toBe(question);
-    }
-  });
-
-  it('stays short: a greeting, the two interviews, then four questions (the phone fit is checked end to end)', () => {
-    expect(text.split('\n')).toHaveLength(10);
+  it('stays short, so the prompt follows straight after it (the phone fit is checked end to end)', () => {
+    expect(text.split('\n')).toHaveLength(4);
   });
 });
 
@@ -54,7 +45,7 @@ describe('recruiter commands', () => {
     expect(text).toMatch(/Software Developer, ZIM Connections Ltd\.\nOct 2022 – Oct 2026 · London, UK/);
     expect(text).toMatch(/Collaborated with another developer[^\n]*\(collaborative\)/);
     expect(text).toMatch(/Helped scale the platform[^\n]*\(team effort\)/);
-    expect(commandsIn(run('experience').blocks)).toEqual(expect.arrayContaining(['star zim-live-chat', 'star zim-black-friday', 'projects zim-sbb']));
+    expect(commandsIn(run('experience').blocks)).toEqual(expect.arrayContaining(['stories zim-live-chat', 'stories zim-black-friday', 'projects zim-sbb']));
     expect(text).not.toMatch(/currently|still works/i);
   });
 
@@ -103,12 +94,12 @@ describe('project pages', () => {
     expect(output('projects zim-sbb')).toMatch(/Worked closely with the product team[^\n]*\(collaborative\)/);
   });
 
-  it.each(kb.projects.map(({ id }) => id))('%s links its STAR stories and the soft skills they show', (id) => {
+  it.each(kb.projects.map(({ id }) => id))('%s links its stories and the soft skills they show', (id) => {
     const stories = kb.findStories({ project: id });
     const commands = commandsIn(run(`projects ${id}`).blocks);
-    for (const story of stories) expect(commands).toContain(`star ${story.id}`);
+    for (const story of stories) expect(commands).toContain(`stories ${story.id}`);
     for (const competency of new Set(stories.flatMap((story) => story.competencies))) expect(commands).toContain(`soft-skills ${competency}`);
-    if (stories.length === 0) expect(output(`projects ${id}`)).not.toMatch(/STAR examples/);
+    if (stories.length === 0) expect(output(`projects ${id}`)).not.toMatch(/^Examples$/m);
   });
 });
 
@@ -117,7 +108,7 @@ describe('follow-ups after an answer', () => {
 
   it('offer the full story and another example only for a story the answer told, and Alex’s role for the one project it was about', () => {
     expect(followUps({ ...done, stories: [{ id: 'zim-black-friday', title: 'Fixing the Black Friday discount problem' }], projects: [{ id: 'zim-connections', name: 'ZIM Connections' }] }, kb)).toEqual([
-      { label: 'See the full STAR story', input: 'star zim-black-friday full' },
+      { label: 'See the full story', input: 'stories zim-black-friday full' },
       { label: 'Another example', input: 'Can you give me another example?' },
       { label: "Alex's role on ZIM Connections", input: "What was Alex's role on ZIM Connections?" },
     ]);
@@ -150,7 +141,7 @@ describe('no unpublished or private content through the new views', () => {
     const unpublished = { kb: createKnowledgeBase(buildBundle({ ...raw, evidence: { ...raw.evidence!, data: drafts } })) };
     for (const input of ['experience', 'education', 'cv', 'interview', 'projects zim-connections', 'projects sol']) {
       const text = output(input, unpublished);
-      expect(text, input).not.toMatch(/Black Friday|STAR examples|Soft skills:|How Alex learned AWS/);
+      expect(text, input).not.toMatch(/Black Friday|^Examples$|Soft skills:|How Alex learned AWS/m);
     }
   });
 });

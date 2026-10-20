@@ -77,7 +77,7 @@ function overview(project: PortfolioProject, kb?: KnowledgeBase): Block[] {
   return blocks;
 }
 
-/** The skills and STAR stories this project evidences, each a link to the full example or skill. */
+/** The skills and stories this project evidences, each a link to the full example or skill. */
 function demonstrates(project: PortfolioProject, kb: KnowledgeBase): Block[] {
   const { stories, competencies, skills } = projectEvidence(kb, project.id);
   if (stories.length + competencies.length + skills.length === 0) return [];
@@ -85,7 +85,7 @@ function demonstrates(project: PortfolioProject, kb: KnowledgeBase): Block[] {
   if (competencies.length > 0) lines.push([text('Soft skills: ', 'muted'), ...joined(competencies.map(({ id, name }) => command(name, `soft-skills ${id}`)))]);
   if (skills.length > 0) lines.push([text('Technical skills: ', 'muted'), ...joined(skills.map(({ name }) => text(name)))]);
   const blocks: Block[] = [subheading('What it demonstrates'), ...lines.map((line) => paragraph(line))];
-  if (stories.length > 0) blocks.push(subheading('STAR examples'), bullets(stories.map((story) => [command(story.title, `star ${story.id}`)])));
+  if (stories.length > 0) blocks.push(subheading('Examples'), bullets(stories.map((story) => [command(story.title, `stories ${story.id}`)])));
   return blocks;
 }
 

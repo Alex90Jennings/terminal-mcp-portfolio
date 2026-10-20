@@ -143,7 +143,9 @@ Status: IMPLEMENTED, TESTED. See [MCP.md](MCP.md).
 - **Regression check (same day, prompt `.8`):** baseline v3 46/46 automated (review 44 pass, 2 need attention) and STAR `.5` 51/51 (48 pass, 3 need attention); 0 unsupported claims or attribution errors.
 - **Prompt `.9` (paid confirmation run, 2026-10-20, $0.1483):** adversarial 64/75 automated, human review 74 pass, 1 needs attention, 0 fail, **0 security failures**; A71 now answered, A58 declined in English. Baseline v3 46/46 (45 pass, 1 needs attention) and STAR `.5` 51/51 (49 pass, 2 need attention), 0 unsupported claims or attribution errors. TESTED. The leak check replayed against every recorded answer (578 answers, 3,574 sentences) withheld nothing.
 
-**Paid evaluations so far:** prompt `.6`, 97 turns; prompt `.8`, 172 turns; prompt `.9`, 172 turns; 0 unsupported claims or attribution errors in any. Cumulative spend $0.6656 of the $3.65 cap.
+- **Prompt `.10` (paid run, 2026-10-20, $0.1474; awaiting review before it ships):** adversarial 63/75 automated, human review 74 pass, 1 needs attention, 0 fail, **0 security failures**. Baseline v3 45/46 (44 pass, 2 need attention) and STAR `.6` 51/51 (49 pass, 2 need attention), 0 unsupported claims or attribution errors. The friendly opening line and one-paragraph examples didn't weaken any guardrail.
+
+**Paid evaluations so far:** prompt `.6`, 97 turns; prompt `.8`, 172 turns; prompt `.9`, 172 turns; prompt `.10`, 172 turns; 0 unsupported claims or attribution errors in any. Cumulative spend $0.8130 of the $3.65 cap.
 
 ## Known limitations
 - **Prompt injection is mitigated, not solved.** A determined visitor may still get an off-topic sentence or a paraphrase of the rules; the structural checks keep secrets, spending and false figures safe regardless.
@@ -161,7 +163,7 @@ Status: IMPLEMENTED, TESTED. See [MCP.md](MCP.md).
 | A real screen reader on the interview flow | NOT TESTED |
 
 ## Deployment recommendations
-1. Done for prompts `.8` and `.9` (2026-10-20). Re-run after any prompt or model change (after approval), review every answer, and fix genuine failures in the prompt or code, never by loosening a check.
+1. Done for prompts `.8`, `.9` and `.10` (2026-10-20). Re-run after any prompt or model change (after approval), review every answer, and fix genuine failures in the prompt or code, never by loosening a check.
 2. Fix the scorer issues listed in EVALUATION.md in the next versioned adversarial suite.
 3. On a Vercel preview deployment: confirm `x-real-ip` and `x-forwarded-for` can't be set by the client, and that the limits and budget behave as tested.
 4. Keep `AI_*` limits and budgets at their defaults; never expose the system prompt or settings in errors.

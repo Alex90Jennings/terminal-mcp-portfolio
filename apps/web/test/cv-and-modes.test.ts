@@ -2,10 +2,9 @@ import { readContent } from '@portfolio/knowledge/node';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { QUICK_COMMANDS } from '@/components/Terminal';
-import { kb } from '@/lib/knowledge';
 import { createCvHandler, cvConfig, MAX_CV_BYTES, type CvConfig, type CvObject } from '@/server/cv';
 import { INTERVIEW_MODES } from '@/terminal/commands/recruiter';
-import { welcome } from '@/terminal/commands/session';
+import { asksForCv } from '@/terminal/execute';
 import { blocksToText } from '@/terminal/output';
 import { commandsIn, hrefsIn, output, run } from './helpers';
 
@@ -172,6 +171,20 @@ describe('the CV is never knowledge', () => {
     expect(JSON.stringify(result.blocks)).not.toMatch(/amazonaws|s3:\/\/|cv-alex-jennings\.s3/);
     expect(output('cv')).toMatch(/A downloadable CV isn’t published here/);
   });
+
+  it.each(['how can I download my CV?', 'Where can I get Alex’s CV?', 'Can you send me a copy of the resume?', 'Does Alex have a CV I can download?', 'cv pdf'])(
+    'asking for the CV (%s) runs cv, with its download link, instead of asking the assistant',
+    (input) => {
+      const result = run(input, { aiAvailable: true, cvAvailable: true });
+      expect(result.ask).toBeUndefined();
+      expect(hrefsIn(result.blocks)).toContain('/api/cv');
+    },
+  );
+
+  it('a question about Alex’s experience that mentions the CV still goes to the assistant', () => {
+    expect(asksForCv('What does the September 2026 CV say about AWS?')).toBe(false);
+    expect(run('What does the September 2026 CV say about AWS?', { aiAvailable: true }).ask).toBeDefined();
+  });
 });
 
 describe('the two interview modes', () => {
@@ -195,30 +208,19 @@ describe('the two interview modes', () => {
     expect(commandsIn(result.blocks)).toContain(command === 'technical' ? 'first-round' : 'technical');
   });
 
-  it('keep star and ask working: star lists the stories; ask alone introduces both interviews', () => {
-    expect(output('star')).toMatch(/^Stories/);
+  it('keep stories and ask working: stories lists them; ask alone introduces both interviews', () => {
+    expect(output('stories')).toMatch(/^Stories/);
     const guide = output('ask', { aiAvailable: true });
     expect(guide).toMatch(/^Interview/);
     expect(guide).toMatch(/First Round Interview[\s\S]*Technical Interview/);
     expect(output('interview')).toBe(output('ask'));
   });
 
-  it('are the welcome screen’s main actions, ahead of the example questions, and named in help', () => {
-    const blocks = welcome({ kb });
-    const actions = blocks.find((block) => block.kind === 'actions');
-    expect(actions).toEqual({
-      kind: 'actions',
-      label: 'Choose an interview',
-      items: [
-        { title: 'First Round Interview', detail: 'Background, experience, soft skills', command: 'first-round' },
-        { title: 'Technical Interview', detail: 'Engineering, architecture, trade-offs', command: 'technical' },
-      ],
-    });
-    expect(blocks.indexOf(actions!)).toBeLessThan(blocks.findIndex((block) => block.kind === 'list'));
-    expect(blocksToText(blocks)).toMatch(/Or ask anything in plain English\. Try:/);
+  it('are the first chips and named in help, without mentioning STAR', () => {
     const help = output('help');
-    expect(help).toMatch(/first-round {2}First Round Interview: background, experience, soft skills and STAR questions/);
+    expect(help).toMatch(/first-round {2}First Round Interview: background, experience, soft skills and competency questions/);
     expect(help).toMatch(/technical {2}Technical Interview: engineering, architecture and the decisions behind it/);
-    expect(help).toMatch(/star \[story\] \[full\] {2}STAR stories/);
+    expect(help).toMatch(/stories \[story\] \[full\] {2}Real examples from my work, each told as a short story/);
+    expect(help).not.toMatch(/\bSTAR\b|Situation/);
   });
 });
