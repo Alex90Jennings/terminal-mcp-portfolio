@@ -17,11 +17,11 @@ const FIGURE = /(?<![\d.,])\d[\d,]*(?:\.\d+)?%?/g;
 const digits = (value: string) => value.replace(/,/g, '');
 
 describe('the STAR catalogue in content/evidence.json', () => {
-  it('has the 15 stories and all 17 competencies, every competency with stories or a stated gap', () => {
+  it('has the 15 stories and all 18 competencies, every competency with stories or a stated gap', () => {
     expect(authored.stories).toHaveLength(15);
     expect(authored.competencies.map(({ id }) => id)).toEqual([
       'collaboration', 'communication', 'problem-solving', 'attention-to-detail', 'ownership', 'adaptability', 'prioritisation',
-      'conflict-resolution', 'handling-feedback', 'learning-from-failure', 'initiative', 'customer-focus',
+      'conflict-resolution', 'handling-feedback', 'learning-from-failure', 'initiative', 'customer-focus', 'self-awareness',
       'balancing-speed-and-quality', 'working-with-ambiguity', 'technical-decision-making', 'cross-functional-ownership', 'continuous-improvement',
     ]);
     for (const competency of authored.competencies) {
@@ -109,10 +109,10 @@ describe('the STAR catalogue in content/evidence.json', () => {
 });
 
 describe('publication', () => {
-  it('publishes the approved catalogue: 15 stories, 17 competencies, 7 interests and 2 background items', () => {
+  it('publishes the approved catalogue: 15 stories, 18 competencies, 7 interests and 2 background items', () => {
     expect(published.preview).toBeUndefined();
     expect(published.evidence.stories).toHaveLength(15);
-    expect(published.evidence.competencies).toHaveLength(17);
+    expect(published.evidence.competencies).toHaveLength(18);
     expect(published.evidence.interests.personal.length + published.evidence.interests.technical.length).toBe(7);
     expect(published.evidence.background.motivation.length + published.evidence.background.workingEnvironment.length).toBe(2);
     expect(JSON.stringify(published)).not.toMatch(/needs-review|"draft"|"private"|"incomplete"/);

@@ -41,7 +41,7 @@ describe('publication filtering at the MCP boundary', () => {
 
   it('serves the stories, soft skills and interests Alex approved (20 Oct 2026) from the public server', async () => {
     expect(structured<Examples>(await call(publicClient, 'get_examples', { competency: 'problem-solving' }))).toMatchObject({ matched: 7, complete: false });
-    expect(structured<{ softSkills: unknown[] }>(await call(publicClient, 'get_skills')).softSkills).toHaveLength(17);
+    expect(structured<{ softSkills: unknown[] }>(await call(publicClient, 'get_skills')).softSkills).toHaveLength(18);
     const profile = structured<{ interests: { personal: unknown[]; technical: unknown[] }; background: { motivation: unknown[]; workingEnvironment: unknown[] } }>(await call(publicClient, 'get_profile'));
     expect(profile.interests.personal.length + profile.interests.technical.length).toBe(7);
     expect(profile.background.motivation.length + profile.background.workingEnvironment.length).toBe(2);
@@ -111,7 +111,7 @@ describe('get_examples (preview content)', () => {
 
   it('lists soft skills with their examples, strongest first', async () => {
     const { softSkills } = structured<{ softSkills: { id: string; examples: { id: string }[]; gap?: string }[] }>(await call(previewClient, 'get_skills'));
-    expect(softSkills).toHaveLength(17);
+    expect(softSkills).toHaveLength(18);
     expect(softSkills.find(({ id }) => id === 'problem-solving')?.examples[0]?.id).toBe('zim-sql-performance');
   });
 

@@ -74,7 +74,7 @@ Those are addressed by the prompt's rules, the always-visible sources and the ev
 **Presentation guards (after the checks).** Released sentences pass through deterministic rewrites, applied after the checks so they can't affect them:
 - internal project ids become display names (`zim-sbb` → ZIM@SBB), matching whole ids only, never inside URLs or repository names;
 - Markdown bold markers and heading hashes are removed, because the terminal shows plain text and would print them literally;
-- a pasted "Sources:" line is removed, because the terminal already lists the sources under the answer.
+- a pasted "Sources:" line is removed. The terminal doesn't show a source list under answers (removed 2026-10-20 at Alex's request); sources are still recorded with each answer for evaluation, and project pages keep their sources.
 
 ## Conversation history
 

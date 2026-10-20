@@ -8,14 +8,14 @@ import { open, output, prompt, runCommand } from './fixtures';
  */
 test.beforeEach(async ({ page }) => open(page));
 
-test('a question streams a grounded answer with sources and project links', async ({ page }) => {
+test('a question streams a grounded answer with project links and no source list', async ({ page }) => {
   await runCommand(page, 'Which project best demonstrates Terraform?');
   const answer = output(page);
   await expect(answer).toContainText('The most relevant project is Operafy.');
   await expect(answer).toContainText('Demo mode: this answer comes from a scripted search');
   await expect(answer.getByRole('list', { name: 'Portfolio lookups' })).toContainText('search_projects: Which project best demonstrates Terraform?');
-  await expect(answer.getByText('Sources:')).toBeVisible();
-  await expect(answer.getByRole('link', { name: /operafy-infra README/ })).toHaveAttribute('target', '_blank');
+  await expect(answer.getByText('Sources:')).toHaveCount(0);
+  await expect(answer.getByRole('link', { name: /operafy-infra README/ })).toHaveCount(0);
   await answer.getByRole('button', { name: 'Operafy', exact: true }).last().click();
   await expect(answer.getByRole('heading', { level: 2, name: 'Operafy' })).toBeVisible();
 });
@@ -75,7 +75,7 @@ test('clear starts a new conversation', async ({ page }) => {
 
 test('an answer has no accessibility violations and is announced once complete', async ({ page }) => {
   await runCommand(page, 'Which project best demonstrates Docker?');
-  await expect(output(page)).toContainText('Sources:');
+  await expect(output(page).getByRole('button', { name: 'Clash of Langs', exact: true }).last()).toBeVisible();
   await expect(page.getByRole('status')).toContainText('Answer: The most relevant project is Clash of Langs.');
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
   expect(results.violations).toEqual([]);

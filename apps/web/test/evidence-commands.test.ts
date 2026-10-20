@@ -31,7 +31,8 @@ describe('the published site', () => {
   it('shows everything Alex approved (20 Oct 2026), without a preview notice', () => {
     const skills = output('soft-skills');
     expect(skills).toMatch(/01 Collaboration/);
-    expect(skills).toMatch(/17 Continuous improvement/);
+    expect(skills).toMatch(/13 Self-awareness/);
+    expect(skills).toMatch(/18 Continuous improvement/);
     expect(commandsIn(run('stories').blocks).filter((command) => command.startsWith('stories '))).toHaveLength(16);
     const interests = output('interests');
     for (const title of ['Building things', 'Learning Italian', 'Why software', 'Working style']) expect(interests).toContain(title);
@@ -62,12 +63,12 @@ describe('the published site', () => {
 });
 
 describe('soft-skills (preview)', () => {
-  it('lists the 17 competencies in two groups, each linked, with a preview notice', () => {
+  it('lists the 18 competencies in two groups, each linked, with a preview notice', () => {
     const result = run('soft-skills', inPreview);
     const text = output('soft-skills', inPreview);
     expect(text).toMatch(/^Preview: draft stories/);
     expect(text).toMatch(/Soft skills\n01 Collaboration/);
-    expect(text).toMatch(/Engineering & product mindset\n13 Balancing speed and quality/);
+    expect(text).toMatch(/Engineering & product mindset\n14 Balancing speed and quality/);
     expect(commandsIn(result.blocks)).toEqual(expect.arrayContaining(['soft-skills collaboration', 'soft-skills continuous-improvement']));
   });
 
@@ -86,7 +87,7 @@ describe('soft-skills (preview)', () => {
   });
 
   it('lists interview questions, for one competency or all', () => {
-    expect(output('soft-skills questions feedback'.replace('feedback', 'handling-feedback'), inPreview)).toMatch(/Questions: Handling feedback[\s\S]*constructive criticism[\s\S]*Best answered by: Building contingency into estimates/);
+    expect(output('soft-skills questions feedback'.replace('feedback', 'handling-feedback'), inPreview)).toMatch(/Questions: Handling feedback[\s\S]*constructive criticism[\s\S]*Best answered by: Leaving room in estimates/);
     expect(output('soft-skills questions', inPreview)).toMatch(/Interview questions[\s\S]*Collaboration[\s\S]*Continuous improvement/);
   });
 
@@ -137,5 +138,26 @@ describe('interests (preview)', () => {
     expect(text).toMatch(/Working style/);
     expect(text).toMatch(/From Alex's own account\./);
     expect(commandsIn(run('interests', inPreview).blocks)).toEqual(expect.arrayContaining(['projects sol', 'projects total-guess']));
+  });
+});
+
+describe('weaknesses (Self-awareness)', () => {
+  it.each(['What are your weaknesses?', "What is Alex's biggest weakness?", 'What are you working on to improve?', 'What is something Alex could do better?'])(
+    '"%s" finds the estimates story',
+    (question) => {
+      expect(serverKb.recogniseCompetency(question)?.id).toBe('self-awareness');
+      expect(serverKb.findStories({ query: question }).map(({ id }) => id)).toContain('zim-estimates-feedback');
+    },
+  );
+
+  it('keeps continuous-improvement questions where they were', () => {
+    expect(serverKb.recogniseCompetency('How does Alex improve working practices?')?.id).toBe('continuous-improvement');
+    expect(serverKb.recogniseCompetency('Tell me about a system Alex improved.')?.id).toBe('continuous-improvement');
+  });
+
+  it('tells the weakness as Alex’s own account, in one paragraph', () => {
+    const text = output('stories zim-estimates-feedback');
+    expect(text).toMatch(/Leaving room in estimates[\s\S]*Alex's estimates didn't leave enough room for the unexpected or for testing[^\n]*about four\./);
+    expect(text).toMatch(/Based on Alex's own account/);
   });
 });

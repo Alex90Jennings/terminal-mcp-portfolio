@@ -74,28 +74,6 @@ export function AiAnswerView({ answer, onCommand }: { answer: AiAnswer; onComman
         </p>
       )}
 
-      {answer.status === 'done' && answer.sources.length > 0 && (
-        <div>
-          <p className="text-term-muted">Sources:</p>
-          {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops list semantics when list-style is none */}
-          <ul role="list" className="space-y-0.5">
-            {answer.sources.map((source) => (
-              <li key={`${source.label}|${source.url ?? ''}`} className="flex gap-2">
-                <span aria-hidden="true" className="text-term-muted">–</span>
-                {source.url ? (
-                  <a href={source.url} className="term-link" target="_blank" rel="noopener noreferrer">
-                    {source.label}
-                    <span aria-hidden="true"> ↗</span>
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  <span>{source.label}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

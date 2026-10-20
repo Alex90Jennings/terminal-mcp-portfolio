@@ -191,7 +191,7 @@ export function interviewMode(mode: InterviewMode, context: Pick<CommandContext,
 export function interviewGuide(context: Pick<CommandContext, 'aiAvailable'>): Block[] {
   const blocks: Block[] = [
     heading('Interview'),
-    paragraph('Ask anything about Alex in plain English, as you would in an interview. Answers come only from this portfolio, with their sources. Choose a starting point:'),
+    paragraph('Ask anything about Alex in plain English, as you would in an interview. Answers come only from this portfolio. Choose a starting point:'),
     ...unavailable(context),
   ];
   for (const mode of Object.keys(INTERVIEW_MODES) as InterviewMode[]) {

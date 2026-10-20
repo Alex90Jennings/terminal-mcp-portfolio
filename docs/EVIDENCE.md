@@ -11,7 +11,7 @@ One authored file, `content/evidence.json`, validated by the same pipeline as th
 | Part | What it is |
 | :-- | :-- |
 | `stories` | STAR stories: Situation, Task, Action, Result and an optional Reflection |
-| `competencies` | The 17 soft skills and engineering mindsets, each pointing at its stories (strongest first) |
+| `competencies` | The 18 soft skills and engineering mindsets, each pointing at its stories (strongest first) |
 | `interests` | Personal and technical interests |
 | `background` | Motivation (why software) and working environment |
 | `sources` | The sources the above cite: Alex's interview answers, the CV, and the project documents the stories draw on |
@@ -66,8 +66,8 @@ Publication is enforced in one place, the bundle build, because the generated bu
 
 ## Competencies
 
-The 17 competencies, in two groups:
-- **Soft skills:** collaboration, communication, problem-solving, attention to detail, ownership and accountability, adaptability, prioritisation, conflict resolution, handling feedback, learning from failure, initiative, customer focus.
+The 18 competencies, in two groups:
+- **Soft skills:** collaboration, communication, problem-solving, attention to detail, ownership and accountability, adaptability, prioritisation, conflict resolution, handling feedback, learning from failure, initiative, customer focus, self-awareness (weaknesses and what Alex is working on to improve: "What is your biggest weakness?" finds the estimates story, told from Alex's own account).
 - **Engineering and product mindset:** balancing speed and quality, working with ambiguity, technical decision-making, cross-functional ownership, continuous improvement.
 
 Each has a neutral description, aliases (everyday wording such as "disagreement", "trade-off" or "went wrong", so a natural question finds it), its stories (strongest first), two or three interview questions, and, where the evidence is thin, a plainly stated `gap`. The full mapping is in `content/evidence.json`.
@@ -77,7 +77,7 @@ Where the evidence for a competency is thin, its `gap` says so plainly, and the 
 ## How it's used
 
 **Terminal:**
-- `soft-skills` lists the 17 competencies; `soft-skills <name|number>` shows the strongest example, with more examples and any evidence gap.
+- `soft-skills` lists the 18 competencies; `soft-skills <name|number>` shows the strongest example, with more examples and any evidence gap.
 - `soft-skills questions [name]` lists interview questions.
 - `stories` lists the stories; `stories <id>` tells the short version and `stories <id> full` the detailed one. A story is shown as one paragraph, with no Situation, Task, Action or Result labels and no mention of STAR anywhere on the site. The short version tells the action in full (most of the story is what Alex did) and keeps the background, task and outcome short; the detailed version adds their detail and the reflection.
 - `interests` shows personal and technical interests, motivation and working style.
