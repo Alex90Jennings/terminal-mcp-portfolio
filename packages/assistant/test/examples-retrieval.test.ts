@@ -128,3 +128,22 @@ describe('which examples an answer told (for follow-ups)', () => {
     expect(outcome.stories).toEqual([{ id: 'zim-black-friday', title: 'Fixing the Black Friday discount problem' }]);
   });
 });
+
+describe('examples follow the competency the visitor named, not the model’s paraphrase', () => {
+  it('"What is your biggest weakness?" searched as "a mistake or weakness" still returns the weakness example', async () => {
+    let toolResult = '';
+    await chat(
+      (request: ModelRequest, call) => {
+        if (call === 1) {
+          const last = request.messages.at(-1)!.content[0]!;
+          if (last.type === 'tool_result') toolResult = last.content;
+        }
+        return call === 0 ? { toolCalls: [{ name: 'get_examples', input: { query: 'a mistake or weakness, something Alex struggled with' } }] } : { text: 'Done.' };
+      },
+      { question: 'What is your biggest weakness?' },
+    );
+    const result = JSON.parse(toolResult) as { examples: { id: string }[]; competency?: { id: string } };
+    expect(result.competency?.id).toBe('self-awareness');
+    expect(result.examples[0]?.id).toBe('zim-estimates-feedback');
+  });
+});

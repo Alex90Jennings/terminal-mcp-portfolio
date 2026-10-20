@@ -26,6 +26,24 @@ type Examples = {
   gap?: string;
 };
 
+describe('relatedTo: the question being answered', () => {
+  it('picks the competency from the visitor’s words ahead of the query’s, and leaves an explicit competency alone', async () => {
+    const asked = structured<Examples & { competency?: { id: string } }>(
+      await call(publicClient, 'get_examples', { query: 'a mistake or weakness', relatedTo: 'What is your biggest weakness?' }),
+    );
+    expect(asked.competency?.id).toBe('self-awareness');
+    expect(asked.examples[0]?.id).toBe('zim-estimates-feedback');
+    const explicit = structured<Examples & { competency?: { id: string } }>(
+      await call(publicClient, 'get_examples', { competency: 'problem-solving', relatedTo: 'What is your biggest weakness?' }),
+    );
+    expect(explicit.competency?.id).toBe('problem-solving');
+    const noCompetency = structured<Examples & { competency?: { id: string } }>(
+      await call(publicClient, 'get_examples', { query: 'disagreements', relatedTo: 'Can you give me another example?' }),
+    );
+    expect(noCompetency.competency?.id).toBe('conflict-resolution');
+  });
+});
+
 describe('publication filtering at the MCP boundary', () => {
   it('serves no draft story, soft skill or interest from a public server', async () => {
     const examples = structured<Examples>(await call(draftClient, 'get_examples', { competency: 'problem-solving' }));

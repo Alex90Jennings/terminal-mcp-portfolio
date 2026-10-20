@@ -172,9 +172,10 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
         calls.map(async (call, index) => {
           const label = toolLabel(call.name, call.input);
           onEvent({ type: 'tool', name: call.name, label, status: 'running' });
-          // A partial project record also brings the omitted passages that bear on the question.
+          // A partial project record also brings the omitted passages that bear on the question, and examples follow the
+          // competency the visitor named, not the model's paraphrase of it.
           const input =
-            call.name === 'get_project' && typeof call.input === 'object' && call.input !== null
+            (call.name === 'get_project' || call.name === 'get_examples') && typeof call.input === 'object' && call.input !== null
               ? { relatedTo: options.question.slice(0, 500), ...(call.input as Record<string, unknown>) }
               : call.input;
           const result = await callTool(mcp, call.name, input);

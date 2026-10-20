@@ -237,7 +237,7 @@ describe('transcript', () => {
 
 describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
   it('is versioned, so results from different prompts are never compared', () => {
-    expect(PROMPT_VERSION).toBe('2026-10-20.11');
+    expect(PROMPT_VERSION).toBe('2026-10-20.12');
   });
 
   it.each([
@@ -252,7 +252,8 @@ describe('system prompt (regression: self-corrections, contact repetition, inter
     ['credits Alex with exactly what the evidence says, not what followed', /Credit Alex with exactly what the evidence says Alex did\. What followed \(a fix, a saving, growth\) or what was used along the way \(a script, a tool\) is Alex's only if the evidence says so/],
     ['counts only earned certifications', /count and describe only earned ones as held; one being studied for is not held/],
     ['never treats missing evidence as proof something didn’t happen', /never conclude from missing evidence that something didn't happen/],
-    ['retrieves examples by the visitor’s wording and trusts the recognised competency', /call get_examples with the visitor's wording as `query`; the result says which competency it recognised and how many examples it has\. Say there's no example only when that competency has none/],
+    ['treats weaknesses and what Alex is working on to improve as soft-skill questions', /including questions about Alex's weaknesses or what Alex is working on to improve, call get_examples/],
+    ['retrieves examples by the visitor’s wording and trusts the recognised competency', /call get_examples with the visitor's wording, unchanged, as `query`; the result says which competency it recognised and how many examples it has\. Say there's no example only when that competency has none/],
     ['keeps a reflection to that experience, not a habit', /Tell a reflection as what Alex learned from that experience, not as something Alex now always does/],
     ['never describes how the portfolio is organised', /how the portfolio is organised: what is listed, tagged, published or filed under which heading \("tagged with", "listed as undocumented", "published under that competency"\)/],
     ['never closes a complete answer with a contact offer', /never as the closing line of an otherwise complete answer/],

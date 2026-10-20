@@ -53,12 +53,21 @@ export const getExamples: ToolModule = {
           exclude: z.array(z.string().max(60)).max(20).optional().describe('Story ids already told in this conversation'),
           version: z.enum(['short', 'detailed']).default('short').describe('short for a concise answer; detailed adds detail and any reflection'),
           limit: z.number().int().min(1).max(10).default(3),
+          relatedTo: z
+            .string()
+            .trim()
+            .max(500)
+            .optional()
+            .describe('The question being answered. A competency it names is used ahead of one recognised in `query`'),
         },
         outputSchema: GetExamplesOutput,
         annotations: READ_ONLY,
       },
-      guarded('get_examples', context, ({ competency, project, query, story, exclude, version, limit }) => {
+      guarded('get_examples', context, ({ competency: given, project, query, story, exclude, version, limit, relatedTo }) => {
         const { kb } = context;
+        // The visitor's own words beat a paraphrase: "What is your biggest weakness?" searched as "a mistake or weakness"
+        // is still about weakness.
+        const competency = given ?? (story === undefined && relatedTo !== undefined ? kb.recogniseCompetency(relatedTo)?.id : undefined);
         const found =
           story !== undefined
             ? [kb.getStory(story)].filter((item): item is Story => item !== undefined && !exclude?.includes(item.id))
