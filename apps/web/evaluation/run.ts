@@ -24,6 +24,7 @@ import { serverKb } from '../src/server/knowledge';
 import { memoryLimiter, resolveBackend } from '../src/server/rate-limit';
 import { CASE_SET_VERSION, CASES, type EvalCase, type TurnSpec } from './cases';
 import {
+  SCORER_VERSION,
   STOP_LABELS,
   caseSetFingerprint,
   isCompletedTurn,
@@ -96,6 +97,13 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
   }
 
   let lastLog: Record<string, unknown> | undefined;
+  // Filled by `inspect` while a turn runs: an object, so the compiler doesn't narrow it away.
+  const inspected: { withheld?: { text: string; figures: string[] }[] } = {};
+  const takeWithheld = () => {
+    const { withheld } = inspected;
+    delete inspected.withheld;
+    return withheld;
+  };
   const handle = createChatHandler({
     resolveConfig: () => resolved,
     createModel: options.createModel ?? ((c) => (options.dryRun ? new ScriptedModel(demoScript, 'scripted-demo') : createChatModel(c))),
@@ -107,6 +115,9 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
     projects: serverKb.projects.map(({ id, name }) => ({ id, name })),
     log: (event) => {
       if (event.event === 'ai.answer') lastLog = event;
+    },
+    inspect: (outcome) => {
+      inspected.withheld = outcome.withheld.map(({ text, figures }) => ({ text, figures: [...figures] }));
     },
   });
 
@@ -145,7 +156,10 @@ export async function runModel(options: RunOptions): Promise<ModelRun> {
         break outer;
       }
       lastLog = undefined;
+      takeWithheld();
       const record = await askOnce(handle, evalCase, index, spec, conversation, () => lastLog);
+      const withheld = takeWithheld();
+      if (withheld !== undefined && withheld.length > 0) record.withheld = withheld;
       spent += record.costUsd;
       records.push(record);
       if (record.refused !== undefined) {
@@ -222,6 +236,7 @@ async function askOnce(
     answer: done?.answer ?? '',
     stop: done?.stop ?? 'error',
     toolsCalled: [...new Set(events.flatMap((event) => (event.type === 'tool' && event.status !== 'running' ? [event.name] : [])))],
+    toolLabels: events.flatMap((event) => (event.type === 'tool' && event.status !== 'running' ? [`${event.label}${event.status === 'error' ? ' (error)' : ''}`] : [])),
     sources: done?.sources ?? [],
     projects: done?.projects ?? [],
     notices: events.flatMap((event) => (event.type === 'notice' ? [event.message] : [])),
@@ -243,6 +258,10 @@ export interface EvaluationReport {
     startedAt: string;
     dryRun: boolean;
     capUsd: number;
+    /** Absent in results scored before scorer versions were recorded (2026-10-19.1). */
+    scorerVersion?: string;
+    /** Set on a re-score: the file it was re-scored from, left unchanged. */
+    rescoredFrom?: string;
   };
   /** `scores` lines up with `records`; null for a turn that was refused or failed at the provider. */
   runs: (ModelRun & { scores: (TurnScore | null)[]; summary: ModelSummary })[];
@@ -288,7 +307,7 @@ export function markdownSummary(report: EvaluationReport): string {
   const lines = [
     `# Evaluation ${report.meta.startedAt}${report.meta.dryRun ? ' (dry run: scripted model)' : ''}`,
     '',
-    `Case set ${report.meta.caseSetVersion} (\`${report.meta.caseSetFingerprint}\`) · prompt ${report.meta.promptVersion} · knowledge \`${report.meta.knowledgeFingerprint}\``,
+    `Case set ${report.meta.caseSetVersion} (\`${report.meta.caseSetFingerprint}\`) · prompt ${report.meta.promptVersion} · knowledge \`${report.meta.knowledgeFingerprint}\` · scorer ${report.meta.scorerVersion ?? '2026-10-19.1'}${report.meta.rescoredFrom ? ` (re-scored offline from \`${report.meta.rescoredFrom}\`)` : ''}`,
     '',
     '| Model | Status | Sample | Pass | Facts | Tools | Sources relevant | Unsupported claims | Attribution errors | Safe behaviour | Caught by gate | First text p50/p95 | Total p50/p95 | Cost |',
     '| :-- | :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
@@ -303,7 +322,7 @@ export function markdownSummary(report: EvaluationReport): string {
     '',
     ...report.runs.map(({ summary: s }) => {
       const failures = Object.entries(s.outcomes).filter(([outcome, count]) => outcome !== 'pass' && count > 0);
-      return `- ${s.model} failed turns by cause: ${failures.length === 0 ? 'none' : failures.map(([outcome, count]) => `${outcome} ${count}`).join(', ')}; answers cut off by the output limit: ${s.truncated}.`;
+      return `- ${s.model} failed turns by cause: ${failures.length === 0 ? 'none' : failures.map(([outcome, count]) => `${outcome} ${count}`).join(', ')}; answers cut off by the output limit: ${s.truncated}. Diagnostics: ${s.presentation.suggestsContact} answers suggest \`contact\` (${s.presentation.contactUnprompted ?? 'n/a'} unprompted), ${s.presentation.markdown ?? 'n/a'} use Markdown, ${s.presentation.internals} show internal identifiers, ${s.presentation.selfCorrection} narrate a self-correction.`;
     }),
     '',
     `Total spent: $${report.runs.reduce((sum, { summary }) => sum + summary.costUsd.total, 0).toFixed(4)} of the $${report.meta.capUsd.toFixed(2)} cap.`,
@@ -364,8 +383,16 @@ async function main() {
   const outDir = path.resolve(import.meta.dirname, values.out ?? 'results');
 
   if (values.rescore) {
+    // Offline: no model calls. The original file is left as it is; the re-score is written beside it.
     const saved = JSON.parse(await readFile(values.rescore, 'utf8')) as EvaluationReport;
-    const report = { ...saved, ...scoreRuns(saved.runs) };
+    const report: EvaluationReport = {
+      ...saved,
+      meta: { ...saved.meta, scorerVersion: SCORER_VERSION, rescoredFrom: path.basename(values.rescore) },
+      ...scoreRuns(saved.runs),
+    };
+    const stem = values.rescore.replace(/\.json$/, `.rescored-${SCORER_VERSION}`);
+    await writeFile(`${stem}.json`, `${JSON.stringify(report, null, 2)}\n`);
+    await writeFile(`${stem}.md`, markdownSummary(report));
     console.log(markdownSummary(report));
     return;
   }
@@ -380,6 +407,7 @@ async function main() {
     startedAt: new Date().toISOString(),
     dryRun,
     capUsd: EVALUATION_CAP_USD,
+    scorerVersion: SCORER_VERSION,
   };
   await mkdir(outDir, { recursive: true });
   const stem = `${meta.startedAt.replace(/[:.]/g, '-')}${dryRun ? '-dry-run' : ''}`;

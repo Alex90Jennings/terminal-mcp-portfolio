@@ -5,5 +5,5 @@ export { ClaudeModel, type Effort, type MessagesClient } from './claude.ts';
 export { PROMPT_VERSION, SYSTEM_PROMPT } from './prompt.ts';
 export { runChat, toolLabel, withheldNotice, type ChatEvent, type ChatOptions, type ChatOutcome, type ChatStop } from './chat.ts';
 export { MAX_HELD_CHARS, SentenceGate, type Withheld } from './gate.ts';
-export { checkGrounding, collectCitations, projectsMentioned, type Citation, type GroundingReport } from './evidence.ts';
+export { checkGrounding, collectCitations, projectsMentioned, toPlainText, withDisplayNames, type Citation, type GroundingReport } from './evidence.ts';
 export { signTranscript, trimTranscript, verifyTranscript, TRANSCRIPT_LIMITS, type SignedTranscript, type TranscriptCheck, type TranscriptTurn } from './transcript.ts';

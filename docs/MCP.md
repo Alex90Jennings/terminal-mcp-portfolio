@@ -33,7 +33,7 @@ All six are read-only and annotated `readOnlyHint: true`, `destructiveHint: fals
 |---|---|---|
 | `list_projects` | — | The six projects: id, name, focus, tagline, tags, context and resource URI, plus a `resource_link` to each document |
 | `get_project` | `project` (id, alias, name or number, ≤ 100 chars); optional `sections[]` | The project's identifying fields plus the requested sections (all by default), with `citations` for exactly the sources those sections cite |
-| `search_projects` | `query` (≤ 200 chars); `limit` 1–10 (default 5) | Ranked projects, each with the matched passages, their source ids and `citations` |
+| `search_projects` | `query` (≤ 200 chars); `limit` 1–10 (default 5) | Ranked projects, each with the matched passages, their source ids and `citations`. A project the query names outright (id, name or alias) ranks first, consistent with `get_project`: "ZIM" means ZIM Connections, and "ZIM@SBB" or "SBB" means ZIM@SBB |
 | `get_profile` | — | Summary, location, contact links, languages, working approach and AI use, with `citations` |
 | `get_experience` | — | Three separate sections: `employment` (each role with the responsibilities from its linked projects, scope intact, and per-project `citations`), `education` and `certifications`, with profile `citations` |
 | `get_skills` | optional `category` | Skills, each linked to the projects that demonstrate it, with `citations` |

@@ -38,6 +38,8 @@ interface IndexedPassage {
 interface IndexedProject {
   project: PortfolioProject;
   passages: IndexedPassage[];
+  /** The project's id, display name and aliases, each as its set of terms. */
+  names: string[][];
 }
 
 const FIELD_WEIGHTS: Record<SearchField, number> = {
@@ -62,13 +64,27 @@ const STOPWORDS = new Set(
 
 const MAX_MATCHES_PER_HIT = 4;
 
+/**
+ * Added per term when the query names a project outright (its id, display name
+ * or an alias), so the project a visitor names ranks first, consistent with
+ * alias resolution: "ZIM" means ZIM Connections even though ZIM@SBB's text
+ * mentions "ZIM" more often. A longer name earns more, so "ZIM@SBB" (two
+ * terms) still outranks the alias "zim" (one).
+ */
+const NAMED_PROJECT_BONUS = 12;
+
 export function createSearchIndex(projects: readonly PortfolioProject[]): IndexedProject[] {
-  return projects.map((project) => ({ project, passages: passagesOf(project) }));
+  return projects.map((project) => ({
+    project,
+    passages: passagesOf(project),
+    names: [project.id, project.name, ...project.aliases].map((name) => [...new Set(tokenise(name))]).filter((terms) => terms.length > 0),
+  }));
 }
 
 /**
  * Ranks projects by weighted term overlap. Each query term counts once per
- * field, at the field's weight, and a whole-phrase match earns a bonus.
+ * field, at the field's weight, and a whole-phrase match earns a bonus. A
+ * project the query names outright ranks first (see NAMED_PROJECT_BONUS).
  */
 export function search(index: readonly IndexedProject[], query: string, limit = 5): SearchHit[] {
   const terms = [...new Set(tokenise(query))];
@@ -76,8 +92,9 @@ export function search(index: readonly IndexedProject[], query: string, limit = 
   const phrase = normalise(query);
 
   const hits: SearchHit[] = [];
-  for (const { project, passages } of index) {
-    let score = 0;
+  for (const { project, passages, names } of index) {
+    const named = Math.max(0, ...names.filter((name) => name.every((term) => terms.includes(term))).map((name) => name.length));
+    let score = named * NAMED_PROJECT_BONUS;
     const scored: { passage: IndexedPassage; score: number }[] = [];
 
     for (const field of Object.keys(FIELD_WEIGHTS) as SearchField[]) {

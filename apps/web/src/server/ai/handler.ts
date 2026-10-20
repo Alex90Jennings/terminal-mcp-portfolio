@@ -62,6 +62,12 @@ export interface ChatDeps {
   projects: readonly { id: string; name: string }[];
   now?: () => Date;
   log?: (event: Record<string, unknown>) => void;
+  /**
+   * Receives each answer's full outcome, including any withheld sentences. For
+   * the offline evaluation only: production leaves it unset, so withheld text is
+   * never logged or sent anywhere.
+   */
+  inspect?: (outcome: ChatOutcome) => void;
 }
 
 const MESSAGES = {
@@ -207,6 +213,7 @@ export function createChatHandler(deps: ChatDeps): (request: Request) => Promise
         } finally {
           await budget.settle(reserved.reservation, toMicros(outcome?.costUsd ?? 0));
           await mcp?.close().catch(() => {});
+          if (outcome !== undefined) deps.inspect?.(outcome);
           log({
             event: 'ai.answer',
             model: config.model,

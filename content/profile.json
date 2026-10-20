@@ -7,7 +7,8 @@
   "sources": [
     { "id": "cv", "label": "CV (September 2026)", "kind": "cv" },
     { "id": "github-profile", "label": "GitHub profile", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
-    { "id": "author-notes", "label": "Author's notes on ZIM@SBB and AI use", "kind": "author-statement" }
+    { "id": "author-notes", "label": "Author's notes on ZIM@SBB and AI use", "kind": "author-statement" },
+    { "id": "employment-update", "label": "Alex, 20 Oct 2026", "kind": "author-statement" }
   ],
   "summary": [
     {
@@ -19,8 +20,8 @@
       "sources": ["cv"]
     },
     {
-      "text": "Software Developer at ZIM Connections since October 2022, working on a production eSIM platform: a React Native app, white-label web platforms, a NestJS backend and the AWS infrastructure behind them.",
-      "sources": ["cv", "github-profile"]
+      "text": "Software Developer at ZIM Connections from October 2022 to October 2026 (last working day 15 October 2026), working on a production eSIM platform: a React Native app, white-label web platforms, a NestJS backend and the AWS infrastructure behind them.",
+      "sources": ["cv", "github-profile", "employment-update"]
     },
     {
       "text": "Uses Claude Code daily across the development lifecycle while keeping ownership of scope, architecture and risk, and validates AI-assisted changes through automated tests, code review, CI and production monitoring.",
@@ -42,10 +43,10 @@
     {
       "organisation": "ZIM Connections Ltd.",
       "role": "Software Developer",
-      "period": "Oct 2022 – present",
+      "period": "Oct 2022 – Oct 2026",
       "location": "London, UK",
       "projects": ["zim-connections", "zim-sbb"],
-      "sources": ["cv"]
+      "sources": ["cv", "employment-update"]
     }
   ],
   "education": [
@@ -137,7 +138,7 @@
         "sources": ["cv"]
       },
       {
-        "text": "At work, no secrets or customer data go into prompts, every line is reviewed, and nothing merges without passing the 2,600+ test CI gate.",
+        "text": "At ZIM Connections, no secrets or customer data went into prompts, every line was reviewed, and nothing merged without passing the 2,600+ test CI gate.",
         "sources": ["author-notes"]
       },
       {

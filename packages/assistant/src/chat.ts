@@ -1,7 +1,7 @@
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { costOf, estimateRequestTokens, estimateTokens, worstCaseCallCost, type ModelPrice } from './cost.ts';
-import { collectCitations, projectsMentioned, type Citation } from './evidence.ts';
+import { collectCitations, projectsMentioned, toPlainText, withDisplayNames, type Citation } from './evidence.ts';
 import { SentenceGate, type Withheld } from './gate.ts';
 import { addUsage, NO_USAGE, type ChatModel, type ContentPart, type ModelMessage, type ModelRequest, type ToolSpec, type Usage } from './model.ts';
 import { SYSTEM_PROMPT } from './prompt.ts';
@@ -91,7 +91,8 @@ export async function runChat(options: ChatOptions): Promise<ChatOutcome> {
   // Evidence is this turn's successful tool results only: never the question or earlier turns.
   const evidence: string[] = [];
   const results: unknown[] = [];
-  const gate = new SentenceGate(() => evidence, (text) => onEvent({ type: 'text', delta: text }));
+  const displayNames = withDisplayNames(options.projects);
+  const gate = new SentenceGate(() => evidence, (text) => onEvent({ type: 'text', delta: text }), (text) => toPlainText(displayNames(text)));
 
   let usage = NO_USAGE;
   let rounds = 0;

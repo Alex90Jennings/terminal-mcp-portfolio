@@ -4,6 +4,7 @@ import { ClaudeModel, type MessagesClient } from '../src/claude.ts';
 import { costOf, maxAnswerCost, MODEL_PRICES, worstCaseCallCost } from '../src/cost.ts';
 import { checkGrounding, collectCitations, projectsMentioned } from '../src/evidence.ts';
 import type { ModelEvent, ModelRequest } from '../src/model.ts';
+import { PROMPT_VERSION, SYSTEM_PROMPT } from '../src/prompt.ts';
 import { signTranscript, TRANSCRIPT_LIMITS, trimTranscript, verifyTranscript, type TranscriptTurn } from '../src/transcript.ts';
 
 describe('ClaudeModel', () => {
@@ -231,5 +232,30 @@ describe('transcript', () => {
     const huge = [...exchange(0), { role: 'user' as const, text: 'x'.repeat(4000) }, { role: 'assistant' as const, text: 'y'.repeat(4000) }, ...exchange(2), { role: 'user' as const, text: 'z'.repeat(4000) }, { role: 'assistant' as const, text: 'w'.repeat(4000) }];
     expect(trimTranscript(huge).reduce((sum, turn) => sum + turn.text.length, 0)).toBeLessThanOrEqual(12_000);
     expect(trimTranscript(huge)[0]?.role).toBe('user');
+  });
+});
+
+describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
+  it('is versioned, so results from different prompts are never compared', () => {
+    expect(PROMPT_VERSION).toBe('2026-10-20.1');
+  });
+
+  it.each([
+    ['stays consistent with earlier answers', /stay consistent with them/],
+    ['treats a fact missing from this lookup as not contradicted', /doesn't mention is not contradicted by it/],
+    ['corrects only on contradiction, and says what was wrong', /Only say an earlier answer was wrong when this turn's tool results contradict it/],
+    ['never presents extra detail as a correction or apologises', /Adding detail is not a correction: never present it as one, apologise/],
+    ['keeps individual and team results apart', /never present team work as Alex's alone/],
+    ['searches when a name could mean two projects', /ZIM Connections and ZIM@SBB are different projects/],
+    ['refers to an unrecorded visitor figure without repeating it', /without repeating the number/],
+    ['suggests contact only for undocumented things Alex could provide', /only when all of these hold: the visitor asked for something the portfolio doesn't document, Alex could reasonably provide it/],
+    ['never suggests contact as a habit or on declined requests', /Don't add it to complete answers, declined or off-topic requests, or as a habitual closing line/],
+    ['answers follow-ups on their own terms', /Answer a follow-up directly and on its own terms/],
+    ['names the evidence instead of pointing back', /name them, with their scope, rather than pointing back \("everything in my previous list"\)/],
+    ['forbids Markdown bold', /bold \(no asterisks\)/],
+    ['hides internal identifiers and metadata', /Never show internal identifiers or metadata/],
+    ['still fails closed on unverified figures', /Every figure you state must appear in this turn's tool results/],
+  ])('%s', (_, rule) => {
+    expect(SYSTEM_PROMPT).toMatch(rule);
   });
 });

@@ -49,6 +49,28 @@ async function events(response: Response): Promise<ChatStreamEvent[]> {
 
 const done = (all: ChatStreamEvent[]) => all.find((event): event is Extract<ChatStreamEvent, { type: 'done' }> => event.type === 'done');
 
+describe('POST /api/chat: evaluation hook', () => {
+  it('hands withheld sentences to `inspect` only, never to the visitor or the log', async () => {
+    const inspected: string[] = [];
+    const { handle, log } = setup({
+      script: (_request, call) =>
+        call === 0
+          ? { toolCalls: [{ name: 'get_project', input: { project: 'operafy', sections: ['decisions'] } }] }
+          : { text: 'Operafy uses GitHub OIDC. It serves 4,417 listeners.' },
+      inspect: (outcome) => inspected.push(...outcome.withheld.map(({ text }) => text)),
+    });
+    const body = await (await handle(request({ question: 'How is Operafy deployed?' }))).text();
+    expect(inspected).toEqual(['It serves 4,417 listeners.']);
+    expect(body).not.toContain('4,417');
+    expect(JSON.stringify(log.mock.calls)).not.toContain('4,417');
+  });
+
+  it('is not wired in production', async () => {
+    const source = await import('node:fs').then(({ readFileSync }) => readFileSync(new URL('../src/server/ai/index.ts', import.meta.url), 'utf8'));
+    expect(source).not.toMatch(/inspect/);
+  });
+});
+
 describe('POST /api/chat: answering', () => {
   it('streams tool status, text and a done event with sources, projects and a signed conversation', async () => {
     const { handle } = setup();

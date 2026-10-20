@@ -51,6 +51,25 @@ describe('search', () => {
     expect(hit?.matches).toContainEqual({ field: 'overview', text: 'Four languages with i18next and Locize.', sources: ['cv'] });
   });
 
+  it('ranks a project the query names by its alias first, even if another project mentions the term more', () => {
+    const named = createKnowledgeBase(
+      buildBundle(
+        content([
+          project({ id: 'zim-connections', name: 'ZIM Connections', aliases: ['zim'], order: 1, focus: 'The platform',
+            overview: [{ text: 'The platform grew to 50,000 users.', sources: ['cv'] }] }),
+          project({ id: 'zim-sbb', name: 'ZIM@SBB', aliases: ['sbb'], order: 2, focus: 'A white-label ZIM app',
+            overview: [{ text: 'A build of the ZIM eSIM app on the ZIM platform.', sources: ['cv'] }] }),
+        ], { skills: { label: 'skills.json', data: skills({ skills: [{ id: 'react-native', name: 'React Native', category: 'mobile', projects: ['zim-sbb'], sources: ['cv'] }] }) } }),
+      ),
+    );
+    expect(named.search('ZIM').map(({ projectId }) => projectId)).toEqual(['zim-connections', 'zim-sbb']);
+    expect(named.search('ZIM users')[0]?.projectId).toBe('zim-connections');
+    // The longer, more specific name wins when both are named.
+    expect(named.search('ZIM@SBB')[0]?.projectId).toBe('zim-sbb');
+    expect(named.search('SBB')[0]?.projectId).toBe('zim-sbb');
+    expect(named.resolveProjectId('ZIM')).toBe('zim-connections');
+  });
+
   it('ignores queries made only of stop words', () => {
     expect(kb.search('what is the')).toEqual([]);
   });

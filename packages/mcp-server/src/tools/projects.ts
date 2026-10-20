@@ -27,6 +27,9 @@ export const listProjects: ToolModule = {
   },
 };
 
+/** Every project id with its name, so a model picks the right one instead of guessing from an example. */
+const projectIdList = (projects: readonly { id: string; name: string }[]) => projects.map(({ id, name }) => `"${id}" (${name})`).join(', ');
+
 export const getProject: ToolModule = {
   name: 'get_project',
   register(server, context) {
@@ -45,7 +48,7 @@ export const getProject: ToolModule = {
             .trim()
             .min(1)
             .max(100)
-            .describe('Project id, alias, display name or listing number, e.g. "sol", "ZIM@SBB", "clash of langs" or "3"'),
+            .describe(`Project id, alias, display name or listing number. The ids: ${projectIdList(context.kb.projects)}`),
           sections: z
             .array(SectionName)
             .min(1)

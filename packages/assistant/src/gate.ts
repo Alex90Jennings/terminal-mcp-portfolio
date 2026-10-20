@@ -28,6 +28,8 @@ export class SentenceGate {
   constructor(
     private readonly evidence: () => readonly string[],
     private readonly emit: (text: string) => void,
+    /** Applied to each sentence after it passes the figure check, e.g. to replace internal ids. */
+    private readonly present: (text: string) => string = (text) => text,
   ) {}
 
   push(delta: string): void {
@@ -82,7 +84,8 @@ export class SentenceGate {
     this.release(sentence);
   }
 
-  private release(text: string): void {
+  private release(raw: string): void {
+    const text = this.present(raw);
     this.released += text;
     this.emit(text);
   }

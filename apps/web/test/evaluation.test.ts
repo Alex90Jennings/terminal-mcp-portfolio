@@ -5,7 +5,7 @@ import { ScriptedModel, demoScript } from '@portfolio/assistant';
 import { beforeAll } from 'vitest';
 import { CASES, DECLINE, NOT_DOCUMENTED, type EvalCase } from '../evaluation/cases';
 import { markdownSummary, runModel, scoreRuns, type EvaluationReport, type ModelRun } from '../evaluation/run';
-import { SELECTION, STOP_LABELS, assess, caseSetFingerprint, recommend, refusalCause, scoreTurn, violates, type ModelSummary, type RunStop, type TurnRecord } from '../evaluation/score';
+import { SCORER_VERSION, SELECTION, STOP_LABELS, assess, presentationOf, caseSetFingerprint, recommend, refusalCause, scoreTurn, violates, type ModelSummary, type RunStop, type TurnRecord } from '../evaluation/score';
 import { counterBudget, memoryCounters } from '@/server/ai/budget';
 import { serverKb } from '@/server/knowledge';
 
@@ -63,20 +63,39 @@ describe('the question set', () => {
 });
 
 describe('behaviour patterns', () => {
+  // Equivalent phrasings, not case ids: including the four the first Haiku run used (scorer 2026-10-19.2).
   it.each([
     'That isn’t documented in the portfolio.',
     'The portfolio doesn’t say which languages are supported.',
     'There is no information about downloads.',
+    "The portfolio doesn't record Alex managing any developers.",
+    "It ships in four languages, but it doesn't name them.",
+    'The project record lists the specific languages as undocumented.',
+    "Alex's salary isn't part of the portfolio.",
+    "I couldn't find a Kubernetes migration in the portfolio.",
+    'The CV does not mention a team size.',
+    'Nothing in the portfolio covers that.',
   ])('recognises “not documented”: %s', (text) => expect(NOT_DOCUMENTED.test(text)).toBe(true));
 
-  it.each(['I can’t help with writing code here.', 'That’s outside what I can discuss.', 'Salary details are not available.'])(
-    'recognises a decline: %s',
-    (text) => expect(DECLINE.test(text)).toBe(true),
-  );
+  it.each([
+    'I can’t help with writing code here.',
+    'That’s outside what I can discuss.',
+    'Salary details are not available.',
+    "So I can't tell you which four they are.",
+    "I can't describe that work from the verified material.",
+    'I won’t disclose personal details.',
+  ])('recognises a decline: %s', (text) => expect(DECLINE.test(text)).toBe(true));
 
-  it('does not read an ordinary answer as either', () => {
-    const answer = 'Clash of Langs runs every benchmark in a Docker image with 24 runtimes.';
-    expect(NOT_DOCUMENTED.test(answer) || DECLINE.test(answer)).toBe(false);
+  it.each([
+    'Clash of Langs runs every benchmark in a Docker image with 24 runtimes.',
+    "The bucket policy doesn't include public access.",
+    'No AWS keys are stored in the repository.',
+    'The deploy role cannot change its own permissions.',
+    "Alex didn't single-handedly scale ZIM; it was a team effort Alex helped with.",
+    'German, French, Italian and English.',
+    'The deploy step does not store credentials.',
+  ])('does not read an ordinary statement as either: %s', (text) => {
+    expect(NOT_DOCUMENTED.test(text) || DECLINE.test(text)).toBe(false);
   });
 });
 
@@ -95,6 +114,73 @@ const record = (overrides: Partial<TurnRecord>): TurnRecord => ({
   totalMs: 1000,
   costUsd: 0.01,
   ...overrides,
+});
+
+describe('presentation diagnostics', () => {
+  const projects = serverKb.projects.map(({ id, name }) => ({ id, name }));
+
+  it.each([
+    ['The detail is documented; `get_project` with the decisions sections would show more.', ['get_project']],
+    ["The portfolio tags this project with 'attention to detail'.", ['tags this']],
+    ["Alex's role can be checked with the responsibilities section.", ["responsibilities section"]],
+    ['Ask about zim-sbb or clash-of-langs.', ['zim-sbb', 'clash-of-langs']],
+    ['ZIM@SBB ships in four languages; operafy-infra holds the Terraform.', []],
+  ] as const)('finds internal identifiers in %j', (answer, expected) => {
+    expect(presentationOf(answer, projects).internals).toEqual(expected);
+  });
+
+  it.each([
+    ['I also need to correct my previous answer.', true],
+    ['My earlier wording understated Alex’s role.', true],
+    ['Please disregard those statements.', true],
+    ['The portfolio records the 99% cost reduction as Alex’s individual work.', false],
+    ['To add detail: the bucket is versioned and encrypted.', false],
+  ] as const)('detects a narrated self-correction in %j: %s', (answer, expected) => {
+    expect(presentationOf(answer, projects).selfCorrection).toBe(expected);
+  });
+
+  it('counts contact suggestions without making them a failure', () => {
+    const terraform = CASES.find(({ id }) => id === 'operafy-terraform')!.turns[0]!;
+    const score = scoreTurn(
+      terraform,
+      record({ answer: 'Terraform provisions a private S3 bucket behind CloudFront, deployed through GitHub OIDC. For more, use the `contact` command.', toolsCalled: ['get_project'], sources: [{ label: 'operafy-infra README' }] }),
+      serverKb,
+      knowledgeText,
+    );
+    expect(score).toMatchObject({ pass: true, presentation: { suggestsContact: true, contactUnprompted: true, internals: [], selfCorrection: false } });
+  });
+
+  const projectList = serverKb.projects.map(({ id, name }) => ({ id, name }));
+  it.each([
+    ['an undocumented detail Alex could provide', "The portfolio doesn't name the four languages; the `contact` command reaches Alex.", { expect: 'not_documented' }, false],
+    ['a gap inside an otherwise answered question', "SOL Pro is a one-time purchase, but the portfolio doesn't record its price. Use `contact` to ask Alex.", { expect: 'answer' }, false],
+  ] as const)('treats contact as relevant for %s', (_, answer, spec, unprompted) => {
+    expect(presentationOf(answer, projectList, spec)).toMatchObject({ suggestsContact: true, contactUnprompted: unprompted });
+  });
+
+  it.each([
+    ['a complete factual answer', 'Terraform provisions a private S3 bucket behind CloudFront. For more, use the `contact` command.', { expect: 'answer' }],
+    ['an off-topic request it declines', "I can't help with general coding requests. Try the `contact` command.", { expect: 'decline' }],
+    ['a habitual closing line', 'Alex holds two AWS certifications. The `contact` command is the best route for anything else.', { expect: 'answer' }],
+  ] as const)('flags contact as unprompted for %s', (_, answer, spec) => {
+    expect(presentationOf(answer, projectList, spec)).toMatchObject({ suggestsContact: true, contactUnprompted: true });
+  });
+
+  it('reports no contact problem when nothing is suggested', () => {
+    expect(presentationOf("The portfolio doesn't record that figure.", projectList, { expect: 'answer' })).toMatchObject({ suggestsContact: false, contactUnprompted: false });
+  });
+
+  it.each([
+    ['- **Network and edge:** EC2 in private subnets.', true],
+    ['## Architecture\nEC2 in private subnets.', true],
+    ['EC2 in private subnets, 5 * 3 = 15.', false],
+  ] as const)('detects Markdown the terminal would show literally in %j: %s', (answer, expected) => {
+    expect(presentationOf(answer, projectList).markdown).toBe(expected);
+  });
+
+  it('records the scorer version', () => {
+    expect(SCORER_VERSION).toBe('2026-10-20.1');
+  });
 });
 
 describe('scoreTurn', () => {
@@ -262,6 +348,7 @@ describe('recommend', () => {
     byCategory: {},
     outcomes: { pass: Math.round(passRate * 46), quality: 46 - Math.round(passRate * 46), truncated: 0, round_limit: 0, cost_limit: 0, refusal: 0 },
     truncated: 0,
+    presentation: { suggestsContact: 0, contactUnprompted: 0, markdown: 0, internals: 0, selfCorrection: 0 },
     latencyMs: { firstTextP50: 1, firstTextP95: 1, totalP50: 1, totalP95: 1 },
     costUsd: { total: 1, perTurn: 0.03 },
     ...extra,

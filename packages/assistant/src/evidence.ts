@@ -39,6 +39,31 @@ export function projectsMentioned<T extends { id: string; name: string }>(answer
   return projects.filter(({ name }) => text.includes(name.toLowerCase()));
 }
 
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Replaces internal project ids that differ from the display name (e.g.
+ * "zim-sbb", "clash-of-langs") with that name, so visitors never see them.
+ * Ids only match as whole words, never inside another identifier such as a
+ * repository name.
+ */
+export function withDisplayNames(projects: readonly { id: string; name: string }[]): (text: string) => string {
+  const internal = projects.filter(({ id, name }) => id.includes('-') && id.toLowerCase() !== name.toLowerCase());
+  if (internal.length === 0) return (text) => text;
+  const names = new Map(internal.map(({ id, name }) => [id.toLowerCase(), name]));
+  const pattern = new RegExp(`(?<![\\w@/.-])(${internal.map(({ id }) => escapeRegExp(id)).join('|')})(?![\\w@/-])`, 'gi');
+  return (text) => text.replace(pattern, (match) => names.get(match.toLowerCase()) ?? match);
+}
+
+/**
+ * Removes Markdown the terminal would show literally: bold markers and heading
+ * hashes. The prompt asks for plain text; this guarantees it for the two forms
+ * models most often slip into. Single asterisks and underscores are left alone.
+ */
+export function toPlainText(text: string): string {
+  return text.replace(/\*\*/g, '').replace(/(^|\n)#{1,6} +/g, '$1');
+}
+
 export interface GroundingReport {
   /** Figures in the answer, as written, that appear in none of the evidence. */
   unsupportedFigures: string[];

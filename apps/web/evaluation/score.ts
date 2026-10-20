@@ -11,10 +11,14 @@ export interface TurnRecord {
   answer: string;
   stop: string;
   toolsCalled: string[];
+  /** Each tool call with its main argument, e.g. "get_project: zim-sbb (responsibilities)". Absent in results recorded before 2026-10-20. */
+  toolLabels?: string[];
   sources: { label: string; url?: string }[];
   projects: { id: string; name: string }[];
   notices: string[];
   withheldStatements: number;
+  /** The withheld sentences and the figures that couldn't be matched. Absent in results recorded before 2026-10-20. */
+  withheld?: { text: string; figures: string[] }[];
   /** Time to the first released text, or null if none was released. */
   firstTextMs: number | null;
   totalMs: number;
@@ -97,6 +101,7 @@ export interface TurnScore {
    * `refusal` (the model's safety classifier declined). `pass` when it passed.
    */
   outcome: TurnOutcome;
+  presentation: Presentation;
 }
 
 export type TurnOutcome = 'pass' | 'quality' | 'truncated' | 'round_limit' | 'cost_limit' | 'refusal';
@@ -109,6 +114,60 @@ const outcomeOf = (pass: boolean, stop: string): TurnOutcome => {
 };
 
 export const FACT_THRESHOLD = 2 / 3;
+
+/**
+ * The scoring rules' version, recorded with every result and every re-score.
+ * 2026-10-19.1: the original rules. 2026-10-19.2: "not documented" and
+ * "can't help" recognise equivalent phrasings ("doesn't record", "isn't part
+ * of the portfolio", "couldn't find", "can't tell"); presentation diagnostics.
+ * 2026-10-20.1: diagnostics only: contact suggestions split into relevant and
+ * unprompted, and Markdown detected. Pass and fail are unchanged.
+ */
+export const SCORER_VERSION = '2026-10-20.1';
+
+/**
+ * Presentation diagnostics. They're reported, never part of pass or fail, so
+ * the quality thresholds stay comparable across scorer versions.
+ */
+export interface Presentation {
+  /** The answer points the visitor to the `contact` command. */
+  suggestsContact: boolean;
+  /**
+   * A suggestion is relevant when the answer says something isn't documented
+   * (so Alex could fill the gap) and the request wasn't one to decline; any
+   * other suggestion is unprompted. False when there's no suggestion.
+   */
+  contactUnprompted: boolean;
+  /** Markdown the terminal would show literally (bold markers or headings). */
+  markdown: boolean;
+  /** Internal identifiers or metadata shown to the visitor (project ids, tags, field or tool names). */
+  internals: string[];
+  /** The answer says it is correcting, retracting or apologising for an earlier answer. */
+  selfCorrection: boolean;
+}
+
+const CONTACT = /`contact`|\bcontact command\b/i;
+const MARKDOWN = /\*\*|(^|\n)#{1,6} /;
+const SELF_CORRECTION = /\b(?:correct(?:ing)? my (?:previous|earlier)|my (?:previous|earlier) (?:answer|reply|wording|response)|I (?:also )?need to correct|I was wrong|(?:please )?disregard (?:that|those|my)|apologi[sz]e)\b/i;
+const INTERNAL_METADATA = /\b(?:get_project|search_projects|list_projects|get_profile|get_experience|get_skills|listingTags)\b|\btag(?:s|ged)? (?:this|it|the project)\b|\b(?:responsibilities|undocumented|scope) (?:section|field|list|tag)\b/gi;
+
+export function presentationOf(answer: string, projects: readonly { id: string; name: string }[], spec?: Pick<TurnSpec, 'expect'>): Presentation {
+  const ids = projects.filter(({ id, name }) => id.includes('-') && id.toLowerCase() !== name.toLowerCase()).map(({ id }) => id);
+  const internals = [
+    ...ids.filter((id) => new RegExp(`(?<![\\w@/.-])${id}(?![\\w@/-])`, 'i').test(answer)),
+    ...[...answer.matchAll(INTERNAL_METADATA)].map(([match]) => match),
+  ];
+  const suggestsContact = CONTACT.test(answer);
+  const declineOnly = spec !== undefined && [spec.expect].flat().every((expectation) => expectation === 'decline');
+  const relevant = NOT_DOCUMENTED.test(answer) && !declineOnly;
+  return {
+    suggestsContact,
+    contactUnprompted: suggestsContact && !relevant,
+    markdown: MARKDOWN.test(answer),
+    internals: [...new Set(internals)],
+    selfCorrection: SELF_CORRECTION.test(answer),
+  };
+}
 
 const accepts = (spec: TurnSpec, expectation: Expectation) => (Array.isArray(spec.expect) ? spec.expect : [spec.expect]).includes(expectation);
 
@@ -166,7 +225,19 @@ export function scoreTurn(spec: TurnSpec, record: TurnRecord, kb: KnowledgeBase,
     unsupportedFigures.length === 0 &&
     (sources === null || sources.relevant);
 
-  return { tools, facts, behaviour, violations, missingRequired, unsupportedFigures, hallucinationCaught: record.withheldStatements > 0, sources, pass, outcome: outcomeOf(pass, record.stop) };
+  return {
+    tools,
+    facts,
+    behaviour,
+    violations,
+    missingRequired,
+    unsupportedFigures,
+    hallucinationCaught: record.withheldStatements > 0,
+    sources,
+    pass,
+    outcome: outcomeOf(pass, record.stop),
+    presentation: presentationOf(answer, kb.projects, spec),
+  };
 }
 
 /** A fingerprint of the case set, recorded with every result so different versions are never compared. */
@@ -200,6 +271,8 @@ export interface ModelSummary {
   outcomes: Record<TurnOutcome, number>;
   /** Turns the output limit cut off, whether or not they still passed. */
   truncated: number;
+  /** Diagnostics, not criteria: how many answers suggest `contact`, show internals, or narrate a self-correction. */
+  presentation: { suggestsContact: number; contactUnprompted: number; markdown: number; internals: number; selfCorrection: number };
   latencyMs: { firstTextP50: number | null; firstTextP95: number | null; totalP50: number; totalP95: number };
   costUsd: { total: number; perTurn: number };
 }
@@ -259,6 +332,13 @@ export function summarise(
       { pass: 0, quality: 0, truncated: 0, round_limit: 0, cost_limit: 0, refusal: 0 },
     ),
     truncated: scored.filter(({ record }) => record.stop === 'max_tokens').length,
+    presentation: {
+      suggestsContact: scored.filter(({ score }) => score.presentation.suggestsContact).length,
+      contactUnprompted: scored.filter(({ score }) => score.presentation.contactUnprompted).length,
+      markdown: scored.filter(({ score }) => score.presentation.markdown).length,
+      internals: scored.filter(({ score }) => score.presentation.internals.length > 0).length,
+      selfCorrection: scored.filter(({ score }) => score.presentation.selfCorrection).length,
+    },
     latencyMs: {
       firstTextP50: percentile(firstText, 50),
       firstTextP95: percentile(firstText, 95),

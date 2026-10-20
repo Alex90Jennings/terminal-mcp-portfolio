@@ -58,6 +58,37 @@ describe('list_projects', () => {
   });
 });
 
+describe('choosing the right project (regression: "ZIM" fetched ZIM@SBB)', () => {
+  it('lists every project id with its name in get_project, so the model need not guess one', async () => {
+    const { tools } = await client.listTools();
+    const description = JSON.stringify(tools.find(({ name }) => name === 'get_project')?.inputSchema);
+    for (const project of kb.projects) expect(description).toContain(`\\"${project.id}\\" (${project.name})`);
+  });
+
+  it.each([
+    ['ZIM', 'zim-connections'],
+    ['ZIM scale users', 'zim-connections'],
+    ['ZIM growth', 'zim-connections'],
+    ['ZIM@SBB', 'zim-sbb'],
+    ['SBB', 'zim-sbb'],
+    ['four languages', 'zim-sbb'],
+    ['Docker', 'clash-of-langs'],
+  ])('search_projects ranks %j first as %s, consistent with get_project', async (query, expected) => {
+    const { results } = structured<{ results: { projectId: string }[] }>(await call(client, 'search_projects', { query }));
+    expect(results[0]?.projectId).toBe(expected);
+  });
+
+  it('resolves "ZIM" to ZIM Connections, where the growth to 50,000+ users is recorded as a team result', async () => {
+    const { project } = structured<{ project: { id: string; responsibilities: { text: string; scope: string }[] } }>(
+      await call(client, 'get_project', { project: 'ZIM', sections: ['responsibilities'] }),
+    );
+    expect(project.id).toBe('zim-connections');
+    const growth = project.responsibilities.find(({ text }) => /50,000/.test(text));
+    expect(growth?.scope).toBe('team');
+    expect(project.responsibilities.some(({ scope }) => scope === 'individual')).toBe(true);
+  });
+});
+
 describe('get_project', () => {
   it.each(['sol', 'SOL', 'sol-app', '5'])('resolves %j', async (input) => {
     const { project } = structured<{ project: { id: string } }>(await call(client, 'get_project', { project: input }));

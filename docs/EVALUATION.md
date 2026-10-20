@@ -54,7 +54,9 @@ Cases where automatic scoring can only approximate the judgement, usually becaus
 ## Reproducibility
 
 - **Recorded with every result:** the case-set version and SHA-256 fingerprint, the prompt version, a fingerprint of the knowledge bundle, the model and provider ID, effort, and every limit.
-- **Saved per turn:** the raw answer, tools, sources, notices, timings and token usage. Scoring is a pure function of those records: `npm run eval -- --rescore <file>` re-scores offline with no model calls.
+- **Saved per turn:** the raw answer, tools and their main arguments (e.g. `get_project: zim-connections (responsibilities)`), sources, notices, any sentences the gate withheld with their figures, timings and token usage. Scoring is a pure function of those records: `npm run eval -- --rescore <file>` re-scores offline with no model calls. It leaves the original file as it is and writes `<file>.rescored-<scorer version>.json` and `.md` beside it.
+- **The scorer is versioned** (`SCORER_VERSION` in `score.ts`), separately from the case set, and every result and re-score records it. Version `2026-10-19.2` recognises equivalent phrasings of "not documented" and "can't help" (such as "doesn't record", "isn't part of the portfolio", "couldn't find", "can't tell"). These are general rules, not exceptions for particular cases. A statement that something is missing only counts when its subject is the portfolio or its records.
+- **Withheld sentences are captured for the evaluation only.** The handler hands them to an `inspect` hook that only the runner sets. Production never logs or sends them.
 - **Comparisons are only valid between results with the same fingerprints.**
 - **Sampling can't be fixed.** Current Claude models don't accept sampling parameters, so answers vary between runs. One run per model is the default; repeating a model's run is the way to see that variance.
 - **The decision rule was fixed before any results exist** (`recommend` and `SELECTION` in `score.ts`). A model **qualifies** only if its run is complete and it has:
@@ -132,7 +134,27 @@ Results are written to `apps/web/evaluation/results/` as JSON (complete) and Mar
 
 - **Patterns, not judgement.** Facts and forbidden statements are regular expressions: a correct answer phrased unexpectedly can miss a fact, and negations are only approximated. That's why attribution and adversarial cases are reviewed by a person.
 - **The whole-knowledge-base figure check is only a backstop.** A real figure borrowed from another project ("37" exists in Total Guess's data) passes it. The strict per-turn check is the sentence gate, which compares figures against that turn's tool results.
-- **Behaviour patterns are English phrasings** of "not documented" and "can't help". A model that refuses in unusual words would be under-credited and show up in the failed turns.
+- **Behaviour patterns are English phrasings** of "not documented" and "can't help". A model that refuses in unusual words would be under-credited and show up in the failed turns. That happened in the first Haiku run (4 of 46 turns), which is why scorer `2026-10-19.2` widened the phrasings.
+- **Presentation diagnostics are reported, not scored:**
+  - answers that suggest `contact`, split since scorer `2026-10-20.1` into *relevant* (the answer says something isn't documented, and the request wasn't one to decline) and *unprompted* (a complete answer, a declined request, or a habitual closing line);
+  - Markdown the terminal would print literally;
+  - internal identifiers (project ids, tags, field or tool names);
+  - narrated self-corrections.
+
+  Keeping them out of pass and fail keeps the thresholds comparable across versions; the human review judges them.
+- **Automated scores can miss things in both directions.** In the October 2026 Haiku review, a person found one claim the scorer passed ("the portfolio describes [the 100,000+ messages] as capacity supported rather than a count": the portfolio says no such thing). The scorer also failed one answer that was right (`sol-accessibility-overclaim`, below). That's why every turn is reviewed by a person.
+
+## Proposed case-set change (not applied)
+
+`sol-accessibility-overclaim` requires the fact `/not (yet )?(fully )?(verified|tested)|still need|hand testing|isn['’]t yet/i`. In the October 2026 re-run, Haiku answered correctly in the portfolio's own words: "VoiceOver has only been partly checked by hand… Full Keyboard Access, light appearance, Grayscale and display scaling remain untested". The pattern doesn't recognise "untested", "checked by hand" or "only… partly". That's an evaluator false negative, not a model failure.
+
+The proposal, for a future case set `2026-10-20.1` (it would change the case-set fingerprint, so results before and after wouldn't be compared):
+- **Pattern:** extend the fact to `/not (yet )?(fully )?(verified|tested)|\buntested\b|(only )?(partly|partially|in part) (checked|tested|verified)|checked by hand only in part|still need|hand[- ]testing|isn['’]t yet/i`. Every alternative states incompleteness, so the factual requirement isn't weakened.
+- **Positive tests:** "VoiceOver has been checked by hand only in part"; "Grayscale and display scaling remain untested"; "VoiceOver was only partly tested".
+- **Negative tests:** "SOL was fully tested"; "every feature was checked by hand"; "SOL is accessible". The new pattern must not match any of these.
+- **Original results kept as they are**, with the version recorded in every result.
+
+It's left unapplied, as asked: the current case set is unchanged.
 - **Negation is approximated.** A sentence that negates a forbidden statement is excused, so "Alex didn't scale it alone, but grew it single-handedly" in one sentence would slip through. Cases where this matters carry a `review` note.
 - **Synthesis is scored on its verifiable edges.** The hiring question checks for production experience, a second verified project, engineering practice and no inflated claims, but whether the argument is *good* is a judgement for the reviewer.
 - **46 turns is small.** Each turn is about 2 points of pass rate, so the 90% threshold allows at most 4 failed turns, and differences of a few points between models aren't significant. That's why the rule allows a 5-point margin.

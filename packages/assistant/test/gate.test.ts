@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { toPlainText, withDisplayNames } from '../src/evidence.ts';
 import { MAX_HELD_CHARS, SentenceGate } from '../src/gate.ts';
 import type { Script } from '../src/scripted.ts';
 import { chat } from './helpers.ts';
@@ -141,5 +142,59 @@ describe('grounded answers end to end (real MCP tools)', () => {
     const textEvents = events.filter((event) => event.type === 'text');
     expect(textEvents.length).toBeGreaterThanOrEqual(3);
     expect(textEvents[0]).toEqual({ type: 'text', delta: 'SOL is a macOS menu bar app. ' });
+  });
+});
+
+describe('internal project ids (regression: answers showed ids and tags)', () => {
+  const present = withDisplayNames([
+    { id: 'zim-sbb', name: 'ZIM@SBB' },
+    { id: 'zim-connections', name: 'ZIM Connections' },
+    { id: 'clash-of-langs', name: 'Clash of Langs' },
+    { id: 'sol', name: 'SOL' },
+  ]);
+
+  it.each([
+    ['Ask about zim-sbb next.', 'Ask about ZIM@SBB next.'],
+    ['See ZIM-CONNECTIONS and clash-of-langs.', 'See ZIM Connections and Clash of Langs.'],
+    ['SOL and sol stay as written.', 'SOL and sol stay as written.'],
+    ['The operafy-infra README and portfolio://projects/zim-sbb are untouched.', 'The operafy-infra README and portfolio://projects/zim-sbb are untouched.'],
+    ['zim-sbb-v2 is a different identifier.', 'zim-sbb-v2 is a different identifier.'],
+  ])('shows %j as %j', (input, expected) => {
+    expect(present(input)).toBe(expected);
+  });
+
+  it('applies the display names after the figure check, which still sees the original sentence', () => {
+    const emitted: string[] = [];
+    const g = new SentenceGate(() => ['zim-sbb ships in four languages'], (text) => emitted.push(text), present);
+    g.push('zim-sbb ships in four languages. zim-sbb has 47 brands.');
+    g.flush();
+    expect(emitted.join('')).toBe('ZIM@SBB ships in four languages. ');
+    expect(g.withheld).toEqual([{ text: 'zim-sbb has 47 brands.', figures: ['47'] }]);
+  });
+
+  it('never lets an id reach the visitor through runChat', async () => {
+    const { text, outcome } = await chat((_request, call) =>
+      call === 0 ? { toolCalls: [{ name: 'get_project', input: { project: 'zim-sbb', sections: ['overview'] } }] } : { text: 'zim-sbb is a white-label build.' },
+    );
+    expect(text).toBe('ZIM@SBB is a white-label build.');
+    expect(outcome.answer).not.toContain('zim-sbb');
+  });
+});
+
+describe('plain text in the terminal (regression: answers used Markdown bold)', () => {
+  it.each([
+    ['- **Network and edge:** The API runs on EC2.', '- Network and edge: The API runs on EC2.'],
+    ['Its clearest backend work is on **ZIM Connections**.', 'Its clearest backend work is on ZIM Connections.'],
+    ['## Heading\nText', 'Heading\nText'],
+    ['Uses 5 * 3 and snake_case names.', 'Uses 5 * 3 and snake_case names.'],
+  ])('shows %j as %j', (input, expected) => {
+    expect(toPlainText(input)).toBe(expected);
+  });
+
+  it('strips bold through runChat, after the figure check', async () => {
+    const { text } = await chat((_request, call) =>
+      call === 0 ? { toolCalls: [{ name: 'get_project', input: { project: 'operafy', sections: ['decisions'] } }] } : { text: '**Operafy** uses GitHub OIDC.' },
+    );
+    expect(text).toBe('Operafy uses GitHub OIDC.');
   });
 });

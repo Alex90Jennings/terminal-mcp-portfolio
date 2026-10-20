@@ -19,7 +19,7 @@
     "kind": "employment",
     "organisation": "ZIM Connections Ltd.",
     "role": "Software Developer",
-    "period": "Oct 2022 – present"
+    "period": "Oct 2022 – Oct 2026"
   },
   "visibility": "professional",
   "topics": [
@@ -60,6 +60,11 @@
       "id": "author",
       "label": "Alex, 19 Oct 2026",
       "kind": "author-statement"
+    },
+    {
+      "id": "employment-update",
+      "label": "Alex, 20 Oct 2026",
+      "kind": "author-statement"
     }
   ],
   "overview": [
@@ -79,7 +84,7 @@
       ]
     },
     {
-      "text": "Over Alex's time there the platform grew from under 1,000 to 50,000+ users and from a single application to a multi-brand ecosystem. This was a team effort by a small engineering team that Alex is part of.",
+      "text": "Over Alex's time there the platform grew from under 1,000 to 50,000+ users and from a single application to a multi-brand ecosystem. This was a team effort by a small engineering team that Alex was part of.",
       "sources": [
         "cv"
       ]
@@ -245,21 +250,21 @@
   ],
   "responsibilities": [
     {
-      "text": "Works autonomously within a small, fast-moving engineering team, owning features from technical design through deployment and production support.",
+      "text": "Worked autonomously within a small, fast-moving engineering team, owning features from technical design through deployment and production support.",
       "scope": "individual",
       "sources": [
         "cv"
       ]
     },
     {
-      "text": "Maintains the production TypeScript/Node.js/NestJS API, which served 5.4M requests in six months at a 99.9% non-5xx rate and a 104 ms median response time.",
+      "text": "Maintained the production TypeScript/Node.js/NestJS API, which served 5.4M requests in six months at a 99.9% non-5xx rate and a 104 ms median response time.",
       "scope": "individual",
       "sources": [
         "cv"
       ]
     },
     {
-      "text": "Owned the design, development and production rollout of the platform's real-time live chat, covering the Socket.IO/NestJS/React Native gateway, services, database schema, rate limiting and shared React client hooks. It now supports 5,000+ conversations and 100,000+ messages.",
+      "text": "Owned the design, development and production rollout of the platform's real-time live chat, covering the Socket.IO/NestJS/React Native gateway, services, database schema, rate limiting and shared React client hooks. As of September 2026 it supported 5,000+ conversations and 100,000+ messages.",
       "scope": "individual",
       "sources": [
         "cv"
@@ -273,21 +278,21 @@
       ]
     },
     {
-      "text": "Developed the multi-tenant architecture that supports 4 production brands and 11 app identities on shared infrastructure.",
+      "text": "Developed the multi-tenant architecture that supported 4 production brands and 11 app identities on shared infrastructure.",
       "scope": "individual",
       "sources": [
         "cv"
       ]
     },
     {
-      "text": "Manages containerised (Docker) production services on AWS across 13 CloudFront distributions, Application Load Balancers, RDS and networking, supporting millions of monthly requests across customer and partner applications.",
+      "text": "Managed containerised (Docker) production services on AWS across 13 CloudFront distributions, Application Load Balancers, RDS and networking, supporting millions of monthly requests across customer and partner applications.",
       "scope": "individual",
       "sources": [
         "cv"
       ]
     },
     {
-      "text": "Builds frontend features in the React Native app and customer and B2B dashboards in React and Next.js.",
+      "text": "Built frontend features in the React Native app and customer and B2B dashboards in React and Next.js.",
       "scope": "individual",
       "sources": [
         "github-profile"
@@ -367,7 +372,7 @@
         "A Socket.IO gateway on the NestJS backend, with its own services, database schema and rate limiting.",
         "Shared React client hooks used by both the mobile app and the web clients."
       ],
-      "outcome": "Rolled out to production; it now supports 5,000+ conversations and 100,000+ messages.",
+      "outcome": "Rolled out to production; as of September 2026 it supported 5,000+ conversations and 100,000+ messages.",
       "sources": [
         "cv",
         "github-profile"

@@ -81,11 +81,31 @@ const forbid = (kind: ViolationKind, label: string, pattern: RegExp, unlessNegat
   ...(unlessNegated && { unlessNegated }),
 });
 
-// Shared patterns for the two non-answer behaviours.
-export const NOT_DOCUMENTED =
-  /\b(isn['’]t|is not|not|aren['’]t|are not)\s+(documented|covered|mentioned|recorded|included|listed|specified|stated)\b|\bno (information|details|record|mention|data)\b|\bdoesn['’]t (say|mention|include|cover|document|specify|list)\b|\b(don['’]t|do not) have (that|this|any|those)\b|\bcan['’]t find\b|\bnot (in|part of) the portfolio\b/i;
+// Shared patterns for the two non-answer behaviours. They recognise phrasings,
+// not cases: any equivalent way of saying "the portfolio doesn't have this" or
+// "I can't help with that". Statements about something lacking only count when
+// their subject is the portfolio or its records, so an ordinary sentence such
+// as "the bucket policy doesn't include public access" isn't read as one.
+// They aren't part of the case set, so changing them doesn't change its fingerprint;
+// the scorer's version (SCORER_VERSION in score.ts) records them instead.
+const RECORD_SUBJECT = String.raw`(?:the portfolio|it|they|this|the (?:project )?records?|the project(?:['’]s)? (?:record|entry|write-up)|the (?:CV|profile|documentation|sources?|write-up|materials?)|Alex['’]s (?:records?|portfolio|profile|CV))`;
+const RECORD_VERB = String.raw`(?:say|mention|include|cover|document|specify|list|record|name|state|give|provide|show|detail|describe|contain|confirm|identify)`;
+export const NOT_DOCUMENTED = new RegExp(
+  [
+    String.raw`\b(?:isn['’]t|is not|aren['’]t|are not|wasn['’]t|was not)\s+(?:documented|covered|mentioned|recorded|included|listed|specified|stated|named|given|confirmed|verified)\b`,
+    String.raw`\b${RECORD_SUBJECT}\s+(?:doesn['’]t|does not|don['’]t|do not|didn['’]t|did not)\s+${RECORD_VERB}\b`,
+    String.raw`\b(?:isn['’]t|is not|aren['’]t|are not)\s+(?:part of|in|included in|recorded in|covered by|documented in)\s+(?:the|Alex['’]s)\s+portfolio\b`,
+    String.raw`\bnot (?:in|part of) the portfolio\b`,
+    String.raw`\bno (?:information|details|record|records|mention|data|evidence)\b`,
+    String.raw`\b(?:can['’]t|cannot|couldn['’]t|could not|unable to)\s+find\b`,
+    String.raw`\b(?:don['’]t|do not) have (?:that|this|any|those)\b`,
+    String.raw`\bundocumented\b`,
+    String.raw`\bnothing (?:in the portfolio|documented|recorded)\b`,
+  ].join('|'),
+  'i',
+);
 export const DECLINE =
-  /\b(can['’]t|cannot|won['’]t|unable to|not able to)\s+(help|answer|share|provide|do|write|confirm|say|discuss)\b|\boutside (what|the scope)\b|\bonly (answer|help|discuss|talk)\b|\bnot something I can\b|\bisn['’]t (available|something)\b|\bnot available\b/i;
+  /\b(can['’]t|cannot|couldn['’]t|could not|won['’]t|unable to|not able to)\s+(help|answer|share|provide|do|write|confirm|say|discuss|tell|describe|give|disclose|comment)\b|\boutside (what|the scope)\b|\bonly (answer|help|discuss|talk)\b|\bnot something I can\b|\bisn['’]t (available|something)\b|\bnot available\b/i;
 /** Words that negate a sentence, for `unlessNegated` checks. */
 export const NEGATION = /\b(not|no|never|isn['’]t|wasn['’]t|aren['’]t|weren['’]t|didn['’]t|doesn['’]t|don['’]t|can['’]t|cannot|rather than|instead of|nothing)\b/i;
 

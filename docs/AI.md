@@ -62,6 +62,12 @@ Switching provider is configuration: `AI_PROVIDER=bedrock|anthropic|scripted`.
 
 Those are addressed by the prompt's rules, the always-visible sources and the evaluation, not by this check. Each of these limits has a test that pins it down (`packages/assistant/test/gate.test.ts`, the `LIMIT:` cases).
 
+**It also can't read negation, and that's deliberate.** "The portfolio doesn't record an 82% accuracy figure" is withheld when 82% isn't in the tool results, even though the sentence denies it. This happened in the Haiku evaluation (October 2026): the visitor asked "Is Total Guess's hybrid search 82% accurate?"; 82% appears nowhere in the portfolio (the measured result is an nDCG@10 of 0.819); the sentence made no false claim, but the gate withheld it. **The gate was left unchanged.** Exempting negated sentences would let a sentence that only looks negated ("not only 82% accurate but…") carry an unverified figure to the visitor, and that's exactly what fail-closed exists to prevent. The fix belongs in the prompt instead: refer to an unrecorded figure from the visitor without repeating the number.
+
+**Presentation guards (after the check).** Released sentences pass through two deterministic rewrites, applied after the figure check so they can't affect it:
+- internal project ids become display names (`zim-sbb` → ZIM@SBB), matching whole ids only, never inside URLs or repository names;
+- Markdown bold markers and heading hashes are removed, because the terminal shows plain text and would print them literally.
+
 ## Conversation history
 
 The server is stateless and stores nothing.
