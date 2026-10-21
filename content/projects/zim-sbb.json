@@ -19,7 +19,7 @@
     { "id": "github-profile", "label": "GitHub profile: ZIM Connections section", "kind": "profile", "url": "https://github.com/Alex90Jennings" },
     { "id": "linkedin-notes", "label": "Author's project description for LinkedIn", "kind": "author-statement" },
     { "id": "author-notes", "label": "Author's notes on ZIM@SBB", "kind": "author-statement" },
-    { "id": "app-store", "label": "ZIM@SBB on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236" },
+    { "id": "app-store", "label": "ZIM@SBB on the App Store", "kind": "store-listing", "url": "https://apps.apple.com/gb/app/zim-sbb-esim-data-plans/id6469112236" },
     { "id": "alex-confirmation", "label": "Alex, 20 Oct 2026", "kind": "author-statement" }
   ],
   "overview": [
@@ -131,7 +131,8 @@
     }
   ],
   "links": [
-    { "label": "ZIM@SBB on the App Store", "url": "https://apps.apple.com/us/app/zim-sbb-esim-data-plans/id6469112236", "kind": "store" }
+    { "label": "ZIM@SBB on the App Store", "url": "https://apps.apple.com/gb/app/zim-sbb-esim-data-plans/id6469112236", "kind": "store" },
+    { "label": "ZIM@SBB on Google Play", "url": "https://play.google.com/store/apps/details?id=com.zim_sbb", "kind": "store" }
   ],
   "undocumented": [
     "Which four languages are supported",

@@ -1,4 +1,4 @@
-import { PROJECT_CONTEXT_LABELS, RESPONSIBILITY_SCOPE_LABELS, projectEvidence, type KnowledgeBase, type PortfolioProject } from '@portfolio/knowledge/runtime';
+import { PROJECT_CONTEXT_LABELS, RESPONSIBILITY_SCOPE_LABELS, projectEvidence, visitLinks, type KnowledgeBase, type PortfolioProject } from '@portfolio/knowledge/runtime';
 import { bullets, command, heading, joined, link, paragraph, subheading, text, type Block, type Inline } from './output';
 
 export const PROJECT_SECTIONS = ['overview', 'architecture', 'challenges', 'decisions', 'lessons', 'sources', 'all'] as const;
@@ -51,7 +51,19 @@ function summary(project: PortfolioProject): Block[] {
   const meta = [project.focus, PROJECT_CONTEXT_LABELS[context.kind] + (where ? ` · ${where}` : ''), context.period].filter(
     (part): part is string => Boolean(part),
   );
-  return [paragraph(joined(meta.map((part) => text(part, 'accent')))), paragraph(project.tagline)];
+  return [paragraph(joined(meta.map((part) => text(part, 'accent')))), paragraph(project.tagline), ...visit(project)];
+}
+
+/** The project itself, one click away: its main site or store pages, or "Coming soon" before release. */
+export function visitInline(project: PortfolioProject): Inline[] {
+  const targets = visitLinks(project);
+  if (targets.length > 0) return joined(targets.map(({ label, url }) => link(`${label} ↗`, url)));
+  return project.comingSoon === undefined ? [] : [text(project.comingSoon, 'muted')];
+}
+
+function visit(project: PortfolioProject): Block[] {
+  const inline = visitInline(project);
+  return inline.length === 0 ? [] : [paragraph([text('See it: ', 'muted'), ...inline])];
 }
 
 /** Alex's role and what the project shows come first; the description, challenges and technology list follow. */

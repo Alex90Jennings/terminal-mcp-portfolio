@@ -547,6 +547,10 @@
               "website",
               "profile"
             ]
+          },
+          "primary": {
+            "type": "boolean",
+            "const": true
           }
         },
         "required": [
@@ -556,6 +560,10 @@
         ],
         "additionalProperties": false
       }
+    },
+    "comingSoon": {
+      "type": "string",
+      "minLength": 1
     },
     "undocumented": {
       "default": [],

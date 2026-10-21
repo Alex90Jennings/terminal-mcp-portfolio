@@ -49,7 +49,7 @@ export const PROJECT_DATA_SECTIONS = [
 
 export type ProjectDataSection = (typeof PROJECT_DATA_SECTIONS)[number];
 
-const HEADER_FIELDS = ['id', 'name', 'aliases', 'focus', 'tagline', 'listingTags', 'context', 'visibility', 'topics'] as const;
+const HEADER_FIELDS = ['id', 'name', 'aliases', 'focus', 'tagline', 'listingTags', 'context', 'visibility', 'topics', 'comingSoon'] as const;
 
 export type ProjectHeader = Pick<PortfolioProject, (typeof HEADER_FIELDS)[number]>;
 export type ProjectSelection = ProjectHeader & Partial<Pick<PortfolioProject, ProjectDataSection>>;
@@ -234,4 +234,10 @@ export function storyText(story: Story, version: 'short' | 'detailed'): string {
 export function storyBasis(story: Story): 'documented' | 'firsthand' | 'mixed' {
   const kinds = new Set(storyParts(story, 'detailed').map(({ provenance }) => provenance));
   return kinds.size === 1 && kinds.has('documented') ? 'documented' : kinds.has('documented') ? 'mixed' : 'firsthand';
+}
+
+/** Where a visitor can see a project for themselves: the link marked primary, else its live site, else its store listings. */
+export function visitLinks(project: Pick<PortfolioProject, 'links'>): PortfolioProject['links'] {
+  const primary = project.links.find((link) => link.primary === true) ?? project.links.find(({ kind }) => kind === 'live');
+  return primary !== undefined ? [primary] : project.links.filter(({ kind }) => kind === 'store');
 }

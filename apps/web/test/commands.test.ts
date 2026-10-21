@@ -70,7 +70,22 @@ describe('/projects', () => {
     expect(text).toContain(project?.tagline);
     expect(text).toContain("Alex's role");
     expect(text).toContain('Terraform');
-    expect(hrefsIn(run('/projects operafy').blocks)).toEqual(project?.links.map(({ url }) => url));
+    // The live app first, under the tagline, then every link in the Links section.
+    expect(hrefsIn(run('/projects operafy').blocks)).toEqual(['https://operafy-music.vercel.app/home', ...(project?.links.map(({ url }) => url) ?? [])]);
+    expect(text).toMatch(/See it: Live app ↗/);
+  });
+
+  it('links each project to the real thing: live site or store page, or "Coming soon" before release', () => {
+    expect(output('/projects sol')).toMatch(/See it: Coming soon/);
+    for (const [id, url] of [['clash-of-langs', 'https://clash-of-langs.vercel.app'], ['total-guess', 'https://www.total-guess.com'], ['operafy', 'https://operafy-music.vercel.app/home']]) {
+      expect(hrefsIn(run(`/projects ${id}`).blocks)[0], id).toBe(url);
+    }
+    const list = run('/projects');
+    expect(hrefsIn(list.blocks)).toEqual(expect.arrayContaining(['https://clash-of-langs.vercel.app', 'https://www.total-guess.com', 'https://operafy-music.vercel.app/home']));
+    expect(blocksToText(list.blocks)).toMatch(/SOL {2}Coming soon/);
+    // ZIM Connections goes to its own site, not a white-label page; ZIM@SBB to both app stores.
+    expect(hrefsIn(run('/projects zim-connections').blocks)[0]).toBe('https://www.zimconnections.com/');
+    expect(hrefsIn(run('/projects zim-sbb').blocks).slice(0, 2)).toEqual(['https://apps.apple.com/gb/app/zim-sbb-esim-data-plans/id6469112236', 'https://play.google.com/store/apps/details?id=com.zim_sbb']);
   });
 
   it('labels whose work each responsibility was', () => {

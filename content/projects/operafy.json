@@ -173,7 +173,7 @@
     }
   ],
   "links": [
-    { "label": "Live app", "url": "https://operafy-music.vercel.app", "kind": "live" },
+    { "label": "Live app", "url": "https://operafy-music.vercel.app/home", "kind": "live" },
     { "label": "Infrastructure source (Terraform)", "url": "https://github.com/Alex90Jennings/operafy-infra", "kind": "source" },
     { "label": "App source (React)", "url": "https://github.com/Alex90Jennings/operafy-react", "kind": "source" }
   ],

@@ -1,5 +1,5 @@
 import type { KnowledgeBase } from '@portfolio/knowledge/runtime';
-import { PROJECT_SECTIONS, formatProject, resolveSection } from '../format-project';
+import { PROJECT_SECTIONS, formatProject, resolveSection, visitInline } from '../format-project';
 import { command, heading, joined, paragraph, text, type Block, type CommandResult } from '../output';
 import type { Command } from '../types';
 
@@ -46,14 +46,17 @@ export function listProjects(kb: KnowledgeBase): CommandResult {
     {
       kind: 'list',
       ordered: true,
-      items: kb.projects.map((project, index) => ({
-        marker: `[${index + 1}]`,
-        lines: [
-          [command(project.name, `/projects ${project.id}`)],
-          [text(project.focus, 'accent')],
-          joined(project.listingTags.map((tag) => text(tag, 'muted'))),
-        ],
-      })),
+      items: kb.projects.map((project, index) => {
+        const visit = visitInline(project);
+        return {
+          marker: `[${index + 1}]`,
+          lines: [
+            [command(project.name, `/projects ${project.id}`), ...(visit.length === 0 ? [] : [text('  '), ...visit])],
+            [text(project.focus, 'accent')],
+            joined(project.listingTags.map((tag) => text(tag, 'muted'))),
+          ],
+        };
+      }),
     },
     paragraph([
       text('Type ', 'muted'),

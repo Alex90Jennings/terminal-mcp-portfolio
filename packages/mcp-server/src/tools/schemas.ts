@@ -19,6 +19,7 @@ const Uri = z.string().describe('MCP resource URI of the full Markdown document'
 
 export const ProjectHeader = ProjectObject.pick({
   id: true,
+  comingSoon: true,
   name: true,
   aliases: true,
   focus: true,

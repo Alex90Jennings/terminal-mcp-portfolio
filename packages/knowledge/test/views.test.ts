@@ -18,7 +18,7 @@ describe('selectProjectSections', () => {
   it('returns only the identifying fields plus the requested sections', () => {
     const selection = selectProjectSections(sol, ['decisions', 'architecture']);
     expect(Object.keys(selection)).toEqual([
-      'id', 'name', 'aliases', 'focus', 'tagline', 'listingTags', 'context', 'visibility', 'topics', 'architecture', 'decisions',
+      'id', 'name', 'aliases', 'focus', 'tagline', 'listingTags', 'context', 'visibility', 'topics', 'comingSoon', 'architecture', 'decisions',
     ]);
     expect(selection.decisions).toBe(sol.decisions);
   });

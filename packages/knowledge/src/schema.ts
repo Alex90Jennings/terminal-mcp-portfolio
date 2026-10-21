@@ -79,6 +79,8 @@ export const LinkSchema = z.strictObject({
   label: Text,
   url: HttpsUrl,
   kind: z.enum(['live', 'source', 'store', 'documentation', 'website', 'profile']),
+  /** The link that takes a visitor to the project itself, when it isn't simply the live site or store page. */
+  primary: z.literal(true).optional(),
 });
 
 export const ProjectObject = z.strictObject({
@@ -115,6 +117,8 @@ export const ProjectObject = z.strictObject({
   lessons: z.array(FactSchema).default([]),
   limitations: z.array(FactSchema).default([]),
   links: z.array(LinkSchema).default([]),
+  /** Shown where the live link would be while the project isn't released, e.g. "Coming soon". */
+  comingSoon: Text.optional(),
   /** Topics known to be missing, so answers can say so instead of guessing. */
   undocumented: z.array(Text).default([]),
 });

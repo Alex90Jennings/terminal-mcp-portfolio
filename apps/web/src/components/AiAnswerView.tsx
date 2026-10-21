@@ -1,7 +1,26 @@
 import type { AiAnswer } from '@/lib/ai-answer';
 import { followUps } from '@/lib/follow-ups';
+import { visitLinks } from '@portfolio/knowledge/runtime';
 import { kb } from '@/lib/knowledge';
 import { OutputBlocks } from './OutputBlocks';
+
+/** The project's live site or store page, or "Coming soon", after its name in the Projects line. */
+function ProjectVisit({ id }: { id: string }) {
+  const project = kb.getProject(id);
+  if (project === undefined) return null;
+  const [target] = visitLinks(project);
+  if (target !== undefined) {
+    return (
+      <>
+        {' '}
+        <a className="term-link text-sm" href={target.url} target="_blank" rel="noopener noreferrer" aria-label={`See ${project.name}: ${target.label} (opens in a new tab)`}>
+          (see it ↗)
+        </a>
+      </>
+    );
+  }
+  return project.comingSoon === undefined ? null : <span className="text-sm text-term-muted"> ({project.comingSoon.toLowerCase()})</span>;
+}
 
 const TOOL_MARK = { running: '…', done: '✓', error: '✗' } as const;
 const TOOL_STATUS = { running: 'looking up', done: 'looked up', error: 'could not look up' } as const;
@@ -69,9 +88,10 @@ export function AiAnswerView({
           {answer.projects.map((project, index) => (
             <span key={project.id}>
               {index > 0 && <span className="text-term-muted"> · </span>}
-              <button type="button" className="term-command" title={`Run “projects ${project.id}”`} onClick={() => onCommand(`/projects ${project.id}`)}>
+              <button type="button" className="term-command" title={`Run “/projects ${project.id}”`} onClick={() => onCommand(`/projects ${project.id}`)}>
                 {project.name}
               </button>
+              <ProjectVisit id={project.id} />
             </span>
           ))}
         </p>

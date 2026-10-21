@@ -477,7 +477,8 @@
     {
       "label": "ZIM Connections",
       "url": "https://www.zimconnections.com/",
-      "kind": "website"
+      "kind": "website",
+      "primary": true
     }
   ],
   "undocumented": [

@@ -63,3 +63,15 @@ describe('content stays in the knowledge base', () => {
     }
   });
 });
+
+describe('AiAnswerView', () => {
+  it('follows each project in the Projects line with a real link, or "coming soon" before release', async () => {
+    const { AiAnswerView } = await import('@/components/AiAnswerView');
+    const { waitingAnswer } = await import('@/lib/ai-answer');
+    const answer = { ...waitingAnswer([]), status: 'done' as const, text: 'Two projects.', projects: [{ id: 'clash-of-langs', name: 'Clash of Langs' }, { id: 'sol', name: 'SOL' }] };
+    const html = renderToStaticMarkup(<AiAnswerView answer={answer} onCommand={() => {}} />);
+    expect(html).toContain('href="https://clash-of-langs.vercel.app"');
+    expect(html).toContain('target="_blank" rel="noopener noreferrer" aria-label="See Clash of Langs: Live arena (opens in a new tab)">(see it ↗)</a>');
+    expect(html).toMatch(/SOL<\/button><span[^>]*> \(coming soon\)<\/span>/);
+  });
+});
