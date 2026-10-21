@@ -83,7 +83,6 @@ const PersonalItem = z.object({
   title: z.string(),
   text: z.string(),
   projects: z.array(z.object({ id: z.string(), name: z.string(), uri: Uri })),
-  basis: z.string().describe('Where it comes from, e.g. "Alex\'s own account"'),
 });
 
 export const GetProfileOutput = {

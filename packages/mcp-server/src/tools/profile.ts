@@ -1,4 +1,4 @@
-import { citationsFor, experienceOf, PROVENANCE_LABELS, SkillSchema, type Interest, type KnowledgeBase } from '@portfolio/knowledge';
+import { citationsFor, experienceOf, SkillSchema, type Interest, type KnowledgeBase } from '@portfolio/knowledge';
 import { projectUri } from '../uris.ts';
 import { GetExperienceOutput, GetProfileOutput, GetSkillsOutput } from './schemas.ts';
 import { guarded, READ_ONLY, success, type ToolModule } from './shared.ts';
@@ -13,7 +13,7 @@ export const getProfile: ToolModule = {
         description:
           "A concise professional profile of Alex Jennings: summary, location, contact links, languages, how Alex works (including where AI fits in), " +
           "and, once published, Alex's interests, motivation and career goals (five years, next role, why Alex left ZIM, a long-term dream) and working style " +
-          "(strengths, frustrations, the first six months in a new role), each from Alex's own account. " +
+          "(strengths, frustrations, the first six months in a new role), in Alex's own words, to state directly. " +
           'For employment, education and certifications use get_experience.',
         inputSchema: {},
         outputSchema: GetProfileOutput,
@@ -48,7 +48,6 @@ function personalItem(kb: KnowledgeBase, item: Interest) {
     title: item.title,
     text: item.text,
     projects: item.projects.map((id) => ({ id, name: kb.getProject(id)?.name ?? id, uri: projectUri(id) })),
-    basis: PROVENANCE_LABELS[item.provenance],
   };
 }
 
@@ -60,7 +59,8 @@ export const getExperience: ToolModule = {
       {
         title: 'Get experience',
         description:
-          'Employment history, education and certifications, as separate sections. ' +
+          'Software employment history, education and certifications, as separate sections. ' +
+          "Alex's earlier, non-software finance work (Citibank) is in get_profile under background.motivation. " +
           'Each role lists the responsibilities recorded on its linked projects, each with a `scope`: ' +
           'individual (Alex alone), collaborative (Alex with others) or team (a team result Alex contributed to). ' +
           'Keep that distinction when you answer. Certifications are split into `earned` (held; `earnedCount` is how many) ' +

@@ -62,7 +62,7 @@ describe('publication filtering at the MCP boundary', () => {
     expect(structured<{ softSkills: unknown[] }>(await call(publicClient, 'get_skills')).softSkills).toHaveLength(18);
     const profile = structured<{ interests: { personal: unknown[]; technical: unknown[] }; background: { motivation: unknown[]; workingEnvironment: unknown[] } }>(await call(publicClient, 'get_profile'));
     expect(profile.interests.personal.length + profile.interests.technical.length).toBe(7);
-    expect(profile.background.motivation.length + profile.background.workingEnvironment.length).toBe(9);
+    expect(profile.background.motivation.length + profile.background.workingEnvironment.length).toBe(10);
     const story = structured<Examples>(await call(publicClient, 'get_examples', { story: 'zim-black-friday', version: 'detailed' })).examples[0]!;
     expect(story.reflection).toMatchObject({ basis: "Alex's own account" });
     expect(story.attributionNote).toMatch(/oversight was a team one\. Alex personally investigated and implemented the fix/);
@@ -133,12 +133,12 @@ describe('get_examples (preview content)', () => {
     expect(softSkills.find(({ id }) => id === 'problem-solving')?.examples[0]?.id).toBe('zim-sql-performance');
   });
 
-  it('includes interests and background, marked as Alex’s own account', async () => {
-    const { interests, background } = structured<{ interests: { personal: { title: string; basis: string }[] }; background: { motivation: { text: string }[] } }>(
+  it('includes interests and background, with no "own account" label for the model to repeat', async () => {
+    const { interests, background } = structured<{ interests: { personal: { title: string; basis?: string }[] }; background: { motivation: { text: string; basis?: string }[] } }>(
       await call(previewClient, 'get_profile'),
     );
     expect(interests.personal.map(({ title }) => title)).toEqual(['Building things', 'Learning Italian']);
-    expect(interests.personal.every(({ basis }) => basis === "Alex's own account")).toBe(true);
+    expect([...interests.personal, ...background.motivation].every(({ basis }) => basis === undefined)).toBe(true);
     expect(background.motivation[0]?.text).toMatch(/economics and worked in finance/);
   });
 

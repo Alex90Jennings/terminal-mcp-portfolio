@@ -33,7 +33,7 @@ describe('the STAR catalogue in content/evidence.json', () => {
   it('publishes every story and interest Alex approved (20 and 21 Oct 2026), and nothing else', () => {
     for (const story of authored.stories) expect({ id: story.id, status: story.status, visibility: story.visibility }).toEqual({ id: story.id, status: 'approved', visibility: 'public' });
     const interests = [...authored.interests.personal, ...authored.interests.technical, ...authored.background.motivation, ...authored.background.workingEnvironment];
-    expect(interests).toHaveLength(16);
+    expect(interests).toHaveLength(17);
     for (const item of interests) expect(isPublished(item), item.id).toBe(true);
   });
 
@@ -109,12 +109,12 @@ describe('the STAR catalogue in content/evidence.json', () => {
 });
 
 describe('publication', () => {
-  it('publishes the approved catalogue: 18 stories, 18 competencies, 7 interests and 9 background items', () => {
+  it('publishes the approved catalogue: 18 stories, 18 competencies, 7 interests and 10 background items', () => {
     expect(published.preview).toBeUndefined();
     expect(published.evidence.stories).toHaveLength(18);
     expect(published.evidence.competencies).toHaveLength(18);
     expect(published.evidence.interests.personal.length + published.evidence.interests.technical.length).toBe(7);
-    expect(published.evidence.background.motivation.map(({ id }) => id)).toEqual(['from-finance', 'five-years', 'next-role', 'leaving-zim', 'long-term-dream']);
+    expect(published.evidence.background.motivation.map(({ id }) => id)).toEqual(['from-finance', 'citibank', 'five-years', 'next-role', 'leaving-zim', 'long-term-dream']);
     expect(published.evidence.background.workingEnvironment.map(({ id }) => id)).toEqual(['small-teams', 'strengths', 'frustrations', 'first-six-months']);
     expect(JSON.stringify(published)).not.toMatch(/needs-review|"draft"|"private"|"incomplete"/);
     for (const { part, provenance } of published.evidence.stories.flatMap((story) => storyParts(story, 'detailed'))) expect(provenance, part).not.toBe('inferred');

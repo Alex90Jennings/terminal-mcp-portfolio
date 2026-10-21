@@ -1727,11 +1727,24 @@
       {
         "id": "from-finance",
         "title": "From finance to software",
-        "text": "Alex studied economics and worked in finance, and first approached software as a valuable technical skill to bring to the financial industry. While learning to program, Alex found a real enjoyment in building products that people use, and decided to pursue software development professionally, while staying interested in finance and investment.",
+        "text": "Alex studied economics and worked in finance, at Citibank in New York, and first approached software as a valuable technical skill to bring to the financial industry. While learning to program, Alex found a real enjoyment in building products that people use, and decided to pursue software development professionally, while staying interested in finance and investment.",
         "projects": [],
         "provenance": "firsthand",
         "sources": [
-          "alex-interview"
+          "alex-interview",
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "citibank",
+        "title": "Trade support at Citibank",
+        "text": "Before moving into software, Alex worked at Citibank in New York in a middle-office trade support role, supporting the trading desk and helping make sure trades were processed correctly and in line with compliance requirements. It was a fast-paced environment where accuracy, attention to detail and clear communication were essential: Alex worked closely with traders and other teams to investigate issues, resolve discrepancies and keep daily trading operations running smoothly. It wasn't a software engineering role, but it gave Alex valuable exposure to financial markets, operational risk and the importance of reliable systems. Alex sees that experience carrying over into development work, particularly in problem-solving, attention to detail and understanding the business impact of technical decisions.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
         ],
         "status": "approved",
         "visibility": "public"

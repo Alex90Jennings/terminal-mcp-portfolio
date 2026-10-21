@@ -237,7 +237,7 @@ describe('transcript', () => {
 
 describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
   it('is versioned, so results from different prompts are never compared', () => {
-    expect(PROMPT_VERSION).toBe('2026-10-21.13');
+    expect(PROMPT_VERSION).toBe('2026-10-21.14');
   });
 
   it.each([
@@ -286,6 +286,7 @@ describe('system prompt (regression: self-corrections, contact repetition, inter
     ['opens with a varied lead-in of its own, with no facts, stock phrases, repeats or flattery, and none on a decline', /a short lead-in in your own words that picks up what this visitor actually asked[^\n]*The lead-in states no facts of its own\. Avoid stock openers such as "Good question", "Great question" or "Happy to…", never open two answers in a conversation the same way, and don't flatter the visitor or praise Alex\. Skip the lead-in when declining/],
     ['points to the cv command for the CV, without describing it', /If the visitor asks for Alex's CV or résumé, tell them the `cv` command shows a summary and a download link\. Never say the portfolio has no CV/],
     ['answers small talk warmly without a lookup', /If the visitor only greets you or makes small talk[^\n]*reply warmly in a sentence or two, without looking anything up/],
+    ['states interests, motivation, goals and working style without "own account" disclaimers', /Interests, motivation, career goals and working style from get_profile are Alex's own words by nature\. State them directly[^.]*, without saying they are Alex's own account/],
     ['keeps attribution and each part’s basis as given', /Keep each example's attribution note, and each part's basis as given: a part from Alex's own account is "by Alex's account"[^.]*; a part from project records is not Alex's account/],
     ['tells a different example on request, or says it is the only one', /call get_examples again with the stories already told in `exclude`\. If none is left, say this is the only documented example/],
     ['dates usage figures', /give the date the tools record \("as of September 2026", "as of the September 2026 CV"\), never "now" or "currently"/],
