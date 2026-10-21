@@ -11,7 +11,16 @@ const TOOL_STATUS = { running: 'looking up', done: 'looked up', error: 'could no
  * technology (it would be read out word by word); the terminal announces the
  * finished answer once instead.
  */
-export function AiAnswerView({ answer, onCommand }: { answer: AiAnswer; onCommand: (command: string) => void }) {
+export function AiAnswerView({
+  answer,
+  onCommand,
+  reading,
+}: {
+  answer: AiAnswer;
+  onCommand: (command: string) => void;
+  /** Reading the answer aloud, where the browser can. */
+  reading?: { active: boolean; toggle: () => void };
+}) {
   const streaming = answer.status === 'waiting' || answer.status === 'streaming';
   return (
     <div className="space-y-1.5" aria-busy={streaming}>
@@ -46,13 +55,21 @@ export function AiAnswerView({ answer, onCommand }: { answer: AiAnswer; onComman
       {(answer.status === 'error' || answer.status === 'unavailable') && answer.message && <p className="text-term-error">{answer.message}</p>}
       {answer.status === 'unavailable' && <OutputBlocks blocks={answer.fallback.slice(1)} onCommand={onCommand} />}
 
+      {answer.status === 'done' && answer.text !== '' && reading !== undefined && (
+        <p>
+          <button type="button" className="term-command" aria-pressed={reading.active} onClick={reading.toggle}>
+            {reading.active ? 'Stop reading' : 'Read aloud'}
+          </button>
+        </p>
+      )}
+
       {answer.status === 'done' && answer.projects.length > 0 && (
         <p>
           <span className="text-term-muted">Projects: </span>
           {answer.projects.map((project, index) => (
             <span key={project.id}>
               {index > 0 && <span className="text-term-muted"> · </span>}
-              <button type="button" className="term-command" title={`Run “projects ${project.id}”`} onClick={() => onCommand(`projects ${project.id}`)}>
+              <button type="button" className="term-command" title={`Run “projects ${project.id}”`} onClick={() => onCommand(`/projects ${project.id}`)}>
                 {project.name}
               </button>
             </span>

@@ -17,7 +17,7 @@ export function followUps(answer: Pick<AiAnswer, 'status' | 'projects' | 'storie
   const suggestions: FollowUp[] = [];
   const story = answer.stories.find(({ id }) => kb.getStory(id) !== undefined);
   if (story !== undefined) {
-    suggestions.push({ label: 'See the full story', input: `stories ${story.id} full` }, { label: 'Another example', input: 'Can you give me another example?' });
+    suggestions.push({ label: 'See the full story', input: `/stories ${story.id} full` }, { label: 'Another example', input: 'Can you give me another example?' });
   }
   const [only, ...others] = answer.projects;
   const project = only !== undefined && others.length === 0 ? kb.getProject(only.id) : undefined;

@@ -26,7 +26,7 @@ export const projects: Command = {
           paragraph(`Unknown section "${args.slice(1).join(' ')}".`, 'error'),
           paragraph([
             text('Sections: ', 'muted'),
-            ...joined(PROJECT_SECTIONS.map((name) => command(name, `projects ${project.id} ${name}`))),
+            ...joined(PROJECT_SECTIONS.map((name) => command(name, `/projects ${project.id} ${name}`))),
           ]),
         ],
       };
@@ -49,7 +49,7 @@ export function listProjects(kb: KnowledgeBase): CommandResult {
       items: kb.projects.map((project, index) => ({
         marker: `[${index + 1}]`,
         lines: [
-          [command(project.name, `projects ${project.id}`)],
+          [command(project.name, `/projects ${project.id}`)],
           [text(project.focus, 'accent')],
           joined(project.listingTags.map((tag) => text(tag, 'muted'))),
         ],
@@ -57,9 +57,9 @@ export function listProjects(kb: KnowledgeBase): CommandResult {
     },
     paragraph([
       text('Type ', 'muted'),
-      command('projects <name>', 'projects'),
+      command('/projects <name>', '/projects'),
       text(' or a number to explore, e.g. ', 'muted'),
-      command('projects 3', 'projects 3'),
+      command('/projects 3', '/projects 3'),
       text('.', 'muted'),
     ]),
   ];
@@ -72,11 +72,11 @@ function projectNotFound(kb: KnowledgeBase, input: string): CommandResult {
     blocks: [
       paragraph(`No project called "${input}".`, 'error'),
       ...(suggestions.length > 0
-        ? [paragraph([text('Did you mean ', 'muted'), ...joined(suggestions.map((id) => command(id, `projects ${id}`)), ' or '), text('?', 'muted')])]
+        ? [paragraph([text('Did you mean ', 'muted'), ...joined(suggestions.map((id) => command(id, `/projects ${id}`)), ' or '), text('?', 'muted')])]
         : []),
       paragraph([
         text('Projects: ', 'muted'),
-        ...joined(kb.projects.map((project) => command(project.id, `projects ${project.id}`))),
+        ...joined(kb.projects.map((project) => command(project.id, `/projects ${project.id}`))),
       ]),
     ],
   };

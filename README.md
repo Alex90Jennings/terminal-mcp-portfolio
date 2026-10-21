@@ -40,7 +40,7 @@ npm run test:e2e     # Playwright: terminal on desktop, Android and iPhone, plus
 
 ## AI assistant
 
-Ask the terminal a question in plain English, or use `ask <question>`. Answers come only from the verified portfolio, via the MCP tools, with sources listed under each answer. By default it runs on a scripted model (no keys, no cost). With `AI_PROVIDER=anthropic` and an API key it uses Claude Haiku 5.5 through the direct Anthropic API, which is how it runs in production at [www.builtbyaj.io](https://www.builtbyaj.io); Amazon Bedrock remains a supported alternative. Every answer counts against a $10/day and $50/month budget. See [docs/AI.md](docs/AI.md).
+Commands start with `/` (`/help`, `/projects sol`). Anything else, from "hi" to "Why should we hire Alex?", goes to the assistant; a bare command name or project name still runs as a shortcut. Where the browser supports it, visitors can also ask by voice (the microphone beside the prompt) and have answers read aloud, using the browser's own Web Speech API: no extra service, key or cost. Answers to spoken questions are read back automatically; typed ones only when "Read aloud" is pressed. The `Permissions-Policy` header allows the microphone for this origin only. Answers come only from the verified portfolio, via the MCP tools, and the sources behind each answer are recorded for evaluation. By default it runs on a scripted model (no keys, no cost). With `AI_PROVIDER=anthropic` and an API key it uses Claude Haiku 5.5 through the direct Anthropic API, which is how it runs in production at [www.builtbyaj.io](https://www.builtbyaj.io); Amazon Bedrock remains a supported alternative. Every answer counts against a $10/day and $50/month budget. See [docs/AI.md](docs/AI.md).
 
 ## The interview
 

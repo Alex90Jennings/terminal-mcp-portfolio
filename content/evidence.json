@@ -88,6 +88,11 @@
       "id": "alex-confirmation",
       "label": "Alex, final confirmations (20 Oct 2026)",
       "kind": "author-statement"
+    },
+    {
+      "id": "alex-answers",
+      "label": "Alex, interview answers (21 Oct 2026)",
+      "kind": "author-statement"
     }
   ],
   "stories": [
@@ -148,7 +153,8 @@
         "Tell me about a time you disagreed with product stakeholders.",
         "How do you handle conflicting product and engineering priorities?",
         "How do you handle unclear requirements?",
-        "How do you work with non-technical stakeholders?"
+        "How do you work with non-technical stakeholders?",
+        "Tell me about a time you had a conflict and needed to influence somebody else."
       ],
       "attribution": "collaborative",
       "attributionNote": "A discussion between product and engineering. Alex explained the technical implications; product and engineering agreed the scope together.",
@@ -181,8 +187,10 @@
         "text": "Alex independently reviewed the AWS services ZIM used, documented what each was for, identified where there was room to scale back, and presented the findings to the CEO and CTO.",
         "provenance": "firsthand",
         "sources": [
-          "alex-interview"
-        ]
+          "alex-interview",
+          "alex-answers"
+        ],
+        "detail": "The certification gave Alex the grounding to go deep into each service, analysing its benefits and limitations, so the case for scaling back rested on evidence rather than guesswork."
       },
       "result": {
         "text": "ZIM reduced its AWS bill by approximately 30%, with no reported negative impact on performance.",
@@ -200,7 +208,8 @@
       "questions": [
         "Tell me about a time you improved something without being asked.",
         "Have you identified opportunities to save money?",
-        "Tell me about a time you explained something technical to a non-technical stakeholder."
+        "Tell me about a time you explained something technical to a non-technical stakeholder.",
+        "What is something that you had to push for in your previous projects?"
       ],
       "attribution": "individual",
       "attributionNote": "Alex researched the services and presented the recommendations. This does not claim Alex implemented every infrastructure change.",
@@ -308,7 +317,9 @@
         "Tell me about a production incident you resolved.",
         "Tell me about a time you had to respond to an urgent problem.",
         "Describe a situation that didn’t go according to plan.",
-        "Tell me about a time you fixed an urgent production problem."
+        "Tell me about a time you fixed an urgent production problem.",
+        "Tell me about a difficult bug you fixed.",
+        "Tell me about a time you met a tight deadline."
       ],
       "attribution": "individual",
       "attributionNote": "The original oversight was a team one. Alex personally investigated and implemented the fix.",
@@ -435,7 +446,8 @@
       "questions": [
         "Describe a project where teamwork was essential.",
         "Tell me about a complex project you delivered.",
-        "How do you evaluate alternative architectures?"
+        "How do you evaluate alternative architectures?",
+        "What is something you had to persevere at for multiple months?"
       ],
       "attribution": "collaborative",
       "attributionNote": "Alex collaborated with another developer to design and implement the architecture; it was shared work, not Alex's alone.",
@@ -567,8 +579,10 @@
         "text": "ZIM's small engineering team ran many projects and deadlines at once, and priorities often changed.",
         "provenance": "firsthand",
         "sources": [
-          "alex-interview"
-        ]
+          "alex-interview",
+          "alex-answers"
+        ],
+        "detail": "ZIM was a start-up, always innovating and trying new things, and at that pace the workload often felt overwhelming."
       },
       "task": {
         "text": "Alex's estimates didn't leave enough room for the unexpected or for testing, so Alex needed to make them more reliable.",
@@ -605,7 +619,12 @@
         "What are you working on to improve?",
         "Tell me about a time you received constructive criticism.",
         "How do you manage deadlines?",
-        "What have you changed about your working approach?"
+        "What have you changed about your working approach?",
+        "What is the most constructive feedback you have received?",
+        "How have you handled criticism of your work?",
+        "Tell me about a time-management skill you learned and applied at work.",
+        "Tell me about a time your work responsibilities got a little overwhelming. What did you do?",
+        "How do you handle a heavy workload?"
       ],
       "attribution": "individual",
       "attributionNote": "A change to Alex's own working practice, following advice.",
@@ -938,6 +957,178 @@
       "attributionNote": "Alex's own learning. Certifications on their own don't establish professional expertise.",
       "status": "approved",
       "visibility": "public"
+    },
+    {
+      "id": "zim-cto-release",
+      "title": "Agreeing a safe release with the CTO",
+      "projects": [
+        "zim-connections"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "During the move of ZIM's push notifications from Firebase to AWS SNS, the CTO wanted to get the migration into production quickly because of a business deadline, while Alex was concerned that some edge cases hadn't been tested enough.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "task": {
+        "text": "Alex wanted to meet the deadline without taking unnecessary risks with notification delivery and reliability.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "action": {
+        "text": "Rather than simply disagreeing, Alex explained the concerns and named the specific risks, such as notifications failing to reach some devices or problems with device token registration, while making an effort to understand the CTO's reasoning and the business pressure behind the deadline. Alex then proposed a compromise: prioritise tests around the critical notification functionality, and postpone some lower-risk improvements until after the release.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "result": {
+        "text": "They agreed an approach that met the deadline while keeping confidence in the core functionality.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "reflection": {
+        "text": "Alex's takeaway: technical disagreements are rarely about one person being right or wrong. They're usually about balancing different priorities, so Alex approaches them knowing both people are working towards the same goal, and resolves them by listening, communicating clearly and finding a practical solution.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "competencies": [
+        "conflict-resolution",
+        "communication",
+        "balancing-speed-and-quality",
+        "prioritisation"
+      ],
+      "questions": [
+        "Tell me about a time you had a disagreement with your manager.",
+        "Tell me about a time when you had a conflict with a co-worker.",
+        "Give me an example of a time when you had a difference of opinion with a team member.",
+        "Tell me about a problem you've had getting along with a work associate."
+      ],
+      "attribution": "collaborative",
+      "attributionNote": "Alex's own account. Alex raised the risks and proposed the compromise; the approach was agreed with the CTO.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "zim-sbb-waiting",
+      "title": "Keeping work moving while waiting for an answer",
+      "projects": [
+        "zim-sbb"
+      ],
+      "organisation": "ZIM Connections Ltd.",
+      "situation": {
+        "text": "While Alex was building part of the ZIM@SBB white-label app, the implementation depended on clarifying some requirements with the product team, but the person responsible was busy with other priorities and wasn't responding.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "task": {
+        "text": "Alex needed to keep development moving without making assumptions that could lead to rework.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "action": {
+        "text": "Alex followed up with one concise message saying exactly what information was needed and why it mattered. Instead of sending repeated messages, Alex documented the working assumptions, worked out which parts of the implementation could safely continue independently, and checked the existing designs and requirements in case the answers were already recorded. When clarification was still needed, Alex suggested a quick five-minute conversation rather than another long exchange of messages.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "result": {
+        "text": "Once the outstanding requirements were clarified, Alex completed the implementation without revisiting work built on wrong assumptions, and the rest of the feature had kept moving in the meantime instead of being blocked.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "reflection": {
+        "text": "Alex's takeaway: managing dependencies is part of owning a project. Everyone has their own priorities, so Alex tries not to assume why someone hasn't replied, while still raising blockers early and finding ways to keep moving, with respect for other people's time.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "competencies": [
+        "communication",
+        "ownership",
+        "working-with-ambiguity",
+        "collaboration"
+      ],
+      "questions": [
+        "Tell me about a time you needed information from someone who wasn't responsive. What did you do?",
+        "How do you handle blockers?",
+        "How do you manage dependencies on other people?"
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own account of Alex's part of the ZIM@SBB implementation.",
+      "status": "approved",
+      "visibility": "public"
+    },
+    {
+      "id": "ai-working-practice",
+      "title": "Learning to use AI tools well",
+      "projects": [],
+      "situation": {
+        "text": "When Alex started using AI coding tools, Alex relied on them too much, and the solutions they produced were sometimes overcomplicated and ignored reusable components that already existed in the code.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "task": {
+        "text": "Alex needed to keep the speed AI brings without giving up simplicity, reuse and judgement.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "action": {
+        "text": "Alex put guardrails around how AI is used. It now sits only in the Execute step of Alex's working loop: Alex defines the scope, weighs the risk and decides the architecture first, and checks whether the codebase already has code that does the job before anything new is written. Claude is treated as a very fast, very literal pair programmer, and AI-assisted changes are validated through automated tests, code review, CI and production monitoring.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "result": {
+        "text": "Alex's AI-assisted work now starts from what the codebase already has, and the decisions that shape it stay with Alex.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "reflection": {
+        "text": "Alex sees this as still changing: the tools keep improving, so Alex keeps reviewing how they're used.",
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ]
+      },
+      "competencies": [
+        "self-awareness",
+        "continuous-improvement",
+        "adaptability"
+      ],
+      "questions": [
+        "What is another weakness?",
+        "Can you give me a second weakness?",
+        "How has your use of AI changed?",
+        "How do you make sure AI-generated code is good enough?"
+      ],
+      "attribution": "individual",
+      "attributionNote": "Alex's own account of how Alex's use of AI has changed.",
+      "status": "approved",
+      "visibility": "public"
     }
   ],
   "competencies": [
@@ -959,7 +1150,8 @@
       "stories": [
         "zim-multi-tenancy",
         "zim-sbb-feature-scope",
-        "zim-sbb-quality"
+        "zim-sbb-quality",
+        "zim-sbb-waiting"
       ],
       "questions": [
         "Tell me about a time Alex worked closely with another team.",
@@ -979,12 +1171,19 @@
         "explain technical",
         "presenting",
         "presentation",
-        "non-technical stakeholder"
+        "non-technical stakeholder",
+        "unresponsive",
+        "not responsive",
+        "not responding",
+        "blocker",
+        "blockers"
       ],
       "stories": [
         "zim-aws-cost-review",
         "zim-sbb-feature-scope",
-        "zim-multi-tenancy"
+        "zim-multi-tenancy",
+        "zim-cto-release",
+        "zim-sbb-waiting"
       ],
       "questions": [
         "Tell me about a time Alex explained something technical to a non-technical stakeholder.",
@@ -1005,7 +1204,11 @@
         "hard problem",
         "technical problem",
         "debugging",
-        "troubleshooting"
+        "troubleshooting",
+        "bug",
+        "bugs",
+        "difficult bug",
+        "tackle challenges"
       ],
       "stories": [
         "zim-sql-performance",
@@ -1065,7 +1268,8 @@
         "zim-black-friday",
         "zim-sns-migration",
         "zim-test-gate",
-        "zim-multi-tenancy"
+        "zim-multi-tenancy",
+        "zim-sbb-waiting"
       ],
       "questions": [
         "Tell me about a project Alex owned end to end.",
@@ -1092,7 +1296,8 @@
         "zim-estimates-feedback",
         "zim-black-friday",
         "zim-sns-migration",
-        "sol-accessibility"
+        "sol-accessibility",
+        "ai-working-practice"
       ],
       "questions": [
         "Tell me about a time Alex learned a new technology.",
@@ -1112,12 +1317,19 @@
         "prioritization",
         "competing priorities",
         "urgent problem",
-        "deadlines"
+        "deadlines",
+        "deadline",
+        "tight deadline",
+        "time management",
+        "overwhelming",
+        "overwhelmed",
+        "workload"
       ],
       "stories": [
         "zim-black-friday",
         "zim-estimates-feedback",
-        "zim-sbb-feature-scope"
+        "zim-sbb-feature-scope",
+        "zim-cto-release"
       ],
       "questions": [
         "How does Alex handle competing priorities?",
@@ -1137,10 +1349,13 @@
         "disagree",
         "disagreed",
         "compromise",
-        "push back"
+        "push back",
+        "difference of opinion",
+        "getting along"
       ],
       "stories": [
-        "zim-sbb-feature-scope"
+        "zim-sbb-feature-scope",
+        "zim-cto-release"
       ],
       "questions": [
         "Tell me about a time Alex disagreed with stakeholders.",
@@ -1206,7 +1421,9 @@
         "without being asked",
         "own initiative",
         "self-starter",
-        "save money"
+        "save money",
+        "push for",
+        "pushed for"
       ],
       "stories": [
         "zim-aws-cost-review",
@@ -1261,17 +1478,21 @@
         "development area",
         "development areas",
         "self awareness",
-        "do better"
+        "do better",
+        "another weakness",
+        "second weakness",
+        "other weakness"
       ],
       "stories": [
-        "zim-estimates-feedback"
+        "zim-estimates-feedback",
+        "ai-working-practice"
       ],
       "questions": [
         "What is Alex's biggest weakness?",
         "What is Alex working on to improve?",
         "What is something Alex could do better?"
       ],
-      "gap": "One example, from Alex's own account."
+      "gap": "Two examples, from Alex's own account."
     },
     {
       "id": "balancing-speed-and-quality",
@@ -1288,7 +1509,8 @@
       "stories": [
         "zim-black-friday",
         "zim-test-gate",
-        "zim-estimates-feedback"
+        "zim-estimates-feedback",
+        "zim-cto-release"
       ],
       "questions": [
         "How does Alex deliver quickly without compromising quality?",
@@ -1310,7 +1532,8 @@
         "project scope"
       ],
       "stories": [
-        "zim-sbb-feature-scope"
+        "zim-sbb-feature-scope",
+        "zim-sbb-waiting"
       ],
       "questions": [
         "How does Alex handle unclear requirements?",
@@ -1390,7 +1613,8 @@
         "zim-aws-cost-review",
         "zim-sns-migration",
         "total-guess-evaluation",
-        "aws-learning"
+        "aws-learning",
+        "ai-working-practice"
       ],
       "questions": [
         "Tell me about a system Alex improved.",
@@ -1511,6 +1735,54 @@
         ],
         "status": "approved",
         "visibility": "public"
+      },
+      {
+        "id": "five-years",
+        "title": "Five years from now",
+        "text": "In five years, Alex would like to have grown into a senior engineer, possibly moving towards a tech lead role: trusted to make important architectural decisions and to own complex projects. Alex particularly enjoys the full lifecycle of software, from understanding the business problem and designing a solution, through building and deploying it, to maintaining and improving it in production. Alex would also like to have grown as a mentor and leader, helping junior engineers develop, sharing knowledge and contributing to a positive engineering culture, because working closely with other developers is one of the most rewarding parts of the job. For Alex, success wouldn't be a more senior title on its own. It would be becoming someone the team trusts for technical guidance, who leads projects confidently and makes a real difference to the product and to the people Alex works with.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "next-role",
+        "title": "What Alex is looking for next",
+        "text": "Alex is looking for a role with room to keep growing technically, take more ownership of projects and contribute to a collaborative engineering team. Working closely with other developers and with the product team has been one of the parts of the job Alex has enjoyed most, especially solving difficult problems together, sharing knowledge and learning from each other. Alex would like to take on more mentoring, both to help others develop and because mentoring sharpens the mentor's own communication, leadership and technical understanding. In terms of progression, Alex is working towards a more senior role: gradually taking more responsibility for architectural decisions and the trade-offs behind them, and being trusted to lead projects from the first idea through design, implementation and production to ongoing maintenance. End-to-end ownership matters to Alex because engineers get better when they're responsible not only for the code, but for how it runs in production and the value it brings to users. Above all, Alex wants a place to contribute meaningfully, learn from experienced colleagues and, over time, become someone others turn to for technical guidance and leadership.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "leaving-zim",
+        "title": "Why Alex left ZIM",
+        "text": "Alex spent four rewarding years at ZIM Connections, gaining a great deal of experience across the stack, working in a small engineering team and helping build products used by real customers. Alex left in October 2026 to look for a new challenge: somewhere to keep growing technically and take on greater responsibility. In particular, Alex wants a collaborative environment with the chance to contribute to architectural decisions, own projects from the first concept through to production and maintenance, and develop as a mentor and leader on the way to a more senior engineering role, while continuing to learn from colleagues.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "long-term-dream",
+        "title": "Alex's long-term dream",
+        "text": "Alex's long-term dream, perhaps many years from now, is to open a coding school in an underprivileged community, offering free or very affordable programming lessons to children and young adults. Software development is a remarkable skill because, with relatively little equipment, someone can learn to build something genuinely useful, yet not everyone has the same access to education or opportunity. The school would teach practical, employable skills, and also help young people build confidence and relationships and discover paths they might not have considered. Alex would want to work with local businesses and technology companies to create routes into internships, apprenticeships and, eventually, jobs. The idea is to use what Alex has learned over a career to open doors for other people. Alex is clear that it's a long way off: first Alex wants to be in a position to offer real knowledge and leadership.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
       }
     ],
     "workingEnvironment": [
@@ -1522,6 +1794,42 @@
         "provenance": "firsthand",
         "sources": [
           "alex-interview"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "strengths",
+        "title": "Strengths, and how colleagues see Alex",
+        "text": "Asked for Alex's biggest strengths, Alex names drive, curiosity and teamwork. Alex thinks colleagues would describe Alex as approachable, calm and honest.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "frustrations",
+        "title": "What frustrates Alex",
+        "text": "Avoidable rework frustrates Alex, especially when it comes from unclear requirements or miscommunication. Alex enjoys solving problems and building things properly, so it's frustrating to implement something only to find that the expectations weren't aligned from the start. Alex has learned that the answer is to be proactive rather than reactive: spending more time understanding the requirements before development begins, asking questions, clarifying edge cases and making sure of what the product team is trying to achieve. Alex also builds more time into estimates for research, testing and the unexpected rather than rushing into implementation, having found that a little more communication and planning up front usually saves much more time later.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
+        ],
+        "status": "approved",
+        "visibility": "public"
+      },
+      {
+        "id": "first-six-months",
+        "title": "The first six months in a new role",
+        "text": "Alex's first six months in a new role would focus on three things: learning, building relationships and gradually taking ownership. The first month is for understanding the product, the users, the architecture and the team's development process: talking to engineers and product colleagues, asking why technical decisions were made, and starting to contribute early through smaller tasks to get to know the codebase. By three months, Alex would aim to be contributing independently, owning features, taking a confident part in technical discussions and understanding the business priorities well enough to make sensible trade-offs between speed, quality and maintainability. By six months, Alex would aim to be a dependable member of the team who can take a feature from requirements to production, collaborate well across engineering and product, and suggest improvements to both the product and the way the team works. Alex would hope a first annual review would describe someone who takes ownership, communicates clearly, pays attention to detail and consistently delivers high-quality work; whom colleagues find approachable, collaborative and reliable; and who has kept learning, actively sought feedback and made meaningful improvements over the year.",
+        "projects": [],
+        "provenance": "firsthand",
+        "sources": [
+          "alex-answers"
         ],
         "status": "approved",
         "visibility": "public"

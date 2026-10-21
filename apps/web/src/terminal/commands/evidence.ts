@@ -35,7 +35,7 @@ function storyBlocks(story: Story, kb: KnowledgeBase, version: 'short' | 'detail
   blocks.push(paragraph(toldAsOne(story, version)));
   const competencies = story.competencies.flatMap((id) => {
     const competency = kb.getCompetency(id);
-    return competency ? [command(competency.name, `soft-skills ${competency.id}`)] : [];
+    return competency ? [command(competency.name, `/soft-skills ${competency.id}`)] : [];
   });
   blocks.push(
     paragraph([text('Who did what: ', 'muted'), story.attributionNote]),
@@ -43,9 +43,9 @@ function storyBlocks(story: Story, kb: KnowledgeBase, version: 'short' | 'detail
   );
   if (competencies.length > 0) blocks.push(paragraph([text('Skills: ', 'muted'), ...joined(competencies)]));
   if (story.projects.length > 0) {
-    blocks.push(paragraph([text('Projects: ', 'muted'), ...joined(story.projects.map((id) => command(kb.getProject(id)?.name ?? id, `projects ${id}`)))]));
+    blocks.push(paragraph([text('Projects: ', 'muted'), ...joined(story.projects.map((id) => command(kb.getProject(id)?.name ?? id, `/projects ${id}`)))]));
   }
-  if (version === 'short' && hasMore(story)) blocks.push(paragraph([text('More detail: ', 'muted'), command(`stories ${story.id} full`)]));
+  if (version === 'short' && hasMore(story)) blocks.push(paragraph([text('More detail: ', 'muted'), command(`/stories ${story.id} full`)]));
   return blocks;
 }
 
@@ -82,7 +82,7 @@ export const softSkills: Command = {
     const competency = resolveCompetency(kb, args.join(' '));
     if (competency === undefined) {
       return {
-        blocks: [paragraph(`No soft skill called "${args.join(' ')}".`, 'error'), paragraph([text('See '), command('soft-skills'), text(' for the list.')], 'muted')],
+        blocks: [paragraph(`No soft skill called "${args.join(' ')}".`, 'error'), paragraph([text('See '), command('/soft-skills'), text(' for the list.')], 'muted')],
       };
     }
     return showCompetency(kb, competency);
@@ -108,11 +108,11 @@ function listCompetencies(kb: KnowledgeBase): CommandResult {
       ordered: true,
       items: inGroup.map((competency) => ({
         marker: String(all.indexOf(competency) + 1).padStart(2, '0'),
-        lines: [[command(competency.name, `soft-skills ${competency.id}`), text(`  ${competency.stories.length} example${competency.stories.length === 1 ? '' : 's'}`, 'muted')]],
+        lines: [[command(competency.name, `/soft-skills ${competency.id}`), text(`  ${competency.stories.length} example${competency.stories.length === 1 ? '' : 's'}`, 'muted')]],
       })),
     });
   }
-  blocks.push(paragraph([text('Choose one to see a real example, or see ', 'muted'), command('soft-skills questions'), text(' and ', 'muted'), command('stories'), text('.', 'muted')]));
+  blocks.push(paragraph([text('Choose one to see a real example, or see ', 'muted'), command('/soft-skills questions'), text(' and ', 'muted'), command('/stories'), text('.', 'muted')]));
   return { blocks };
 }
 
@@ -125,9 +125,9 @@ function showCompetency(kb: KnowledgeBase, competency: Competency): CommandResul
   } else {
     blocks.push(paragraph(text('Example', 'accent', true)), ...storyBlocks(strongest, kb, 'short'));
   }
-  if (others.length > 0) blocks.push(subheading('More examples'), bullets(others.map((story) => [command(story.title, `stories ${story.id}`)])));
+  if (others.length > 0) blocks.push(subheading('More examples'), bullets(others.map((story) => [command(story.title, `/stories ${story.id}`)])));
   if (competency.gap) blocks.push(paragraph([text('Evidence gap: ', 'muted'), competency.gap]));
-  blocks.push(paragraph([text('Interview questions: ', 'muted'), command(`soft-skills questions ${competency.id}`)]));
+  blocks.push(paragraph([text('Interview questions: ', 'muted'), command(`/soft-skills questions ${competency.id}`)]));
   return { blocks };
 }
 
@@ -138,7 +138,7 @@ function questions(kb: KnowledgeBase, only: Competency | undefined): CommandResu
     if (!only) blocks.push(subheading(competency.name));
     blocks.push(bullets(competency.questions.map((question) => [question])));
     const best = competency.stories[0];
-    if (best && kb.getStory(best)) blocks.push(paragraph([text('Best answered by: ', 'muted'), command(kb.getStory(best)!.title, `stories ${best}`)]));
+    if (best && kb.getStory(best)) blocks.push(paragraph([text('Best answered by: ', 'muted'), command(kb.getStory(best)!.title, `/stories ${best}`)]));
   }
   return { blocks };
 }
@@ -158,7 +158,7 @@ export const stories: Command = {
     const target = (full ? words.slice(0, -1) : words).join(' ');
     const story = /^\d+$/.test(target) ? stories[Number(target) - 1] : kb.getStory(target);
     if (story === undefined) {
-      return { blocks: [paragraph(`No story called "${target}".`, 'error'), paragraph([text('See '), command('stories'), text(' for the list.')], 'muted')] };
+      return { blocks: [paragraph(`No story called "${target}".`, 'error'), paragraph([text('See '), command('/stories'), text(' for the list.')], 'muted')] };
     }
     return { blocks: [...previewNotice(kb), ...storyBlocks(story, kb, full ? 'detailed' : 'short')] };
   },
@@ -180,12 +180,12 @@ function listStories(kb: KnowledgeBase): CommandResult {
         items: kb.evidence.stories.map((story, index) => ({
           marker: `[${index + 1}]`,
           lines: [
-            [command(story.title, `stories ${story.id}`)],
+            [command(story.title, `/stories ${story.id}`)],
             [text([story.organisation ?? kb.getProject(story.projects[0] ?? '')?.name, STORY_ATTRIBUTION_LABELS[story.attribution]].filter(Boolean).join(' · '), 'muted')],
           ],
         })),
       },
-      paragraph([text('Open one by name or number, e.g. ', 'muted'), command(`stories ${kb.evidence.stories[0]!.id}`)]),
+      paragraph([text('Open one by name or number, e.g. ', 'muted'), command(`/stories ${kb.evidence.stories[0]!.id}`)]),
     ],
   };
 }
@@ -199,7 +199,7 @@ export const interests: Command = {
     const sections: [string, readonly Interest[]][] = [
       ['Personal interests', found.personal],
       ['Technical interests', found.technical],
-      ['Why software', background.motivation],
+      ['Motivation and goals', background.motivation],
       ['Working style', background.workingEnvironment],
     ];
     if (sections.every(([, items]) => items.length === 0)) return noEvidence(kb, 'interests');
@@ -212,7 +212,7 @@ export const interests: Command = {
           lines: [
             [text(item.title, 'accent', true)],
             [item.text],
-            ...(item.projects.length > 0 ? [[text('See: ', 'muted'), ...joined(item.projects.map((id) => command(kb.getProject(id)?.name ?? id, `projects ${id}`)))]] : []),
+            ...(item.projects.length > 0 ? [[text('See: ', 'muted'), ...joined(item.projects.map((id) => command(kb.getProject(id)?.name ?? id, `/projects ${id}`)))]] : []),
           ],
         })),
       });

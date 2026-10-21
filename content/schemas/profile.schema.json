@@ -107,6 +107,10 @@
           "format": "email",
           "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
         },
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+\\d[\\d ]{6,18}\\d$"
+        },
         "links": {
           "default": [],
           "type": "array",

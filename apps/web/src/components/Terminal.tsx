@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent } from 'react';
 import { applyChatEvent, isActive, waitingAnswer, type AiAnswer } from '@/lib/ai-answer';
 import { ChatRefused, streamChat, type Conversation } from '@/lib/chat-client';
 import { kb } from '@/lib/knowledge';
@@ -10,6 +10,7 @@ import { execute } from '@/terminal/execute';
 import { browse, idleCursor, remember } from '@/terminal/history';
 import type { Block } from '@/terminal/output';
 import { cleanInput } from '@/lib/clean-input';
+import { listen, recognitionIn, speak, synthesisIn } from '@/lib/speech';
 import { MAX_INPUT_LENGTH } from '@/terminal/parse';
 import { registry } from '@/terminal/registry';
 import type { CommandContext } from '@/terminal/types';
@@ -27,19 +28,26 @@ interface Entry {
 
 /** The primary navigation: each chip runs an ordinary command, labelled in plain words. */
 export const QUICK_COMMANDS = [
-  { label: 'First Round Interview', command: 'first-round', primary: true },
-  { label: 'Technical Interview', command: 'technical', primary: true },
-  { label: 'About', command: 'about', primary: false },
-  { label: 'Experience', command: 'experience', primary: false },
-  { label: 'Projects', command: 'projects', primary: false },
-  { label: 'Soft skills', command: 'soft-skills', primary: false },
-  { label: 'Education', command: 'education', primary: false },
-  { label: 'Interests', command: 'interests', primary: false },
-  { label: 'Contact', command: 'contact', primary: false },
+  { label: 'First Round Interview', command: '/first-round', primary: true },
+  { label: 'Technical Interview', command: '/technical', primary: true },
+  { label: 'About', command: '/about', primary: false },
+  { label: 'Experience', command: '/experience', primary: false },
+  { label: 'Projects', command: '/projects', primary: false },
+  { label: 'Soft skills', command: '/soft-skills', primary: false },
+  { label: 'Education', command: '/education', primary: false },
+  { label: 'Interests', command: '/interests', primary: false },
+  { label: 'Contact', command: '/contact', primary: false },
 ] as const;
 
 const user = (kb.profile.name.split(' ')[0] ?? 'guest').toLowerCase();
 const PROMPT = `${user}@portfolio:~$`;
+
+/** The site's language, for recognising and reading English as spoken in the UK. */
+const SPEECH_LANG = 'en-GB';
+const LISTENING_NOTE = 'Listening… Your browser’s speech service (Google in Chrome, Apple in Safari) turns your voice into text.';
+
+/** Browser support for voice doesn't change while the page is open. */
+const noSubscription = () => () => {};
 
 /** Touch devices: don't summon the on-screen keyboard after tapping a command. */
 const isCoarsePointer = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
@@ -58,6 +66,46 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
   // The signed conversation so far: only the server's copy, sent back with each question.
   const conversationRef = useRef<Conversation | undefined>(undefined);
   const askingRef = useRef<{ id: number; controller: AbortController } | undefined>(undefined);
+  // Voice, where the browser supports it: found after mounting, so the server render never differs from the first client one.
+  const recognition = useSyncExternalStore(noSubscription, () => recognitionIn(window), () => undefined);
+  const canReadAloud = useSyncExternalStore(noSubscription, () => synthesisIn(window) !== undefined, () => false);
+  const synthRef = useRef<SpeechSynthesis | undefined>(undefined);
+  const [listening, setListening] = useState(false);
+  const [voiceNote, setVoiceNote] = useState('');
+  const [speakingId, setSpeakingId] = useState<number | undefined>(undefined);
+  const stopListeningRef = useRef<(() => void) | undefined>(undefined);
+  const runRef = useRef<(typed: string, options: { refocus: boolean; spoken?: boolean }) => void>(() => {});
+
+  useEffect(() => {
+    synthRef.current = synthesisIn(window);
+    return () => {
+      stopListeningRef.current?.();
+      synthRef.current?.cancel();
+    };
+  }, []);
+
+  const readAloud = useCallback((id: number, text: string) => {
+    const synth = synthRef.current;
+    if (synth === undefined) return;
+    setSpeakingId(id);
+    speak(synth, text, { lang: SPEECH_LANG, onEnd: () => setSpeakingId((current) => (current === id ? undefined : current)) });
+  }, []);
+
+  /** Stops reading aloud; true if something was being read. */
+  const stopReading = useCallback(() => {
+    if (synthRef.current?.speaking !== true && synthRef.current?.pending !== true) return false;
+    synthRef.current.cancel();
+    setSpeakingId(undefined);
+    return true;
+  }, []);
+
+  /** Stops listening; true if the microphone was on. */
+  const stopListening = useCallback(() => {
+    const stop = stopListeningRef.current;
+    if (stop === undefined) return false;
+    stop();
+    return true;
+  }, []);
 
   const context: CommandContext = useMemo(
     () => ({ kb, history, commands: registry.commands, aiAvailable: aiEnabled, cvAvailable }),
@@ -78,8 +126,9 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
   }, [updateAnswer]);
 
   const ask = useCallback(
-    async (id: number, question: string) => {
+    async (id: number, question: string, spoken: boolean) => {
       cancelAnswer();
+      stopReading();
       const controller = new AbortController();
       askingRef.current = { id, controller };
       setStatus('');
@@ -92,6 +141,8 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
             if (event.type === 'done') {
               conversationRef.current = event.conversation;
               if (event.answer) setStatus(`Answer: ${event.answer}`);
+              // A question asked by voice is answered by voice too.
+              if (spoken && event.answer) readAloud(id, event.answer);
             }
             updateAnswer(id, (answer) => applyChatEvent(answer, event));
           },
@@ -105,11 +156,11 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
         if (askingRef.current?.controller === controller) askingRef.current = undefined;
       }
     },
-    [cancelAnswer, updateAnswer],
+    [cancelAnswer, readAloud, stopReading, updateAnswer],
   );
 
   const run = useCallback(
-    (typed: string, { refocus }: { refocus: boolean }) => {
+    (typed: string, { refocus, spoken = false }: { refocus: boolean; spoken?: boolean }) => {
       // Shown, remembered and run as cleaned text, so escape or bidirectional characters can't disguise it.
       const line = cleanInput(typed);
       const nextHistory = remember(history, line);
@@ -118,23 +169,53 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
       setCursor(idleCursor);
       setValue('');
       setCandidates([]);
+      setVoiceNote('');
       if (result.clear) {
         cancelAnswer();
+        stopReading();
         conversationRef.current = undefined;
         setEntries([]);
         setStatus('Screen cleared.');
       } else if (result.ask) {
         const id = nextId.current++;
         setEntries((current) => [...current, { id, input: line, blocks: [], answer: waitingAnswer(result.ask?.fallback ?? []) }]);
-        void ask(id, result.ask.question);
+        void ask(id, result.ask.question, spoken);
       } else {
         setEntries((current) => [...current, { id: nextId.current++, input: line, blocks: result.blocks }]);
         setStatus('');
       }
       if (refocus && !isCoarsePointer()) inputRef.current?.focus({ preventScroll: true });
     },
-    [ask, cancelAnswer, context, history],
+    [ask, cancelAnswer, context, history, stopReading],
   );
+  useLayoutEffect(() => {
+    runRef.current = run;
+  }, [run]);
+
+  const toggleListening = () => {
+    if (recognition === undefined) return;
+    if (stopListening()) return;
+    stopReading();
+    setValue('');
+    setCandidates([]);
+    setListening(true);
+    setVoiceNote(LISTENING_NOTE);
+    setStatus('Listening.');
+    stopListeningRef.current = listen(recognition, {
+      lang: SPEECH_LANG,
+      onInterim: setValue,
+      onFinal: (question) => runRef.current(question, { refocus: true, spoken: true }),
+      onError: (message) => {
+        setVoiceNote(message);
+        setStatus(message);
+      },
+      onEnd: () => {
+        stopListeningRef.current = undefined;
+        setListening(false);
+        setVoiceNote((note) => (note === LISTENING_NOTE ? '' : note));
+      },
+    });
+  };
 
   // Long output scrolls to its first line, so it reads from the top; short output keeps the prompt in view.
   useLayoutEffect(() => {
@@ -187,11 +268,14 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
       setCandidates([]);
       return;
     }
-    // Esc or Ctrl+C on an empty prompt stops an answer that is still coming in.
-    if ((event.key === 'Escape' || (event.ctrlKey && event.key.toLowerCase() === 'c')) && value === '' && cancelAnswer()) {
-      event.preventDefault();
-      setStatus('Answer stopped.');
-      return;
+    // Esc or Ctrl+C on an empty prompt stops an answer that is still coming in, reading aloud and listening.
+    if ((event.key === 'Escape' || (event.ctrlKey && event.key.toLowerCase() === 'c')) && value === '') {
+      const stopped = [cancelAnswer(), stopReading(), stopListening()];
+      if (stopped.some(Boolean)) {
+        event.preventDefault();
+        setStatus(stopped[0] ? 'Answer stopped.' : 'Stopped.');
+        return;
+      }
     }
     if (event.ctrlKey && event.key.toLowerCase() === 'l') {
       event.preventDefault();
@@ -246,7 +330,18 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
                 </p>
               )}
               <OutputBlocks blocks={entry.blocks} onCommand={(command) => run(command, { refocus: true })} />
-              {entry.answer && <AiAnswerView answer={entry.answer} onCommand={(command) => run(command, { refocus: true })} />}
+              {entry.answer && (
+                <AiAnswerView
+                  answer={entry.answer}
+                  onCommand={(command) => run(command, { refocus: true })}
+                  {...(canReadAloud && {
+                    reading: {
+                      active: speakingId === entry.id,
+                      toggle: () => (speakingId === entry.id ? stopReading() : readAloud(entry.id, entry.answer?.text ?? '')),
+                    },
+                  })}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -282,9 +377,25 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
             aria-describedby="terminal-help"
             className="term-input min-w-0 flex-1 bg-transparent text-term-text caret-term-accent outline-none"
           />
+          {aiEnabled && recognition !== undefined && (
+            <button
+              type="button"
+              className="term-mic self-center"
+              aria-label={listening ? 'Stop listening' : 'Ask by voice'}
+              aria-pressed={listening}
+              title={listening ? 'Stop listening' : 'Ask by voice'}
+              onClick={toggleListening}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="3" width="6" height="11" rx="3" />
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+              </svg>
+            </button>
+          )}
         </form>
+        {voiceNote && <p className="mt-1 text-sm text-term-muted">{voiceNote}</p>}
         <p id="terminal-help" className="sr-only">
-          Type help and press Enter. Tab completes, the up and down arrows step through previous commands.
+          Type /help and press Enter, or ask a question in plain English. Tab completes, the up and down arrows step through previous commands.
         </p>
 
         <div role="status" aria-live="polite" className="mt-2 text-term-muted">

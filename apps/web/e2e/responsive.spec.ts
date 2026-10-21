@@ -54,7 +54,7 @@ test.describe("on phones", () => {
     page,
   }) => {
     await expect(
-      output(page).getByRole("button", { name: "help", exact: true }),
+      output(page).getByRole("button", { name: "/help", exact: true }),
     ).toBeInViewport();
     await expect(prompt(page)).toBeInViewport();
   });
@@ -63,7 +63,7 @@ test.describe("on phones", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.reload();
     await expect(
-      output(page).getByRole("button", { name: "help", exact: true }),
+      output(page).getByRole("button", { name: "/help", exact: true }),
     ).toBeInViewport();
     await expect(prompt(page)).toBeInViewport();
   });

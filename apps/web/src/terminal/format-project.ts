@@ -82,10 +82,10 @@ function demonstrates(project: PortfolioProject, kb: KnowledgeBase): Block[] {
   const { stories, competencies, skills } = projectEvidence(kb, project.id);
   if (stories.length + competencies.length + skills.length === 0) return [];
   const lines: Inline[][] = [];
-  if (competencies.length > 0) lines.push([text('Soft skills: ', 'muted'), ...joined(competencies.map(({ id, name }) => command(name, `soft-skills ${id}`)))]);
+  if (competencies.length > 0) lines.push([text('Soft skills: ', 'muted'), ...joined(competencies.map(({ id, name }) => command(name, `/soft-skills ${id}`)))]);
   if (skills.length > 0) lines.push([text('Technical skills: ', 'muted'), ...joined(skills.map(({ name }) => text(name)))]);
   const blocks: Block[] = [subheading('What it demonstrates'), ...lines.map((line) => paragraph(line))];
-  if (stories.length > 0) blocks.push(subheading('Examples'), bullets(stories.map((story) => [command(story.title, `stories ${story.id}`)])));
+  if (stories.length > 0) blocks.push(subheading('Examples'), bullets(stories.map((story) => [command(story.title, `/stories ${story.id}`)])));
   return blocks;
 }
 
@@ -155,7 +155,7 @@ function more(project: PortfolioProject, current?: ProjectSection): Block[] {
   return [
     paragraph([
       text('More: ', 'muted'),
-      ...joined(options.map((section) => command(section, `projects ${project.id} ${section}`))),
+      ...joined(options.map((section) => command(section, `/projects ${project.id} ${section}`))),
     ]),
   ];
 }

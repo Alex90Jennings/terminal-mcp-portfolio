@@ -12,7 +12,8 @@ export const getProfile: ToolModule = {
         title: 'Get profile',
         description:
           "A concise professional profile of Alex Jennings: summary, location, contact links, languages, how Alex works (including where AI fits in), " +
-          "and, once published, Alex's interests, motivation and preferred working environment, each from Alex's own account. " +
+          "and, once published, Alex's interests, motivation and career goals (five years, next role, why Alex left ZIM, a long-term dream) and working style " +
+          "(strengths, frustrations, the first six months in a new role), each from Alex's own account. " +
           'For employment, education and certifications use get_experience.',
         inputSchema: {},
         outputSchema: GetProfileOutput,

@@ -8,18 +8,18 @@ export interface Completion {
   candidates: string[];
 }
 
-/** Shell-style completion of the word at the end of the input. */
+/** Shell-style completion of the word at the end of the input. Command names complete to their "/" form. */
 export function complete(input: string, registry: Registry, context: CommandContext): Completion {
   const endsWithSpace = /\s$/.test(input);
   const words = input.trimStart().split(/\s+/).filter(Boolean);
   if (endsWithSpace) words.push('');
   if (words.length === 0) return { candidates: [] };
 
-  const partial = (words.at(-1) ?? '').toLowerCase();
+  const partial = (words.length === 1 ? `/${(words[0] ?? '').replace(/^\//, '')}` : (words.at(-1) ?? '')).toLowerCase();
   const options =
     words.length === 1
-      ? registry.commands.map(({ name }) => name)
-      : (registry.find(words[0] ?? '')?.complete?.(words.slice(1), context) ?? []);
+      ? registry.commands.map(({ name }) => `/${name}`)
+      : (registry.find((words[0] ?? '').replace(/^\//, ''))?.complete?.(words.slice(1), context) ?? []);
 
   const matches = [...new Set(options.filter((option) => option.startsWith(partial)))];
   if (matches.length === 0) return { candidates: [] };

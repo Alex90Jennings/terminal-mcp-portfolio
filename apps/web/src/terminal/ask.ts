@@ -18,12 +18,12 @@ export function answerWithoutAi(question: string, { kb }: CommandContext): Block
       kind: 'list',
       items: hits.map((hit) => ({
         lines: [
-          [command(hit.projectName, `projects ${hit.projectId}`)],
+          [command(hit.projectName, `/projects ${hit.projectId}`)],
           ...(hit.matches[0] ? [[text(hit.matches[0].text, 'muted')]] : []),
         ],
       })),
     });
   }
-  blocks.push(paragraph([text('Or browse with ', 'muted'), command('projects'), text(' and ', 'muted'), command('skills'), text('.', 'muted')]));
+  blocks.push(paragraph([text('Or browse with ', 'muted'), command('/projects'), text(' and ', 'muted'), command('/skills'), text('.', 'muted')]));
   return blocks;
 }

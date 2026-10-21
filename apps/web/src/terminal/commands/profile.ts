@@ -23,7 +23,7 @@ export const about: Command = {
             lines: [
               [text(`${role.role}, ${role.organisation}`, undefined, true), text(`  ${role.period}`, 'muted')],
               ...(role.projects.length > 0
-                ? [[text('Projects: ', 'muted'), ...joined(role.projects.map((id) => command(projectName(id), `projects ${id}`)))]]
+                ? [[text('Projects: ', 'muted'), ...joined(role.projects.map((id) => command(projectName(id), `/projects ${id}`)))]]
                 : []),
             ],
           })),
@@ -58,7 +58,7 @@ export const about: Command = {
     blocks.push(
       paragraph([
         text('Next: ', 'muted'),
-        ...joined([command('projects'), command('skills'), command('soft-skills'), command('interests'), command('approach'), command('contact')]),
+        ...joined([command('/projects'), command('/skills'), command('/soft-skills'), command('/interests'), command('/approach'), command('/contact')]),
       ]),
     );
     return { blocks };
@@ -81,7 +81,7 @@ export const skills: Command = {
           term: [skill.name],
           detail:
             skill.projects.length > 0
-              ? joined(skill.projects.map((id) => command(kb.getProject(id)?.name ?? id, `projects ${id}`)))
+              ? joined(skill.projects.map((id) => command(kb.getProject(id)?.name ?? id, `/projects ${id}`)))
               : [text('Professional practice (see about)', 'muted')],
         })),
       });
@@ -119,9 +119,10 @@ export const contact: Command = {
   aliases: ['email', 'links', 'hire'],
   summary: 'How to get in touch',
   run: (_args, { kb }) => {
-    const { email, links } = kb.profile.contact;
+    const { email, phone, links } = kb.profile.contact;
     const rows: { term: Inline[]; detail: Inline[] }[] = [
       { term: ['Email'], detail: [link(email, `mailto:${email}`)] },
+      ...(phone !== undefined ? [{ term: ['Phone'], detail: [link(phone, `tel:${phone.replace(/ /g, '')}`)] }] : []),
       ...links.map(({ label, url }) => ({ term: [label], detail: [link(url.replace(/^https:\/\//, ''), url)] })),
     ];
     return { blocks: [heading('Contact'), { kind: 'definitions', rows }] };

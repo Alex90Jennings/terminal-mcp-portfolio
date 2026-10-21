@@ -237,7 +237,7 @@ describe('transcript', () => {
 
 describe('system prompt (regression: self-corrections, contact repetition, internals, wrong ZIM project)', () => {
   it('is versioned, so results from different prompts are never compared', () => {
-    expect(PROMPT_VERSION).toBe('2026-10-20.12');
+    expect(PROMPT_VERSION).toBe('2026-10-21.13');
   });
 
   it.each([

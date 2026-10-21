@@ -98,11 +98,11 @@ export interface ChatDeps {
 
 const MESSAGES = {
   unavailable:
-    "The AI assistant isn’t available right now. Commands like `projects` and `skills` still work.",
+    "The AI assistant isn’t available right now. Commands like `/projects` and `/skills` still work.",
   budget:
-    "The AI assistant has reached its spending limit for now. Commands like `projects` and `skills` still work, and the assistant will be back soon.",
+    "The AI assistant has reached its spending limit for now. Commands like `/projects` and `/skills` still work, and the assistant will be back soon.",
   rateLimited:
-    "That’s a lot of questions in a short time. Please wait a moment, or browse with `projects` meanwhile.",
+    "That’s a lot of questions in a short time. Please wait a moment, or browse with `/projects` meanwhile.",
   failed:
     "The AI assistant ran into a problem answering that. Please try again.",
   historyReset:

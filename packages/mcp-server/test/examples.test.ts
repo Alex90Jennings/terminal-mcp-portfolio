@@ -62,7 +62,7 @@ describe('publication filtering at the MCP boundary', () => {
     expect(structured<{ softSkills: unknown[] }>(await call(publicClient, 'get_skills')).softSkills).toHaveLength(18);
     const profile = structured<{ interests: { personal: unknown[]; technical: unknown[] }; background: { motivation: unknown[]; workingEnvironment: unknown[] } }>(await call(publicClient, 'get_profile'));
     expect(profile.interests.personal.length + profile.interests.technical.length).toBe(7);
-    expect(profile.background.motivation.length + profile.background.workingEnvironment.length).toBe(2);
+    expect(profile.background.motivation.length + profile.background.workingEnvironment.length).toBe(9);
     const story = structured<Examples>(await call(publicClient, 'get_examples', { story: 'zim-black-friday', version: 'detailed' })).examples[0]!;
     expect(story.reflection).toMatchObject({ basis: "Alex's own account" });
     expect(story.attributionNote).toMatch(/oversight was a team one\. Alex personally investigated and implemented the fix/);
@@ -240,8 +240,9 @@ describe('competency retrieval from natural questions (regression: star-decision
     const second = await ask({ query: 'Give me another example of problem-solving.', limit: 1, exclude: [first.examples[0]!.id] });
     expect(second.examples[0]!.id).not.toBe(first.examples[0]!.id);
     expect(second.matched).toBe(first.matched - 1);
-    const only = await ask({ query: 'disagreement', exclude: ['zim-sbb-feature-scope'] });
-    expect(only).toMatchObject({ examples: [], matched: 0, complete: true, competency: { id: 'conflict-resolution', examples: 1 } });
+    const both = ['zim-sbb-feature-scope', 'zim-cto-release'];
+    const none = await ask({ query: 'disagreement', exclude: both });
+    expect(none).toMatchObject({ examples: [], matched: 0, complete: true, competency: { id: 'conflict-resolution', examples: 2 } });
   });
 
   it('keeps keyword search for questions that name no competency, ranked by relevance', async () => {

@@ -22,14 +22,14 @@ export const experience: Command = {
       blocks.push(subheading(`${role.role}, ${role.organisation}`), paragraph(text([role.period, role.location].filter(Boolean).join(' · '), 'muted')));
       for (const project of role.projects) {
         blocks.push(
-          paragraph([text('On ', 'muted'), command(project.name, `projects ${project.id}`), text(':', 'muted')]),
+          paragraph([text('On ', 'muted'), command(project.name, `/projects ${project.id}`), text(':', 'muted')]),
           bullets(project.responsibilities.map((item) => [item.text, text(` (${RESPONSIBILITY_SCOPE_LABELS[item.scope]})`, 'muted')])),
         );
       }
       const stories = uniqueStories(role.projects.flatMap(({ id }) => projectEvidence(kb, id).stories));
-      if (stories.length > 0) blocks.push(subheading('Examples from this role'), bullets(stories.map((story) => [command(story.title, `stories ${story.id}`)])));
+      if (stories.length > 0) blocks.push(subheading('Examples from this role'), bullets(stories.map((story) => [command(story.title, `/stories ${story.id}`)])));
     }
-    blocks.push(next([command('education'), command('soft-skills'), command('stories'), command('projects')]));
+    blocks.push(next([command('/education'), command('/soft-skills'), command('/stories'), command('/projects')]));
     return { blocks };
   },
 };
@@ -65,9 +65,9 @@ export const education: Command = {
     const learning = kb.getStory('aws-learning');
     blocks.push(
       next([
-        ...(learning ? [command('How Alex learned AWS', `stories ${learning.id}`)] : []),
-        command('From finance to software', 'interests'),
-        command('experience'),
+        ...(learning ? [command('How Alex learned AWS', `/stories ${learning.id}`)] : []),
+        command('From finance to software', '/interests'),
+        command('/experience'),
       ]),
     );
     return { blocks };
@@ -112,7 +112,7 @@ export const cv: Command = {
               ...(linkedIn ? [text(' The full history is on ', 'muted'), link('LinkedIn', linkedIn.url), text('.', 'muted')] : []),
             ],
       ),
-      next([command('experience'), command('education'), command('projects'), command('contact')]),
+      next([command('/experience'), command('/education'), command('/projects'), command('/contact')]),
     );
     return { blocks };
   },
@@ -180,9 +180,9 @@ export function interviewMode(mode: InterviewMode, context: Pick<CommandContext,
     paragraph(text('Ask your own in plain English: any question about Alex works here. Follow-ups work too, such as “Can you give me another example?”', 'muted')),
     paragraph([
       text('Browse: ', 'muted'),
-      ...joined(browse.map(([label, run]) => command(label, run))),
+      ...joined(browse.map(([label, run]) => command(label, `/${run}`))),
       text(' · or switch to the ', 'muted'),
-      command(INTERVIEW_MODES[other].title, other),
+      command(INTERVIEW_MODES[other].title, `/${other}`),
     ]),
   ];
 }
@@ -196,7 +196,7 @@ export function interviewGuide(context: Pick<CommandContext, 'aiAvailable'>): Bl
   ];
   for (const mode of Object.keys(INTERVIEW_MODES) as InterviewMode[]) {
     const { title, purpose, questions } = INTERVIEW_MODES[mode];
-    blocks.push(subheading(title), paragraph(text(purpose, 'muted')), questionLinks(questions.slice(0, 2)), paragraph([command(`More ${title} questions`, mode)]));
+    blocks.push(subheading(title), paragraph(text(purpose, 'muted')), questionLinks(questions.slice(0, 2)), paragraph([command(`More ${title} questions`, `/${mode}`)]));
   }
   return blocks;
 }

@@ -80,11 +80,11 @@ export const demoScript: Script = (request) => {
     const parsed = JSON.parse(result) as { results?: { projectName: string; matches: { text: string }[] }[] };
     const [top] = parsed.results ?? [];
     if (top === undefined) {
-      return { text: 'That isn’t documented in the portfolio. Try `projects` to browse, or `contact` to ask Alex directly.' };
+      return { text: 'That isn’t documented in the portfolio. Try `/projects` to browse, or `/contact` to ask Alex directly.' };
     }
     const evidence = top.matches[0]?.text ?? '';
     return { text: `The most relevant project is ${top.projectName}. ${evidence}`.trim() };
   } catch {
-    return { text: 'I couldn’t read the portfolio data for that question. Try `projects` instead.' };
+    return { text: 'I couldn’t read the portfolio data for that question. Try `/projects` instead.' };
   }
 };

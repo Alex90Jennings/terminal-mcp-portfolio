@@ -52,8 +52,10 @@ describe('portfolio content', () => {
     expect(kb.search(query)[0]?.projectId).toBe(expected);
   });
 
-  it('never publishes the phone number or private source material', () => {
-    const text = JSON.stringify(bundle);
+  it('publishes a phone number only in the contact details Alex chose to share, and no private source material', () => {
+    const { phone, ...contact } = bundle.profile.contact;
+    expect(phone).toMatch(/^\+44 7\d{3} \d{6}$/);
+    const text = JSON.stringify({ ...bundle, profile: { ...bundle.profile, contact } });
     expect(text).not.toMatch(/\+?44\s?7\d{3}|07\d{3}\s?\d{6}/);
     expect(text).not.toMatch(/\.env|tfstate|\.captures/);
   });

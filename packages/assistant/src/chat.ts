@@ -63,7 +63,7 @@ export interface ChatOutcome {
 
 const NOTICES: Partial<Record<ChatStop, string>> = {
   max_tokens: 'The answer was cut short. Ask a narrower question for the rest.',
-  refusal: 'I can’t help with that one. Try `help` to see what I can do.',
+  refusal: 'I can’t help with that one. Try `/help` to see what I can do.',
   round_limit: 'I couldn’t finish looking that up. Try a more specific question.',
   cost_limit: 'That question needed more lookups than one answer allows. Try a more specific question.',
 };

@@ -31,13 +31,13 @@ test('Tab completes commands, projects and sections', async ({ page }) => {
   const input = prompt(page);
   await input.fill('proj');
   await input.press('Tab');
-  await expect(input).toHaveValue('projects ');
+  await expect(input).toHaveValue('/projects ');
   await input.pressSequentially('cl');
   await input.press('Tab');
-  await expect(input).toHaveValue('projects clash-of-langs ');
+  await expect(input).toHaveValue('/projects clash-of-langs ');
   await input.pressSequentially('arch');
   await input.press('Tab');
-  await expect(input).toHaveValue('projects clash-of-langs architecture ');
+  await expect(input).toHaveValue('/projects clash-of-langs architecture ');
 });
 
 test('ambiguous Tab shows the choices, which can be picked', async ({ page }) => {
@@ -54,13 +54,19 @@ test('Tab on an empty prompt moves focus on, so keyboard users are never trapped
   await expect(prompt(page)).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(prompt(page)).not.toBeFocused();
+  // Where the browser supports voice, the microphone comes next, then the quick commands.
+  const mic = page.getByRole('button', { name: 'Ask by voice' });
+  if ((await mic.count()) > 0) {
+    await expect(mic).toBeFocused();
+    await page.keyboard.press('Tab');
+  }
   await expect(page.getByRole('navigation', { name: 'Quick commands' }).getByRole('button', { name: 'First Round Interview' })).toBeFocused();
 });
 
 test('the greeting’s help link is reachable with Shift+Tab and runs with Enter', async ({ page }) => {
   await expect(prompt(page)).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(output(page).getByRole('button', { name: 'help', exact: true })).toBeFocused();
+  await expect(output(page).getByRole('button', { name: '/help', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(output(page).getByRole('heading', { name: 'Commands' })).toBeVisible();
 });

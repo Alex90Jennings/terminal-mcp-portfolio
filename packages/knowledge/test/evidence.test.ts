@@ -17,8 +17,8 @@ const FIGURE = /(?<![\d.,])\d[\d,]*(?:\.\d+)?%?/g;
 const digits = (value: string) => value.replace(/,/g, '');
 
 describe('the STAR catalogue in content/evidence.json', () => {
-  it('has the 15 stories and all 18 competencies, every competency with stories or a stated gap', () => {
-    expect(authored.stories).toHaveLength(15);
+  it('has the 18 stories and all 18 competencies, every competency with stories or a stated gap', () => {
+    expect(authored.stories).toHaveLength(18);
     expect(authored.competencies.map(({ id }) => id)).toEqual([
       'collaboration', 'communication', 'problem-solving', 'attention-to-detail', 'ownership', 'adaptability', 'prioritisation',
       'conflict-resolution', 'handling-feedback', 'learning-from-failure', 'initiative', 'customer-focus', 'self-awareness',
@@ -30,10 +30,10 @@ describe('the STAR catalogue in content/evidence.json', () => {
     }
   });
 
-  it('publishes every story and interest Alex approved (20 Oct 2026), and nothing else', () => {
+  it('publishes every story and interest Alex approved (20 and 21 Oct 2026), and nothing else', () => {
     for (const story of authored.stories) expect({ id: story.id, status: story.status, visibility: story.visibility }).toEqual({ id: story.id, status: 'approved', visibility: 'public' });
     const interests = [...authored.interests.personal, ...authored.interests.technical, ...authored.background.motivation, ...authored.background.workingEnvironment];
-    expect(interests).toHaveLength(9);
+    expect(interests).toHaveLength(16);
     for (const item of interests) expect(isPublished(item), item.id).toBe(true);
   });
 
@@ -109,19 +109,20 @@ describe('the STAR catalogue in content/evidence.json', () => {
 });
 
 describe('publication', () => {
-  it('publishes the approved catalogue: 15 stories, 18 competencies, 7 interests and 2 background items', () => {
+  it('publishes the approved catalogue: 18 stories, 18 competencies, 7 interests and 9 background items', () => {
     expect(published.preview).toBeUndefined();
-    expect(published.evidence.stories).toHaveLength(15);
+    expect(published.evidence.stories).toHaveLength(18);
     expect(published.evidence.competencies).toHaveLength(18);
     expect(published.evidence.interests.personal.length + published.evidence.interests.technical.length).toBe(7);
-    expect(published.evidence.background.motivation.length + published.evidence.background.workingEnvironment.length).toBe(2);
+    expect(published.evidence.background.motivation.map(({ id }) => id)).toEqual(['from-finance', 'five-years', 'next-role', 'leaving-zim', 'long-term-dream']);
+    expect(published.evidence.background.workingEnvironment.map(({ id }) => id)).toEqual(['small-teams', 'strengths', 'frustrations', 'first-six-months']);
     expect(JSON.stringify(published)).not.toMatch(/needs-review|"draft"|"private"|"incomplete"/);
     for (const { part, provenance } of published.evidence.stories.flatMap((story) => storyParts(story, 'detailed'))) expect(provenance, part).not.toBe('inferred');
   });
 
   it('includes drafts only in a preview, marked as such, and never private items', async () => {
     expect(preview.preview).toBe(true);
-    expect(preview.evidence.stories).toHaveLength(15);
+    expect(preview.evidence.stories).toHaveLength(18);
     const withPrivate = structuredClone(authored);
     withPrivate.stories[0]!.visibility = 'private';
     const raw = await readContent(contentDir);

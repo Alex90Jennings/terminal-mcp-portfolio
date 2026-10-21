@@ -88,9 +88,15 @@ describe('questions and the ask command', () => {
     expect(output('ask', { aiAvailable: true })).toMatch(/^Interview\nAsk anything about Alex/);
   });
 
-  it('commands never go to the assistant, even with AI enabled', () => {
-    for (const command of ['help', 'projects', 'projects sol', 'sol', 'skills', 'contact', 'projcts']) {
+  it('commands never go to the assistant, even with AI enabled: "/" commands, bare command names and project names', () => {
+    for (const command of ['/help', '/projects sol', '/projcts', '/', 'help', 'projects', 'projects sol', 'sol', 'skills', 'contact']) {
       expect(run(command, { aiAvailable: true }).ask, command).toBeUndefined();
+    }
+  });
+
+  it('anything else is conversation: greetings, small talk, typos and sentences that start with a command name', () => {
+    for (const input of ['hi', 'hello there', 'thanks!', 'projcts', 'help me choose a question', 'experience with React']) {
+      expect(run(input, { aiAvailable: true }).ask?.question, input).toBe(input);
     }
   });
 });

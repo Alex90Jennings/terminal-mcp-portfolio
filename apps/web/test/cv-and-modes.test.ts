@@ -164,15 +164,15 @@ describe('the CV is never knowledge', () => {
     expect(JSON.stringify(content)).not.toMatch(/%PDF|amazonaws|s3:\/\/|cv-alex-jennings\.pdf/);
   });
 
-  it('cv links /api/cv only when the deployment serves a CV, and keeps the summary otherwise', () => {
-    const result = run('cv', { cvAvailable: true });
+  it('/cv links /api/cv only when the deployment serves a CV, and keeps the summary otherwise', () => {
+    const result = run('/cv', { cvAvailable: true });
     expect(hrefsIn(result.blocks)).toEqual(expect.arrayContaining(['/api/cv']));
     expect(blocksToText(result.blocks)).toMatch(/Download: CV \(PDF\)/);
     expect(JSON.stringify(result.blocks)).not.toMatch(/amazonaws|s3:\/\/|cv-alex-jennings\.s3/);
-    expect(output('cv')).toMatch(/A downloadable CV isn’t published here/);
+    expect(output('/cv')).toMatch(/A downloadable CV isn’t published here/);
   });
 
-  it.each(['how can I download my CV?', 'Where can I get Alex’s CV?', 'Can you send me a copy of the resume?', 'Does Alex have a CV I can download?', 'cv pdf'])(
+  it.each(['how can I download my CV?', 'Where can I get Alex’s CV?', 'Can you send me a copy of the resume?', 'Does Alex have a CV I can download?', '/cv pdf'])(
     'asking for the CV (%s) runs cv, with its download link, instead of asking the assistant',
     (input) => {
       const result = run(input, { aiAvailable: true, cvAvailable: true });
@@ -191,33 +191,33 @@ describe('the two interview modes', () => {
   it('are the navigation chips, named consistently, alongside the other areas', () => {
     expect(QUICK_COMMANDS.map(({ label }) => label)).toEqual(['First Round Interview', 'Technical Interview', 'About', 'Experience', 'Projects', 'Soft skills', 'Education', 'Interests', 'Contact']);
     expect(QUICK_COMMANDS.filter(({ primary }) => primary).map(({ label }) => label)).toEqual(['First Round Interview', 'Technical Interview']);
-    expect(QUICK_COMMANDS.find(({ label }) => label === 'First Round Interview')?.command).toBe('first-round');
-    expect(QUICK_COMMANDS.find(({ label }) => label === 'Technical Interview')?.command).toBe('technical');
+    expect(QUICK_COMMANDS.find(({ label }) => label === 'First Round Interview')?.command).toBe('/first-round');
+    expect(QUICK_COMMANDS.find(({ label }) => label === 'Technical Interview')?.command).toBe('/technical');
   });
 
   it.each([
-    ['first-round', 'First Round Interview', 'Tell me about a time Alex resolved a disagreement.'],
-    ['technical', 'Technical Interview', 'How did Alex improve SQL performance?'],
+    ['/first-round', 'First Round Interview', 'Tell me about a time Alex resolved a disagreement.'],
+    ['/technical', 'Technical Interview', 'How did Alex improve SQL performance?'],
   ] as const)('%s: says what it offers, with questions that run as typed, and links to the other mode', (command, title, question) => {
     const result = run(command, { aiAvailable: true });
     const text = blocksToText(result.blocks);
     expect(text.startsWith(title)).toBe(true);
     expect(text).toMatch(/any question about Alex works here/);
-    expect(commandsIn(result.blocks)).toEqual(expect.arrayContaining([...INTERVIEW_MODES[command].questions]));
+    expect(commandsIn(result.blocks)).toEqual(expect.arrayContaining([...INTERVIEW_MODES[command.slice(1) as 'first-round' | 'technical'].questions]));
     expect(run(question, { aiAvailable: true }).ask?.question).toBe(question);
-    expect(commandsIn(result.blocks)).toContain(command === 'technical' ? 'first-round' : 'technical');
+    expect(commandsIn(result.blocks)).toContain(command === '/technical' ? '/first-round' : '/technical');
   });
 
   it('keep stories and ask working: stories lists them; ask alone introduces both interviews', () => {
-    expect(output('stories')).toMatch(/^Stories/);
+    expect(output('/stories')).toMatch(/^Stories/);
     const guide = output('ask', { aiAvailable: true });
     expect(guide).toMatch(/^Interview/);
     expect(guide).toMatch(/First Round Interview[\s\S]*Technical Interview/);
-    expect(output('interview')).toBe(output('ask'));
+    expect(output('/interview')).toBe(output('ask'));
   });
 
   it('are the first chips and named in help, without mentioning STAR', () => {
-    const help = output('help');
+    const help = output('/help');
     expect(help).toMatch(/first-round {2}First Round Interview: background, experience, soft skills and competency questions/);
     expect(help).toMatch(/technical {2}Technical Interview: engineering, architecture and the decisions behind it/);
     expect(help).toMatch(/stories \[story\] \[full\] {2}Real examples from my work, each told as a short story/);

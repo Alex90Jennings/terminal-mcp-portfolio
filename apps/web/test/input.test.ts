@@ -55,15 +55,17 @@ describe('complete', () => {
   const completeInput = (input: string) => complete(input, registry, context());
 
   it('completes a unique command name', () => {
-    expect(completeInput('proj')).toEqual({ value: 'projects ', candidates: [] });
+    expect(completeInput('proj')).toEqual({ value: '/projects ', candidates: [] });
+    expect(completeInput('/proj')).toEqual({ value: '/projects ', candidates: [] });
   });
 
   it('lists candidates when several commands match', () => {
-    expect(completeInput('a')).toEqual({ candidates: ['about', 'approach', 'ask'] });
+    expect(completeInput('/a')).toEqual({ candidates: ['/about', '/approach', '/ask'] });
   });
 
   it('completes project ids after "projects"', () => {
     expect(completeInput('projects cl')).toEqual({ value: 'projects clash-of-langs ', candidates: [] });
+    expect(completeInput('/projects cl')).toEqual({ value: '/projects clash-of-langs ', candidates: [] });
     expect(completeInput('projects zim')).toEqual({ value: 'projects zim-', candidates: ['zim-connections', 'zim-sbb'] });
   });
 

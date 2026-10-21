@@ -40,7 +40,7 @@ export function parseSse(buffer: string): { events: ChatStreamEvent[]; rest: str
   return { events, rest };
 }
 
-const NETWORK_MESSAGE = 'The AI assistant couldn’t be reached. Commands like `projects` still work.';
+const NETWORK_MESSAGE = 'The AI assistant couldn’t be reached. Commands like `/projects` still work.';
 
 /** Asks the assistant and reports each streamed event. Throws `ChatRefused` if it declines up front. */
 export async function streamChat(options: {

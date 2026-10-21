@@ -89,7 +89,7 @@ const PersonalItem = z.object({
 export const GetProfileOutput = {
   ...ProfileObject.pick({ name: true, title: true, location: true, summary: true, contact: true, languages: true, workingApproach: true }).shape,
   interests: z.object({ personal: z.array(PersonalItem), technical: z.array(PersonalItem) }).describe('Published interests; empty until Alex approves them'),
-  background: z.object({ motivation: z.array(PersonalItem), workingEnvironment: z.array(PersonalItem) }).describe('Why Alex works in software, and how Alex works best'),
+  background: z.object({ motivation: z.array(PersonalItem), workingEnvironment: z.array(PersonalItem) }).describe('Why Alex works in software and career goals (motivation); how Alex works best, strengths, frustrations and the first six months in a new role (workingEnvironment)'),
   citations: Citations,
 };
 

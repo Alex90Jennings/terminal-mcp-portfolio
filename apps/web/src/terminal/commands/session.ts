@@ -26,7 +26,7 @@ export const help: Command = {
       {
         kind: 'definitions',
         rows: commands.map((entry) => ({
-          term: [command(entry.usage ?? entry.name, entry.name)],
+          term: [command(`/${entry.usage ?? entry.name}`, `/${entry.name}`)],
           detail: [
             entry.summary,
             ...(entry.aliases.length > 0 ? [text(`  (also: ${entry.aliases.join(', ')})`, 'muted')] : []),
@@ -37,13 +37,13 @@ export const help: Command = {
       {
         kind: 'list',
         items: [
-          [text('Open a project by number or name on its own: '), command('3'), text(' or '), command('sol')],
+          [text('Open a project by number or name: '), command('/projects 3'), text(' or '), command('/projects sol')],
           [text('Tab completes commands and project names; ↑ and ↓ step through history')],
           [text('Ctrl+L clears the screen; Esc clears the line')],
           [
             text(
               aiAvailable
-                ? 'Ask about my work in plain English, e.g. "Which project best demonstrates Docker?" Follow-up questions work too; Ctrl+C or Esc stops an answer.'
+                ? 'Commands start with "/". Anything else is a conversation with the assistant: say hi, or ask about my work in plain English, e.g. "Which project best demonstrates Docker?" Follow-up questions work too; Ctrl+C or Esc stops an answer.'
                 : 'Questions in plain English will be answered once the AI assistant is connected. Until then you get the matching projects.',
             ),
           ],
@@ -96,7 +96,7 @@ export function welcome(context: { kb: { profile: { name: string; title: string 
     paragraph(`Hi, I’m ${firstName}. Welcome to my interactive portfolio: think of it as a first-stage interview.`),
     paragraph([
       text(`Ask me anything to get to know ${firstName}, and why you should hire him. Try `, 'muted'),
-      command('help'),
+      command('/help'),
       text(' if you can’t think of anything to ask:', 'muted'),
     ]),
   ];

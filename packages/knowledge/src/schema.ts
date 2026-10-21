@@ -131,6 +131,8 @@ export const ProfileObject = z.strictObject({
   summary: z.array(FactSchema).min(1),
   contact: z.strictObject({
     email: z.email(),
+    /** International format, e.g. "+44 7700 900000". Published, so only ever Alex's own choice. */
+    phone: z.string().regex(/^\+\d[\d ]{6,18}\d$/, 'an international phone number').optional(),
     links: z.array(LinkSchema).default([]),
   }),
   experience: z

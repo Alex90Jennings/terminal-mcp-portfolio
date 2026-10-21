@@ -85,7 +85,7 @@
       ]
     },
     {
-      "text": "The assistant answers only from the portfolio's MCP tools and lists the sources under each answer. Every sentence is checked before it is shown: one whose figures don't appear in that turn's tool results is withheld.",
+      "text": "The assistant answers only from the portfolio's MCP tools, and the sources behind each answer are recorded for evaluation. Every sentence is checked before it is shown: one whose figures don't appear in that turn's tool results is withheld.",
       "sources": [
         "readme",
         "ai-doc"

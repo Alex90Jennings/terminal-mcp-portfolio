@@ -6,15 +6,21 @@ test.beforeEach(async ({ page }) => open(page));
 test('greets visitors as a first-stage interview and tells them how to start', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Alex Jennings' })).toBeVisible();
   await expect(output(page)).toContainText('think of it as a first-stage interview');
-  await expect(output(page)).toContainText('Ask me anything to get to know Alex, and why you should hire him. Try help if you can’t think of anything to ask:');
+  await expect(output(page)).toContainText('Ask me anything to get to know Alex, and why you should hire him. Try /help if you can’t think of anything to ask:');
   // No interview cards or suggested questions in the terminal: the interviews are the chips below it.
-  await expect(output(page).getByRole('button')).toHaveText(['help']);
+  await expect(output(page).getByRole('button')).toHaveText(['/help']);
   await expect(page).toHaveTitle(/Alex Jennings/);
 });
 
 test('the greeting’s help link runs help', async ({ page }) => {
-  await output(page).getByRole('button', { name: 'help', exact: true }).click();
+  await output(page).getByRole('button', { name: '/help', exact: true }).click();
   await expect(output(page).getByRole('heading', { name: 'Commands' })).toBeVisible();
+});
+
+test('small talk without a "/" goes to the assistant, not to a command', async ({ page }) => {
+  await runCommand(page, 'hi');
+  await expect(output(page)).not.toContainText('command not found');
+  await expect(output(page).getByRole('list', { name: 'Portfolio lookups' }).last()).toContainText('hi');
 });
 
 test('a typed question goes to the assistant', async ({ page }) => {
@@ -76,9 +82,9 @@ test('section links open the deeper views', async ({ page }) => {
 });
 
 test('an unknown command suggests the right one, and the suggestion runs', async ({ page }) => {
-  await runCommand(page, 'projcts');
-  await expect(output(page)).toContainText('command not found: projcts');
-  await output(page).getByRole('button', { name: 'projects', exact: true }).last().click();
+  await runCommand(page, '/projcts');
+  await expect(output(page)).toContainText('command not found: /projcts');
+  await output(page).getByRole('button', { name: '/projects', exact: true }).last().click();
   await expect(output(page).getByRole('heading', { name: 'Available projects' })).toBeVisible();
 });
 
@@ -113,8 +119,10 @@ test('long output scrolls to its own start, so it reads from the top', async ({ 
 
 test('input is capped and never executed', async ({ page }) => {
   await expect(prompt(page)).toHaveAttribute('maxlength', '500');
-  await runCommand(page, '<img src=x onerror="document.title=1">');
+  await runCommand(page, '/<img src=x onerror="document.title=1">');
   await expect(output(page)).toContainText('command not found');
+  await runCommand(page, '<img src=x onerror="document.title=1">');
+  await expect(output(page).getByRole('list', { name: 'Portfolio lookups' }).last()).toContainText('<img src=x');
   await expect(page).toHaveTitle(/Alex Jennings/);
 });
 
