@@ -374,6 +374,7 @@ export function Terminal({ aiEnabled = false, cvAvailable = false }: { aiEnabled
             autoCorrect="off"
             spellCheck={false}
             enterKeyHint="go"
+            placeholder="Type here…"
             aria-describedby="terminal-help"
             className="term-input min-w-0 flex-1 bg-transparent text-term-text caret-term-accent outline-none"
           />

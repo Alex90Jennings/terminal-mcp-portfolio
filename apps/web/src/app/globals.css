@@ -53,6 +53,12 @@
     font-size: max(16px, 1em);
     line-height: inherit;
   }
+  /* A quiet hint where to type; it disappears with the first keystroke. */
+  .term-input::placeholder {
+    color: var(--color-term-muted);
+    opacity: 0.75;
+    font-size: 0.85em;
+  }
   .term-input:focus-visible {
     outline: none;
   }
