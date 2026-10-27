@@ -74,7 +74,7 @@ describe('complete', () => {
   });
 
   it('offers every project after "projects "', () => {
-    expect(completeInput('projects ').candidates).toHaveLength(7);
+    expect(completeInput('projects ').candidates).toHaveLength(8);
   });
 
   it('returns nothing when nothing matches', () => {

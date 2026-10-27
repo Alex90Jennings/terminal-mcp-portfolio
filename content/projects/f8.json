@@ -1,0 +1,176 @@
+{
+  "$schema": "../schemas/project.schema.json",
+  "id": "f8",
+  "name": "f/8",
+  "aliases": [
+    "f8-portfolio"
+  ],
+  "order": 8,
+  "focus": "Native Apple photography app",
+  "tagline": "A photography portfolio for Mac, iPhone and iPad: build a portfolio of your best shots, tagged from each photo's own metadata, and share it privately with the people you choose.",
+  "listingTags": [
+    "Swift",
+    "SwiftUI",
+    "CloudKit"
+  ],
+  "context": {
+    "kind": "personal",
+    "organisation": "AJ Software Ltd"
+  },
+  "visibility": "public",
+  "topics": [
+    "native application design",
+    "photography",
+    "photo metadata",
+    "iCloud sharing",
+    "CloudKit",
+    "privacy",
+    "content moderation",
+    "accessibility",
+    "localisation",
+    "subscriptions",
+    "StoreKit"
+  ],
+  "sources": [
+    {
+      "id": "source-code",
+      "label": "f/8 source code",
+      "kind": "repository"
+    },
+    {
+      "id": "accessibility-doc",
+      "label": "f/8 accessibility notes (25 Oct 2026)",
+      "kind": "documentation"
+    },
+    {
+      "id": "invite-email-readme",
+      "label": "f/8 invitation email README",
+      "kind": "documentation"
+    },
+    {
+      "id": "privacy-policy",
+      "label": "f/8 privacy policy",
+      "kind": "website",
+      "url": "https://aj-software-ltd.github.io/f8-legal/privacy/"
+    },
+    {
+      "id": "author",
+      "label": "Alex, 27 Oct 2026",
+      "kind": "author-statement"
+    }
+  ],
+  "overview": [
+    {
+      "text": "f/8 is a photography portfolio app for the Apple ecosystem, written in Swift: a Mac app, and an iPhone and iPad app that share its models, services, iCloud storage, translations and Pro subscription.",
+      "sources": ["source-code"]
+    },
+    {
+      "text": "Photographers choose their best shots from the Photos library or from folders on the Mac, including RAW files. f/8 doesn't copy them: the library stays where it is.",
+      "sources": ["source-code"]
+    },
+    {
+      "text": "f/8 reads each photo's metadata, from aperture and focal length to camera, lens, place and time of day, and tags the work by it, so photographers can see the settings and habits behind their best shots.",
+      "sources": ["source-code"]
+    },
+    {
+      "text": "Work is presented as a professional portfolio rather than a camera roll: tags flick through like a stack of prints, and there are slideshows with music that play on a TV through AirPlay, and photo books.",
+      "sources": ["source-code"]
+    },
+    {
+      "text": "Tags and slideshows can be shared through iCloud with people the photographer invites by email, up to five at a time, with Private, Shared and Public sharing levels. Invitations arrive as notifications, and photos can be offered with or without downloads.",
+      "sources": ["source-code"]
+    },
+    {
+      "text": "f/8 is in development and not yet released.",
+      "sources": ["author"]
+    },
+    {
+      "text": "Translated into the 20 most spoken languages besides English, as SOL is, with 811 strings in its string catalog.",
+      "sources": ["source-code"]
+    }
+  ],
+  "technologies": [
+    { "name": "Swift", "category": "language", "sources": ["source-code"] },
+    { "name": "SwiftUI", "category": "frontend", "sources": ["source-code"] },
+    { "name": "PhotoKit and image metadata", "category": "platform", "sources": ["source-code"] },
+    { "name": "CloudKit (iCloud sharing and sync)", "category": "cloud", "sources": ["source-code"] },
+    { "name": "Apple push notifications", "category": "platform", "sources": ["source-code"] },
+    { "name": "StoreKit 2", "category": "platform", "sources": ["source-code"] },
+    { "name": "AirPlay", "category": "platform", "sources": ["source-code"] },
+    { "name": "XcodeGen", "category": "devops", "sources": ["source-code"] },
+    { "name": "String catalogs (Localizable.xcstrings)", "category": "frontend", "sources": ["source-code"] },
+    { "name": "Cloudflare Workers and Resend (invitation email)", "category": "cloud", "sources": ["invite-email-readme"] }
+  ],
+  "responsibilities": [
+    {
+      "text": "Personal project, designed and built by Alex: the Mac and iPhone apps, metadata tagging, iCloud sharing, moderation, the Pro subscription, accessibility and translations.",
+      "scope": "individual",
+      "sources": ["source-code", "author"]
+    }
+  ],
+  "architecture": {
+    "overview": [
+      {
+        "text": "One codebase for two apps: the Mac and iPhone targets share the models and services, and each has screens of its own. They use the same bundle ID, so f/8 is one app on the App Store and Pro carries across devices.",
+        "sources": ["source-code"]
+      },
+      {
+        "text": "Sharing is built on iCloud (CloudKit). Uploaded tags also sync between the photographer's own Macs, and backups sync as soon as photos or tags change.",
+        "sources": ["source-code"]
+      },
+      {
+        "text": "Invitation emails go through a small Cloudflare Worker that sends one designed letter through Resend. It accepts at most five recipients, only links to iCloud shares, and ten requests a minute per IP address, so it can't be used to send other mail. Without it, f/8 falls back to a Mail draft.",
+        "sources": ["invite-email-readme"]
+      }
+    ]
+  },
+  "challenges": [
+    {
+      "title": "Sharing photos safely",
+      "problem": "Sharing photos with other people needs privacy and protection from misuse, not just an upload.",
+      "approach": [
+        "Invitee lists are hashed, and the names of the photographer's Macs are never shared.",
+        "Anyone who sees a shared tag can report it, and people can block others. Tags that break the sharing rules can be taken down.",
+        "Shared photos that may be sensitive are blurred for people who have turned on Sensitive Content Warning."
+      ],
+      "sources": ["source-code"]
+    },
+    {
+      "title": "Accessibility to SOL's standard",
+      "problem": "A visual, photo-first app still has to work for people who use VoiceOver, larger text, higher contrast or reduced motion.",
+      "approach": [
+        "Free accessibility settings that add to the Mac's own and never override them: text size up to 200%, Increase Contrast and Reduce Motion.",
+        "A contrast report checks every theme, surface, accent and contrast mode against Apple's and WCAG's targets."
+      ],
+      "outcome": "6,480 contrast checks, none below target, as of 25 October 2026.",
+      "sources": ["accessibility-doc"]
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Shared work is always free to view",
+      "decision": "Tags, slideshows and photo books people share with you are always free. f/8 Pro is a monthly or yearly subscription with a free week.",
+      "rationale": "The people a photographer shares with shouldn't need to pay to see the work.",
+      "sources": ["source-code"]
+    }
+  ],
+  "limitations": [
+    {
+      "text": "VoiceOver, Voice Control and Full Keyboard Access haven't yet been tested by hand.",
+      "sources": ["accessibility-doc"]
+    }
+  ],
+  "comingSoon": "Coming soon",
+  "links": [
+    {
+      "label": "Privacy policy",
+      "url": "https://aj-software-ltd.github.io/f8-legal/privacy/",
+      "kind": "website"
+    }
+  ],
+  "undocumented": [
+    "Release date",
+    "App Store link (not yet released)",
+    "Whether the source repository will be public"
+  ]
+}

@@ -16,7 +16,7 @@ export const SERVER_VERSION = '0.1.0';
 export const TOOL_MODULES: readonly ToolModule[] = [listProjects, getProject, searchProjects, getProfile, getExperience, getSkills, getExamples];
 
 export const INSTRUCTIONS = [
-  "Read-only access to Alex Jennings' software engineering portfolio: seven featured projects, a professional profile, experience, skills, and real examples (STAR stories) of how Alex works.",
+  "Read-only access to Alex Jennings' software engineering portfolio: featured projects, a professional profile, experience, skills, and real examples (STAR stories) of how Alex works.",
   'Every fact is verified. Facts carry `sources` ids, resolved to labels and URLs in `citations`; cite them when you answer.',
   'Responsibilities have a `scope`: individual (Alex alone), collaborative (with others) or team (a team result Alex contributed to). Preserve that distinction.',
   'If something is not covered, or is listed under `undocumented`, say it is not documented. Do not guess or embellish achievements, metrics or responsibilities.',

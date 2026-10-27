@@ -12,7 +12,7 @@ export const listProjects: ToolModule = {
       {
         title: 'List featured projects',
         description:
-          "List Alex Jennings' seven featured engineering projects with each one's primary technical focus, tagline and tags. " +
+          "List Alex Jennings' featured engineering projects with each one's primary technical focus, tagline and tags. " +
           'Start here to find a project id for get_project.',
         inputSchema: {},
         outputSchema: ListProjectsOutput,

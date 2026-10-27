@@ -16,8 +16,8 @@ describe('the question set', () => {
   it('has about 35 conversations covering every project it was written for, and every category', () => {
     expect(CASES.length).toBeGreaterThanOrEqual(34);
     expect(CASES.length).toBeLessThanOrEqual(40);
-    // The Terminal Portfolio project was added after this set; the set is frozen, so it isn't covered.
-    const addedLater = new Set(['terminal-portfolio']);
+    // The Terminal Portfolio and f/8 projects were added after this set; the set is frozen, so they aren't covered.
+    const addedLater = new Set(['terminal-portfolio', 'f8']);
     expect(new Set(CASES.flatMap(({ projects }) => projects))).toEqual(new Set(serverKb.projects.map(({ id }) => id).filter((id) => !addedLater.has(id))));
     const categories = new Set(CASES.map(({ category }) => category));
     for (const category of ['technical', 'architectural', 'behavioural', 'attribution', 'semantic', 'synthesis', 'adversarial', 'undocumented']) {

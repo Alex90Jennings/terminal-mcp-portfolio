@@ -7,7 +7,7 @@ An interactive developer portfolio that works like a terminal, backed by a typed
 ## Workspace
 
 ```
-content/               The knowledge base: profile, skills, seven projects and STAR evidence, every claim cited
+content/               The knowledge base: profile, skills, eight projects and STAR evidence, every claim cited
 packages/knowledge     Schema, validation, build step and read-only queries
 packages/mcp-server    Read-only MCP server: 7 tools, 4 resources, Streamable HTTP and stdio
 packages/assistant     Provider-neutral AI assistant: chat loop over the MCP tools, Claude adapter, grounding

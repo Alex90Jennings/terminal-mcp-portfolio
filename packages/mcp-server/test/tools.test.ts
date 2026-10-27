@@ -43,12 +43,12 @@ describe('discovery', () => {
 });
 
 describe('list_projects', () => {
-  it('returns the seven projects in order, each with its resource URI and a resource link', async () => {
+  it('returns the eight projects in order, each with its resource URI and a resource link', async () => {
     const result = await call(client, 'list_projects');
     const { projects } = structured<{ projects: { id: string; uri: string; focus: string }[] }>(result);
     expect(projects.map(({ id }) => id)).toEqual(kb.projects.map(({ id }) => id));
     expect(projects[0]).toMatchObject({ id: 'zim-connections', uri: 'portfolio://projects/zim-connections', focus: 'Production engineering' });
-    expect(result.content.filter((item) => item.type === 'resource_link')).toHaveLength(7);
+    expect(result.content.filter((item) => item.type === 'resource_link')).toHaveLength(8);
   });
 
   it('mirrors the structured content as JSON text for older clients', async () => {

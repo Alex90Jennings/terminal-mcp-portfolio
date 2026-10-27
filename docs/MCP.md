@@ -31,7 +31,7 @@ All seven are read-only and annotated `readOnlyHint: true`, `destructiveHint: fa
 
 | Tool | Input | Returns |
 |---|---|---|
-| `list_projects` | — | The seven projects: id, name, focus, tagline, tags, context and resource URI, plus a `resource_link` to each document |
+| `list_projects` | — | The eight projects: id, name, focus, tagline, tags, context and resource URI, plus a `resource_link` to each document |
 | `get_project` | `project` (id, alias, name or number, ≤ 100 chars); optional `sections[]`; optional `relatedTo` (≤ 500 chars) | The project's identifying fields plus the requested sections (all by default), with `citations` for exactly the sources cited. Every result says what it covers: `sections` (retrieved), `omittedSections` (sections with content that weren't requested) and `complete`. A partial result adds a `note`, and with `relatedTo`, up to four passages from the omitted sections that match it (`relatedFromOmitted`). All additions are optional fields, so existing clients are unaffected |
 | `search_projects` | `query` (≤ 200 chars); `limit` 1–10 (default 5) | Ranked projects, each with the matched passages, their source ids and `citations`. A project the query names outright (id, name or alias) ranks first, consistent with `get_project`: "ZIM" means ZIM Connections, and "ZIM@SBB" or "SBB" means ZIM@SBB. Ranking: a term counts in full where it says what a project is (name, focus, topics, technologies) and in its two best narrative fields; scores are scaled by how many of the query's terms a project matches and weighted by the evidence it is (employment work 1.25, personal projects 1, this portfolio's own project 0.6); ties go to the curated project order; "AI" also matches LLM, RAG and retrieval work |
 | `get_profile` | — | Summary, location, contact links, languages, working approach and AI use, plus published `interests` and `background` (each marked with its basis, "Alex's own account"), with `citations` |
@@ -58,10 +58,10 @@ Markdown documents that clients can attach to a conversation directly. Every cla
 |---|---|
 | `portfolio://profile` | Summary, employment, education, certifications, working approach, languages, contact |
 | `portfolio://skills` | Skills by category, linked to project documents |
-| `portfolio://projects` | Index of the seven projects |
+| `portfolio://projects` | Index of the eight projects |
 | `portfolio://projects/{id}` | Full documentation of one project: overview, responsibilities with scope, technologies, architecture with Mermaid diagrams, challenges, decisions with rationale, lessons, limitations, links, "not documented yet", sources |
 
-The template lists all seven projects and supports id completion. Only canonical ids resolve, so every document has exactly one URI; anything else returns resource-not-found (`-32002`). These URIs are stable public API.
+The template lists all eight projects and supports id completion. Only canonical ids resolve, so every document has exactly one URI; anything else returns resource-not-found (`-32002`). These URIs are stable public API.
 
 ## Connecting a client
 

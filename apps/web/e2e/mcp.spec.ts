@@ -24,7 +24,7 @@ test('the official MCP client connects over Streamable HTTP and uses tools and r
   expect(Object.keys(experience.structuredContent ?? {})).toEqual(['employment', 'education', 'certifications', 'citations']);
 
   const { resources } = await client.listResources();
-  expect(resources).toHaveLength(10);
+  expect(resources).toHaveLength(11);
   const { contents } = await client.readResource({ uri: 'portfolio://projects/operafy' });
   expect(contents[0] && 'text' in contents[0] ? contents[0].text : '').toContain('## Sources');
 

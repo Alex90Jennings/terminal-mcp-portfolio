@@ -52,10 +52,10 @@ test('help lists the commands', async ({ page }) => {
   }
 });
 
-test('projects lists all seven, and a project opens by click, number, name or alias', async ({ page }) => {
+test('projects lists all eight, and a project opens by click, number, name or alias', async ({ page }) => {
   await runCommand(page, 'projects');
   const listing = output(page).getByRole('list').last();
-  await expect(listing.getByRole('listitem')).toHaveCount(7);
+  await expect(listing.getByRole('listitem')).toHaveCount(8);
 
   await listing.getByRole('button', { name: 'SOL' }).click();
   await expect(output(page).getByRole('heading', { level: 2, name: 'SOL' })).toBeVisible();
@@ -65,6 +65,9 @@ test('projects lists all seven, and a project opens by click, number, name or al
 
   await runCommand(page, 'project zim@sbb');
   await expect(output(page).getByRole('heading', { level: 2, name: 'ZIM@SBB' })).toBeVisible();
+
+  await runCommand(page, 'project f/8');
+  await expect(output(page).getByRole('heading', { level: 2, name: 'f/8' })).toBeVisible();
 });
 
 test('project links are real, open in a new tab and are announced as such', async ({ page }) => {

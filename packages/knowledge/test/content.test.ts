@@ -10,7 +10,7 @@ const bundle = await loadBundle(contentDir);
 const kb = createKnowledgeBase(bundle);
 
 describe('portfolio content', () => {
-  it('publishes exactly the seven featured projects, in order', () => {
+  it('publishes exactly the eight featured projects, in order', () => {
     expect(kb.projects.map(({ id }) => id)).toEqual([
       'zim-connections',
       'zim-sbb',
@@ -19,6 +19,7 @@ describe('portfolio content', () => {
       'sol',
       'total-guess',
       'terminal-portfolio',
+      'f8',
     ]);
   });
 

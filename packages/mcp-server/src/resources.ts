@@ -44,7 +44,7 @@ export function registerResources(server: McpServer, context: ToolContext): void
   server.registerResource(
     'projects',
     PROJECTS_URI,
-    { title: 'Featured projects', description: 'An index of the seven featured projects, linking to each project’s document.', mimeType: MARKDOWN },
+    { title: 'Featured projects', description: 'An index of every featured project, linking to each project’s document.', mimeType: MARKDOWN },
     (uri) => document(uri, () => renderProjectIndexMarkdown(kb)),
   );
 
